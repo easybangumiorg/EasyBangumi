@@ -2,9 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- libmpv is exposed only on API 26+; older devices keep using ExoPlayer. -->
-    <uses-sdk tools:overrideLibrary="dev.jdtech.mpv" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -118,7 +115,7 @@
 
         <provider
             android:name=".provider.MediaContentProvider"
-            android:authorities="${package_name}.provider"
+            android:authorities="${applicationId}.provider"
             android:grantUriPermissions="true"
             android:exported="false">
             <meta-data

@@ -16,6 +16,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -36,6 +37,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +61,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +70,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -81,6 +86,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
 import com.heyanle.easybangumi4.danmaku.DANMAKU_SCROLL_SPEED_TIERS
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
@@ -93,6 +99,7 @@ import com.heyanle.easybangumi4.player.mpv.MpvAnime4KStatus
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.common.PlayerCutoutInsets
 import com.heyanle.easybangumi4.ui.common.TabIndicator
+import com.heyanle.inject.core.Inject
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -188,6 +195,7 @@ internal fun DanmakuPlaybackState.toPlayerDanmakuControlState(
 internal enum class PlayerSettingsSection {
     Danmaku,
     Video,
+    Controls,
     Anime4K,
     AdBlock,
 }
@@ -197,11 +205,13 @@ internal object PlayerPlaybackSettingsTestTags {
     const val SETTINGS_PANEL = "player_settings_panel"
     const val DANMAKU_SECTION_TAB = "player_settings_tab_danmaku"
     const val VIDEO_SECTION_TAB = "player_settings_tab_video"
+    const val CONTROLS_SECTION_TAB = "player_settings_tab_controls"
     const val ANIME4K_SECTION_TAB = "player_settings_tab_anime4k"
     const val ADBLOCK_SECTION_TAB = "player_settings_tab_adblock"
     const val OPEN_DANMAKU_SETTINGS = "player_open_danmaku_settings"
     const val DANMAKU_SECTION = "player_settings_danmaku"
     const val VIDEO_SECTION = "player_settings_video"
+    const val CONTROLS_SECTION = "player_settings_controls"
     const val ANIME4K_SECTION = "player_settings_anime4k"
     const val ADBLOCK_SECTION = "player_settings_adblock"
     const val RESET = "player_danmaku_reset"
@@ -314,7 +324,18 @@ internal fun FullscreenPlayerSidePanel(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val activity = LocalContext.current as Activity
-    val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(activity)
+    val preferences: SettingPreferences by Inject.injectLazy()
+    val cutoutMode by preferences.playerCutoutAvoidanceMode.flow().collectAsState(
+        preferences.playerCutoutAvoidanceMode.get(),
+    )
+    val cutoutManualPaddingDp by preferences.playerCutoutManualPaddingDp.flow().collectAsState(
+        preferences.playerCutoutManualPaddingDp.get(),
+    )
+    val cutoutInsets = PlayerCutoutInsets.rememberResolved(
+        activity = activity,
+        mode = cutoutMode,
+        manualPaddingDp = cutoutManualPaddingDp,
+    )
     BackHandler(enabled = visible, onBack = onDismiss)
     Box(modifier = modifier.fillMaxSize()) {
         AnimatedVisibility(
@@ -363,10 +384,7 @@ internal fun FullscreenPlayerSidePanel(
                         .fillMaxSize()
                         // 面板底色可以延伸到挖孔区，但内部所有操作必须保持可点击。
                         .padding(
-                            end = PlayerCutoutInsets.paddingFor(
-                                cutoutSide = cutoutSide,
-                                targetSide = PlayerCutoutInsets.Side.RIGHT,
-                            ),
+                            end = cutoutInsets.paddingFor(PlayerCutoutInsets.Side.RIGHT),
                         )
                         .navigationBarsPadding(),
                     content = content,
@@ -511,7 +529,8 @@ private fun ColumnScope.PlayerSettingsContent(
     val sections = buildList {
         add(PlayerSettingsSection.Danmaku)
         add(PlayerSettingsSection.Video)
-        if (isMpvEngine) add(PlayerSettingsSection.Anime4K)
+        add(PlayerSettingsSection.Controls)
+        if (BuildConfig.HAS_MPV && isMpvEngine) add(PlayerSettingsSection.Anime4K)
         if (isExoPlayerEngine) add(PlayerSettingsSection.AdBlock)
     }
     var selectedSection by remember { mutableStateOf(initialSelectedSection) }
@@ -555,6 +574,7 @@ private fun ColumnScope.PlayerSettingsContent(
                 when (selectedSection) {
                     PlayerSettingsSection.Danmaku -> danmakuScrollState
                     PlayerSettingsSection.Video -> videoScrollState
+                    PlayerSettingsSection.Controls -> videoScrollState
                     PlayerSettingsSection.Anime4K,
                     PlayerSettingsSection.AdBlock,
                     -> videoScrollState
@@ -578,14 +598,22 @@ private fun ColumnScope.PlayerSettingsContent(
                 onScaleSelected = onVideoScaleSelected,
             )
 
-            PlayerSettingsSection.Anime4K -> MpvAnime4KSettingsContent(
-                enabled = mpvAnime4kEnabled,
-                preset = mpvAnime4kPreset,
-                status = mpvAnime4kStatus,
-                onEnabledChange = onMpvAnime4kEnabledChange,
-                onPresetChange = onMpvAnime4kPresetChange,
-                modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.ANIME4K_SECTION),
+            PlayerSettingsSection.Controls -> PlayerControlSettingsContent(
+                modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.CONTROLS_SECTION),
             )
+
+            PlayerSettingsSection.Anime4K -> {
+                if (BuildConfig.HAS_MPV) {
+                    MpvAnime4KSettingsContent(
+                        enabled = mpvAnime4kEnabled,
+                        preset = mpvAnime4kPreset,
+                        status = mpvAnime4kStatus,
+                        onEnabledChange = onMpvAnime4kEnabledChange,
+                        onPresetChange = onMpvAnime4kPresetChange,
+                        modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.ANIME4K_SECTION),
+                    )
+                }
+            }
 
             PlayerSettingsSection.AdBlock -> ExoAdAudioProbeSettingsContent(
                 enabled = exoAdAudioProbeEnabled,
@@ -633,6 +661,9 @@ private fun PlayerSettingsSectionSelector(
                             PlayerSettingsSection.Video ->
                                 PlayerPlaybackSettingsTestTags.VIDEO_SECTION_TAB
 
+                            PlayerSettingsSection.Controls ->
+                                PlayerPlaybackSettingsTestTags.CONTROLS_SECTION_TAB
+
                             PlayerSettingsSection.Anime4K ->
                                 PlayerPlaybackSettingsTestTags.ANIME4K_SECTION_TAB
 
@@ -650,7 +681,10 @@ private fun PlayerSettingsSectionSelector(
                         text = when (section) {
                             PlayerSettingsSection.Danmaku -> "弹幕"
                             PlayerSettingsSection.Video -> "画面"
-                            PlayerSettingsSection.Anime4K -> "Anime4K"
+                            PlayerSettingsSection.Controls -> "控制"
+                            PlayerSettingsSection.Anime4K -> {
+                                if (BuildConfig.HAS_MPV) "Anime4K" else ""
+                            }
                             PlayerSettingsSection.AdBlock -> "去广告"
                         },
                         style = MaterialTheme.typography.titleSmall,
@@ -939,14 +973,43 @@ private fun DanmakuTypeChip(
 }
 
 @Composable
-private fun SettingsGroupTitle(text: String) {
-    Text(
-        text = text,
-        modifier = Modifier.padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 4.dp),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.SemiBold,
-    )
+internal fun SettingsGroupTitle(
+    text: String,
+    onHelpClick: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+        )
+        if (onHelpClick != null) {
+            Spacer(Modifier.widthIn(min = 4.dp))
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = "查看${text}说明",
+                        onClick = onHelpClick,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                    contentDescription = "$text 说明",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -1052,80 +1115,330 @@ internal fun VideoScaleSettingsContent(
 }
 
 @Composable
-internal fun MpvAnime4KSettingsContent(
-    enabled: Boolean,
-    preset: SettingPreferences.MpvAnime4KPreset,
-    status: MpvAnime4KStatus,
-    onEnabledChange: (Boolean) -> Unit,
-    onPresetChange: (SettingPreferences.MpvAnime4KPreset) -> Unit,
+private fun PlayerControlSettingsContent(
     modifier: Modifier = Modifier,
 ) {
+    val preferences: SettingPreferences by Inject.injectLazy()
+    val controlPosition by preferences.fullscreenControlPosition.flow().collectAsState(
+        preferences.fullscreenControlPosition.get(),
+    )
+    val cutoutMode by preferences.playerCutoutAvoidanceMode.flow().collectAsState(
+        preferences.playerCutoutAvoidanceMode.get(),
+    )
+    val manualPadding by preferences.playerCutoutManualPaddingDp.flow().collectAsState(
+        preferences.playerCutoutManualPaddingDp.get(),
+    )
+    val seekWidthMs by preferences.playerSeekFullWidthTimeMS.flow().collectAsState(
+        preferences.playerSeekFullWidthTimeMS.get(),
+    )
+    val fastWeight by preferences.fastWeight.flow().collectAsState(preferences.fastWeight.get())
+    val fastTopWeight by preferences.fastWeightTopMolecule.flow().collectAsState(
+        preferences.fastWeightTopMolecule.get(),
+    )
+    val fastSeconds by preferences.fastSecond.flow().collectAsState(preferences.fastSecond.get())
+    val fastTopSeconds by preferences.fastTopSecond.flow().collectAsState(
+        preferences.fastTopSecond.get(),
+    )
+    var helpTopic by remember { mutableStateOf<PlayerControlSettingHelp?>(null) }
+
     Column(modifier = modifier.fillMaxWidth()) {
-        SettingsGroupTitle("Anime4K")
+        SettingsGroupTitle(
+            text = "全屏侧边按钮",
+            onHelpClick = { helpTopic = PlayerControlSettingHelp.FullscreenSideButtons },
+        )
+        listOf(
+            SettingPreferences.FullscreenControlPosition.AUTO to ("自动" to "跟随唤出控制器时的点击侧"),
+            SettingPreferences.FullscreenControlPosition.LEFT to ("固定左侧" to "侧边按钮始终停靠左边"),
+            SettingPreferences.FullscreenControlPosition.RIGHT to ("固定右侧" to "侧边按钮始终停靠右边"),
+        ).forEach { (value, copy) ->
+            val selected = controlPosition == value
+            ListItem(
+                headlineContent = { Text(copy.first) },
+                supportingContent = { Text(copy.second) },
+                trailingContent = {
+                    RadioButton(selected = selected, onClick = { preferences.fullscreenControlPosition.set(value) })
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.RadioButton) { preferences.fullscreenControlPosition.set(value) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
+
+        SettingsGroupTitle("刘海避让")
+        listOf(
+            SettingPreferences.PlayerCutoutAvoidanceMode.AUTO to ("自动" to "识别刘海位置并避让"),
+            SettingPreferences.PlayerCutoutAvoidanceMode.DISABLED to ("关闭" to "控制器允许进入刘海区域"),
+            SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL to ("手动" to "两侧使用自定义安全距离"),
+        ).forEach { (value, copy) ->
+            val selected = cutoutMode == value
+            ListItem(
+                headlineContent = { Text(copy.first) },
+                supportingContent = { Text(copy.second) },
+                trailingContent = {
+                    RadioButton(selected = selected, onClick = { preferences.playerCutoutAvoidanceMode.set(value) })
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.RadioButton) { preferences.playerCutoutAvoidanceMode.set(value) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
+        if (cutoutMode == SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL) {
+            PlayerControlSlider(
+                title = "安全距离",
+                valueText = "${manualPadding.coerceIn(0, 96)} dp",
+                value = manualPadding.coerceIn(0, 96).toFloat(),
+                valueRange = 0f..96f,
+                steps = 23,
+                onValueChange = { preferences.playerCutoutManualPaddingDp.set((it / 4f).roundToInt() * 4) },
+            )
+        }
+
+        SettingsGroupTitle("滑动手势")
+        val seekSeconds = (seekWidthMs / 1_000L).coerceIn(60L, 1_800L)
+        PlayerControlSlider(
+            title = "横滑满屏时长",
+            valueText = if (seekSeconds >= 60) "${seekSeconds / 60} 分钟" else "$seekSeconds 秒",
+            value = seekSeconds.toFloat(),
+            valueRange = 60f..1_800f,
+            steps = 28,
+            onValueChange = {
+                val seconds = (it / 60f).roundToInt().coerceIn(1, 30) * 60L
+                preferences.playerSeekFullWidthTimeMS.set(seconds * 1_000L)
+            },
+            onHelpClick = { helpTopic = PlayerControlSettingHelp.HorizontalSeekDuration },
+        )
+
+        SettingsGroupTitle("双击快进快退")
+        val doubleTapEnabled = fastWeight > 0
         ListItem(
-            headlineContent = { Text("启用 Anime4K") },
-            supportingContent = { Text("使用 mpv GLSL Shader 实时增强画面") },
+            headlineContent = { Text("启用双击手势") },
+            supportingContent = { Text("点击画面两侧快速快退或快进") },
             trailingContent = {
                 Switch(
-                    checked = enabled,
-                    onCheckedChange = onEnabledChange,
+                    checked = doubleTapEnabled,
+                    onCheckedChange = {
+                        preferences.fastWeight.set(if (it) kotlin.math.abs(fastWeight).coerceIn(2, 6) else -kotlin.math.abs(fastWeight).coerceIn(2, 6))
+                    },
                 )
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onEnabledChange(!enabled) },
+            modifier = Modifier.fillMaxWidth().clickable {
+                preferences.fastWeight.set(if (doubleTapEnabled) -kotlin.math.abs(fastWeight).coerceIn(2, 6) else kotlin.math.abs(fastWeight).coerceIn(2, 6))
+            },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
-        if (enabled) {
-            SettingsGroupTitle("实时状态")
+        if (doubleTapEnabled) {
+            val widthOptions = preferences.fastWeightSelection
+            val widthIndex = widthOptions.indexOf(kotlin.math.abs(fastWeight)).coerceAtLeast(0)
+            PlayerControlSlider(
+                title = "两侧响应宽度",
+                valueText = "各占屏幕 1/${widthOptions[widthIndex]}",
+                value = widthIndex.toFloat(),
+                valueRange = 0f..widthOptions.lastIndex.toFloat(),
+                steps = (widthOptions.size - 2).coerceAtLeast(0),
+                onValueChange = { preferences.fastWeight.set(widthOptions[it.roundToInt().coerceIn(widthOptions.indices)]) },
+            )
+            PlayerControlSlider(
+                title = "两侧快进快退时长",
+                valueText = "${fastSeconds.coerceIn(5, 60)} 秒",
+                value = fastSeconds.coerceIn(5, 60).toFloat(),
+                valueRange = 5f..60f,
+                steps = 10,
+                onValueChange = { preferences.fastSecond.set((it / 5f).roundToInt().coerceIn(1, 12) * 5) },
+            )
+            val topEnabled = fastTopWeight > 0
             ListItem(
-                headlineContent = {
-                    Text(
-                        when (status.upscaleCnnActive) {
-                            true -> "Upscale CNN 已触发"
-                            false -> "Upscale CNN 未触发"
-                            null -> "正在读取视频尺寸"
+                headlineContent = { Text("顶部独立区域") },
+                supportingContent = { Text("顶部区域可使用不同的跳转时长") },
+                trailingContent = {
+                    Switch(
+                        checked = topEnabled,
+                        onCheckedChange = {
+                            val value = kotlin.math.abs(fastTopWeight).coerceIn(1, 5)
+                            preferences.fastWeightTopMolecule.set(if (it) value else -value)
                         },
                     )
                 },
-                supportingContent = {
-                    Text(
-                        when {
-                            status.inputWidth <= 0 || status.outputWidth <= 0 ->
-                                "开始播放后将显示实际输入与输出尺寸"
-                            status.upscaleCnnActive == true ->
-                                "输入 ${status.inputWidth}×${status.inputHeight} → 输出 ${status.outputWidth}×${status.outputHeight}"
-                            else ->
-                                "输入 ${status.inputWidth}×${status.inputHeight} → 输出 ${status.outputWidth}×${status.outputHeight}；输出需至少比输入放大约 20%"
-                        },
-                    )
+                modifier = Modifier.fillMaxWidth().clickable {
+                    val value = kotlin.math.abs(fastTopWeight).coerceIn(1, 5)
+                    preferences.fastWeightTopMolecule.set(if (topEnabled) -value else value)
                 },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             )
-            SettingsGroupTitle("增强档位")
-            listOf(
-                SettingPreferences.MpvAnime4KPreset.FAST to ("效率档" to "更省电，适合日常观看"),
-                SettingPreferences.MpvAnime4KPreset.QUALITY to ("质量档" to "更高画质，可能增加功耗和发热"),
-                SettingPreferences.MpvAnime4KPreset.STRONG to ("强效档" to "低清老番增强更明显，可能明显发热或掉帧"),
-            ).forEach { (value, content) ->
-                val selected = preset == value
-                ListItem(
-                    headlineContent = { Text(content.first) },
-                    supportingContent = { Text(content.second) },
-                    trailingContent = {
-                        RadioButton(
-                            selected = selected,
-                            onClick = { onPresetChange(value) },
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(role = Role.RadioButton) { onPresetChange(value) },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            if (topEnabled) {
+                PlayerControlSlider(
+                    title = "顶部区域高度",
+                    valueText = "屏幕高度的 ${fastTopWeight.coerceIn(1, 5)}/6",
+                    value = fastTopWeight.coerceIn(1, 5).toFloat(),
+                    valueRange = 1f..5f,
+                    steps = 3,
+                    onValueChange = { preferences.fastWeightTopMolecule.set(it.roundToInt().coerceIn(1, 5)) },
+                )
+                PlayerControlSlider(
+                    title = "顶部快进快退时长",
+                    valueText = "${fastTopSeconds.coerceIn(5, 120)} 秒",
+                    value = fastTopSeconds.coerceIn(5, 120).toFloat(),
+                    valueRange = 5f..120f,
+                    steps = 22,
+                    onValueChange = { preferences.fastTopSecond.set((it / 5f).roundToInt().coerceIn(1, 24) * 5) },
                 )
             }
+            PlayerControlDoubleTapPreview(
+                fastWeight = widthOptions[widthIndex],
+                fastTopWeight = if (topEnabled) fastTopWeight.coerceIn(1, 5) else -1,
+                topDenominator = preferences.fastWeightTopDenominator,
+            )
         }
         Spacer(Modifier.height(16.dp))
+    }
+    helpTopic?.let { topic ->
+        AlertDialog(
+            onDismissRequest = { helpTopic = null },
+            title = { Text(topic.title) },
+            text = { Text(topic.description) },
+            confirmButton = {
+                TextButton(onClick = { helpTopic = null }) {
+                    Text("知道了")
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun PlayerControlDoubleTapPreview(
+    fastWeight: Int,
+    fastTopWeight: Int,
+    topDenominator: Int,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.78f),
+            )
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(12.dp),
+            ),
+    ) {
+        PlayerControlDoubleTapPreviewSide(
+            modifier = Modifier.align(Alignment.CenterStart),
+            widthFraction = 1f / fastWeight.coerceAtLeast(2),
+            topFraction = fastTopWeight.takeIf { it > 0 }
+                ?.toFloat()
+                ?.div(topDenominator.toFloat()),
+            icon = Icons.Filled.FastRewind,
+        )
+        PlayerControlDoubleTapPreviewSide(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            widthFraction = 1f / fastWeight.coerceAtLeast(2),
+            topFraction = fastTopWeight.takeIf { it > 0 }
+                ?.toFloat()
+                ?.div(topDenominator.toFloat()),
+            icon = Icons.Filled.FastForward,
+        )
+    }
+}
+
+@Composable
+private fun PlayerControlDoubleTapPreviewSide(
+    modifier: Modifier,
+    widthFraction: Float,
+    topFraction: Float?,
+    icon: ImageVector,
+) {
+    val areaColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+    val accent = MaterialTheme.colorScheme.primary
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .fillMaxWidth(widthFraction)
+            .background(areaColor),
+    ) {
+        if (topFraction != null) {
+            Box(
+                modifier = Modifier.weight(topFraction).fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = null, tint = accent)
+            }
+            Box(Modifier.fillMaxWidth().height(1.dp).background(accent))
+            Box(
+                modifier = Modifier.weight(1f - topFraction).fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = null, tint = accent)
+            }
+        } else {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = accent)
+            }
+        }
+    }
+}
+
+private enum class PlayerControlSettingHelp(
+    val title: String,
+    val description: String,
+) {
+    FullscreenSideButtons(
+        title = "全屏侧边按钮",
+        description = "控制横屏全屏时截图、倍速、弹幕、选集和锁定按钮出现在哪一侧。自动模式会跟随本次唤出控制器时的点击侧；固定模式始终停靠在指定一侧。",
+    ),
+    HorizontalSeekDuration(
+        title = "横滑满屏时长",
+        description = "表示手指横向滑过整个播放器宽度时对应的进度跨度。数值越小，滑动跳转越快；数值越大，进度调整越精细。",
+    ),
+}
+
+@Composable
+private fun PlayerControlSlider(
+    title: String,
+    valueText: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int,
+    onValueChange: (Float) -> Unit,
+    onHelpClick: (() -> Unit)? = null,
+) {
+    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            if (onHelpClick != null) {
+                Spacer(Modifier.widthIn(min = 4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable(
+                            role = Role.Button,
+                            onClickLabel = "查看${title}说明",
+                            onClick = onHelpClick,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                        contentDescription = "$title 说明",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Spacer(Modifier.weight(1f))
+            Text(valueText, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        }
+        Slider(
+            value = value.coerceIn(valueRange.start, valueRange.endInclusive),
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            steps = steps,
+        )
     }
 }
 

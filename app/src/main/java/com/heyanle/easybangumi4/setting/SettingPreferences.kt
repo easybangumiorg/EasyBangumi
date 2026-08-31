@@ -55,6 +55,18 @@ class SettingPreferences(
         MPV,
     }
 
+    enum class FullscreenControlPosition {
+        AUTO,
+        LEFT,
+        RIGHT,
+    }
+
+    enum class PlayerCutoutAvoidanceMode {
+        AUTO,
+        DISABLED,
+        MANUAL,
+    }
+
     enum class MpvAnime4KPreset {
         FAST,
         QUALITY,
@@ -69,6 +81,19 @@ class SettingPreferences(
     val playbackEngine = preferenceStore.getEnum(
         "playback_engine",
         PlaybackEngine.EXO_PLAYER,
+    )
+
+    val fullscreenControlPosition = preferenceStore.getEnum(
+        "fullscreen_control_position",
+        FullscreenControlPosition.AUTO,
+    )
+    val playerCutoutAvoidanceMode = preferenceStore.getEnum(
+        "player_cutout_avoidance_mode",
+        PlayerCutoutAvoidanceMode.AUTO,
+    )
+    val playerCutoutManualPaddingDp = preferenceStore.getInt(
+        "player_cutout_manual_padding_dp",
+        36,
     )
 
     // ExoPlayer 专属：音频指纹广告探针。规则地址由用户或后续云端配置提供。

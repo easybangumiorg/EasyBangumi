@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -30,16 +29,12 @@ import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Swipe
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.VerticalAlignCenter
 import androidx.compose.material.icons.filled.ViewDay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
@@ -61,10 +56,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
 import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
@@ -90,7 +85,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private enum class PlayerChoiceDialogV2 { Engine, Orientation, Cache, Speed }
-private enum class PlayerNumberDialogV2 { SeekWidthTime, FastTop, FastBottom }
 
 @Composable
 internal fun PlayerSettingV2(
@@ -108,7 +102,10 @@ internal fun PlayerSettingV2(
     val playbackEngine by preferences.playbackEngine.flow().collectAsState(
         preferences.playbackEngine.get(),
     )
-    val mpvAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+    val mpvAvailable = BuildConfig.HAS_MPV && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+    val effectivePlaybackEngine = playbackEngine.takeIf {
+        it != SettingPreferences.PlaybackEngine.MPV || mpvAvailable
+    } ?: SettingPreferences.PlaybackEngine.EXO_PLAYER
     val orientationMode by preferences.playerOrientationMode.flow().collectAsState(
         preferences.playerOrientationMode.get(),
     )
@@ -147,7 +144,6 @@ internal fun PlayerSettingV2(
     )
 
     var choiceDialog by remember { mutableStateOf<PlayerChoiceDialogV2?>(null) }
-    var numberDialog by remember { mutableStateOf<PlayerNumberDialogV2?>(null) }
     var confirmDanmakuReset by remember { mutableStateOf(false) }
 
     LaunchedEffect(defaultSpeedStored, speedOptions) {
@@ -173,7 +169,7 @@ internal fun PlayerSettingV2(
             V2ActionRow(
                 icon = Icons.Filled.PlayCircle,
                 title = "播放引擎",
-                subtitle = when (playbackEngine) {
+                subtitle = when (effectivePlaybackEngine) {
                     SettingPreferences.PlaybackEngine.EXO_PLAYER -> "ExoPlayer · 截图、片段录制、缓存与广告探测"
                     SettingPreferences.PlaybackEngine.MPV -> "mpv · Anime4K 与无缝旋转，不支持截图和录制"
                 },
@@ -209,7 +205,7 @@ internal fun PlayerSettingV2(
         }
 
         V2Section(title = "播放体验") {
-            if (playbackEngine != SettingPreferences.PlaybackEngine.MPV) {
+            if (effectivePlaybackEngine != SettingPreferences.PlaybackEngine.MPV) {
                 V2ActionRow(
                     icon = Icons.Filled.Cached,
                     title = stringResource(R.string.max_cache_size),
@@ -228,12 +224,20 @@ internal fun PlayerSettingV2(
                 onClick = { choiceDialog = PlayerChoiceDialogV2.Speed },
             )
             V2SectionDivider()
-            V2ActionRow(
-                icon = Icons.Filled.Swipe,
-                title = stringResource(R.string.player_seek_full_width_time_ms),
-                subtitle = "$seekWidthTime ms",
-                onClick = { numberDialog = PlayerNumberDialogV2.SeekWidthTime },
-            )
+            val seekSeconds = (seekWidthTime / 1_000L).coerceIn(60L, 1_800L)
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                PlayerValueSliderV2(
+                    title = stringResource(R.string.player_seek_full_width_time_ms),
+                    valueLabel = "${seekSeconds / 60} 分钟",
+                    value = seekSeconds.toFloat(),
+                    valueRange = 60f..1_800f,
+                    steps = 28,
+                    onValueChange = {
+                        val seconds = (it / 60f).roundToInt().coerceIn(1, 30) * 60L
+                        preferences.playerSeekFullWidthTimeMS.set(seconds * 1_000L)
+                    },
+                )
+            }
         }
 
         DoubleTapFastSettingV2(
@@ -242,8 +246,6 @@ internal fun PlayerSettingV2(
             fastTopWeight = fastTopWeight,
             fastSeconds = fastSeconds,
             fastTopSeconds = fastTopSeconds,
-            onEditTopTime = { numberDialog = PlayerNumberDialogV2.FastTop },
-            onEditBottomTime = { numberDialog = PlayerNumberDialogV2.FastBottom },
         )
 
         DanmakuDisplaySettingV2(
@@ -269,9 +271,7 @@ internal fun PlayerSettingV2(
                 add(SettingPreferences.PlaybackEngine.EXO_PLAYER to "ExoPlayer（截图、录制、缓存与广告探测）")
                 if (mpvAvailable) add(SettingPreferences.PlaybackEngine.MPV to "mpv（Anime4K、无缝旋转；不支持截图和录制）")
             },
-            selected = playbackEngine.takeIf {
-                it != SettingPreferences.PlaybackEngine.MPV || mpvAvailable
-            } ?: SettingPreferences.PlaybackEngine.EXO_PLAYER,
+            selected = effectivePlaybackEngine,
             onDismiss = { choiceDialog = null },
             onSelected = {
                 preferences.playbackEngine.set(it)
@@ -315,42 +315,6 @@ internal fun PlayerSettingV2(
         null -> Unit
     }
 
-    when (numberDialog) {
-        PlayerNumberDialogV2.SeekWidthTime -> PlayerNumberDialog(
-            title = stringResource(R.string.player_seek_full_width_time_ms),
-            value = seekWidthTime,
-            positiveOnly = false,
-            onDismiss = { numberDialog = null },
-            onConfirm = {
-                preferences.playerSeekFullWidthTimeMS.set(it)
-                numberDialog = null
-            },
-        )
-        PlayerNumberDialogV2.FastTop -> PlayerNumberDialog(
-            title = stringResource(R.string.fast_time_top),
-            value = fastTopSeconds.toLong(),
-            positiveOnly = true,
-            onDismiss = { numberDialog = null },
-            onConfirm = {
-                preferences.fastTopSecond.set(it.toInt())
-                numberDialog = null
-            },
-        )
-        PlayerNumberDialogV2.FastBottom -> PlayerNumberDialog(
-            title = stringResource(
-                if (fastTopWeight > 0) R.string.fast_time_bottom else R.string.fast_time,
-            ),
-            value = fastSeconds.toLong(),
-            positiveOnly = true,
-            onDismiss = { numberDialog = null },
-            onConfirm = {
-                preferences.fastSecond.set(it.toInt())
-                numberDialog = null
-            },
-        )
-        null -> Unit
-    }
-
     if (confirmDanmakuReset) {
         AlertDialog(
             onDismissRequest = { confirmDanmakuReset = false },
@@ -386,8 +350,6 @@ private fun DoubleTapFastSettingV2(
     fastTopWeight: Int,
     fastSeconds: Int,
     fastTopSeconds: Int,
-    onEditTopTime: () -> Unit,
-    onEditBottomTime: () -> Unit,
 ) {
     val enabled = fastWeight > 0
     val topEnabled = fastTopWeight > 0
@@ -467,23 +429,36 @@ private fun DoubleTapFastSettingV2(
                 )
             }
             V2SectionDivider()
-            if (topEnabled) {
-                V2ActionRow(
-                    icon = Icons.Filled.Timer,
-                    title = stringResource(R.string.fast_time_top),
-                    subtitle = "$fastTopSeconds 秒",
-                    onClick = onEditTopTime,
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                if (topEnabled) {
+                    PlayerValueSliderV2(
+                        title = stringResource(R.string.fast_time_top),
+                        valueLabel = "${fastTopSeconds.coerceIn(5, 120)} 秒",
+                        value = fastTopSeconds.coerceIn(5, 120).toFloat(),
+                        valueRange = 5f..120f,
+                        steps = 22,
+                        onValueChange = {
+                            preferences.fastTopSecond.set(
+                                (it / 5f).roundToInt().coerceIn(1, 24) * 5,
+                            )
+                        },
+                    )
+                }
+                PlayerValueSliderV2(
+                    title = stringResource(
+                        if (topEnabled) R.string.fast_time_bottom else R.string.fast_time,
+                    ),
+                    valueLabel = "${fastSeconds.coerceIn(5, 60)} 秒",
+                    value = fastSeconds.coerceIn(5, 60).toFloat(),
+                    valueRange = 5f..60f,
+                    steps = 10,
+                    onValueChange = {
+                        preferences.fastSecond.set(
+                            (it / 5f).roundToInt().coerceIn(1, 12) * 5,
+                        )
+                    },
                 )
-                V2SectionDivider()
             }
-            V2ActionRow(
-                icon = Icons.Filled.Timer,
-                title = stringResource(
-                    if (topEnabled) R.string.fast_time_bottom else R.string.fast_time,
-                ),
-                subtitle = "$fastSeconds 秒",
-                onClick = onEditBottomTime,
-            )
         }
     }
 }
@@ -861,54 +836,6 @@ private fun <T> PlayerChoiceDialog(
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text("取消", color = V2Theme.colors.accent)
-            }
-        },
-        containerColor = V2Tokens.Surface,
-    )
-}
-
-@Composable
-private fun PlayerNumberDialog(
-    title: String,
-    value: Long,
-    positiveOnly: Boolean,
-    onDismiss: () -> Unit,
-    onConfirm: (Long) -> Unit,
-) {
-    var text by remember(value) { mutableStateOf(value.toString()) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title, color = V2Tokens.TextPrimary) },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { input ->
-                    if (input.isEmpty() || input.all(Char::isDigit)) text = input
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = V2Theme.colors.accent,
-                    cursorColor = V2Theme.colors.accent,
-                ),
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val next = text.toLongOrNull() ?: 0L
-                if (positiveOnly && (next <= 0L || next > Int.MAX_VALUE)) {
-                    stringRes(R.string.please_input_right_speed).moeSnackBar()
-                    onDismiss()
-                } else {
-                    onConfirm(next)
-                }
-            }) {
-                Text("确定", color = V2Theme.colors.accent)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消", color = V2Tokens.TextSecondary)
             }
         },
         containerColor = V2Tokens.Surface,

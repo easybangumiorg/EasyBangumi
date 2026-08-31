@@ -157,6 +157,9 @@ class BackupController(
             spO.put(padMode.key(), padMode.get().name)
             spO.put(playerOrientationMode.key(), playerOrientationMode.get().name)
             spO.put(playbackEngine.key(), playbackEngine.get().name)
+            spO.put(fullscreenControlPosition.key(), fullscreenControlPosition.get().name)
+            spO.put(playerCutoutAvoidanceMode.key(), playerCutoutAvoidanceMode.get().name)
+            spO.put(playerCutoutManualPaddingDp.key(), playerCutoutManualPaddingDp.get())
             spO.put(mpvAnime4kEnabled.key(), mpvAnime4kEnabled.get())
             spO.put(mpvAnime4kPreset.key(), mpvAnime4kPreset.get().name)
             spO.put(useExternalVideoPlayer.key(), useExternalVideoPlayer.get())
@@ -164,8 +167,10 @@ class BackupController(
             spO.put(cacheSize.key(), cacheSize.get())
             spO.put(customSpeed.key(), customSpeed.get())
             spO.put(fastWeight.key(), fastWeight.get())
+            spO.put(fastWeightTopMolecule.key(), fastWeightTopMolecule.get())
             spO.put(fastSecond.key(), fastSecond.get())
             spO.put(fastTopSecond.key(), fastTopSecond.get())
+            spO.put(playerSeekFullWidthTimeMS.key(), playerSeekFullWidthTimeMS.get())
             spO.put(detailedScreenEpisodeGridCount.key(), detailedScreenEpisodeGridCount.get())
         }
 

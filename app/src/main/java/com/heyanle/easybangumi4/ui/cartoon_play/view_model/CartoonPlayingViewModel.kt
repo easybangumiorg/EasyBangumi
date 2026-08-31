@@ -18,6 +18,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSourceException
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.SourceStateCase
@@ -31,8 +32,8 @@ import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
-import com.heyanle.easybangumi4.player.mpv.MpvPlaybackController
 import com.heyanle.easybangumi4.player.mpv.MpvAnime4KStatus
+import com.heyanle.easybangumi4.player.mpv.createMpvPlaybackController
 import com.heyanle.easybangumi4.player.exo.ExoAdAudioProbeController
 import com.heyanle.easybangumi4.plugin.source.utils.VerificationHelper
 import com.heyanle.easybangumi4.ui.cartoon_play.cartoon_recorded.CartoonRecordedModel
@@ -191,10 +192,11 @@ class CartoonPlayingViewModel(
     private val exoPlayerController = ExoEasyPlayerController(exoPlayer)
     private val requestedPlaybackEngine = settingPreferences.playbackEngine.get()
     private val mpvPlayerController = if (
+        BuildConfig.HAS_MPV &&
         requestedPlaybackEngine == SettingPreferences.PlaybackEngine.MPV &&
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     ) {
-        runCatching { MpvPlaybackController(APP, settingPreferences) }
+        runCatching { createMpvPlaybackController(APP, settingPreferences) }
             .onFailure { Log.e(TAG, "mpv init failed; fallback to ExoPlayer", it) }
             .getOrNull()
     } else {
@@ -313,8 +315,20 @@ class CartoonPlayingViewModel(
     val videoScaleTypeSelection = settingPreferences.scaleTypeSelection
     private val videoScaleTypePref = settingPreferences.videoScaleType
     val videoScaleType = videoScaleTypePref.stateIn(viewModelScope)
-    val mpvAnime4kEnabled = settingPreferences.mpvAnime4kEnabled.stateIn(viewModelScope)
-    val mpvAnime4kPreset = settingPreferences.mpvAnime4kPreset.stateIn(viewModelScope)
+    // Normal artifacts keep only inert compatibility state so an Anime4K installation can still
+    // read the same preference schema after an in-place upgrade/downgrade. They do not subscribe
+    // to or mutate the mpv preferences at runtime.
+    val mpvAnime4kEnabled: StateFlow<Boolean> = if (BuildConfig.HAS_MPV) {
+        settingPreferences.mpvAnime4kEnabled.stateIn(viewModelScope)
+    } else {
+        MutableStateFlow(false)
+    }
+    val mpvAnime4kPreset: StateFlow<SettingPreferences.MpvAnime4KPreset> =
+        if (BuildConfig.HAS_MPV) {
+            settingPreferences.mpvAnime4kPreset.stateIn(viewModelScope)
+        } else {
+            MutableStateFlow(SettingPreferences.MpvAnime4KPreset.FAST)
+        }
     val exoAdAudioProbeEnabled = settingPreferences.exoAdAudioProbeEnabled.stateIn(viewModelScope)
     val exoAdAudioProbeRulesUrl = settingPreferences.exoAdAudioProbeRulesUrl.stateIn(viewModelScope)
     private val disabledAnime4KStatus = MutableStateFlow(MpvAnime4KStatus())
@@ -333,6 +347,12 @@ class CartoonPlayingViewModel(
 
     val playerSeekFullWidthTimeMS =
         settingPreferences.playerSeekFullWidthTimeMS.stateIn(viewModelScope)
+    val fullscreenControlPosition =
+        settingPreferences.fullscreenControlPosition.stateIn(viewModelScope)
+    val playerCutoutAvoidanceMode =
+        settingPreferences.playerCutoutAvoidanceMode.stateIn(viewModelScope)
+    val playerCutoutManualPaddingDp =
+        settingPreferences.playerCutoutManualPaddingDp.stateIn(viewModelScope)
 
     val defaultSpeed = settingPreferences.defaultSpeed.stateIn(viewModelScope)
 
@@ -411,11 +431,13 @@ class CartoonPlayingViewModel(
     }
 
     fun setMpvAnime4kEnabled(enabled: Boolean) {
+        if (!BuildConfig.HAS_MPV) return
         settingPreferences.mpvAnime4kEnabled.set(enabled)
         mpvPlayerController?.applyAnime4K()
     }
 
     fun setMpvAnime4kPreset(preset: SettingPreferences.MpvAnime4KPreset) {
+        if (!BuildConfig.HAS_MPV) return
         settingPreferences.mpvAnime4kPreset.set(preset)
         mpvPlayerController?.applyAnime4K()
     }

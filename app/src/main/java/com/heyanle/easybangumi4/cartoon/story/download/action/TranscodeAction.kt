@@ -1,16 +1,6 @@
 package com.heyanle.easybangumi4.cartoon.story.download.action
 
 import android.app.Application
-import androidx.core.net.toUri
-import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.transformer.Composition
-import androidx.media3.transformer.ExportException
-import androidx.media3.transformer.ExportResult
-import androidx.media3.transformer.InAppMp4Muxer
-import androidx.media3.transformer.ProgressHolder
-import androidx.media3.transformer.Transformer
-import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.cartoon.story.download.engine.QuickDownloadArtifact
@@ -20,7 +10,6 @@ import com.heyanle.easybangumi4.utils.EasyMemoryInfo
 import com.heyanle.easybangumi4.utils.getCachePath
 import com.heyanle.easybangumi4.utils.stringRes
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
@@ -29,7 +18,6 @@ import java.io.IOException
  * Created by heyanle on 2024/8/4.
  * https://github.com/heyanLE
  */
-@androidx.annotation.OptIn(UnstableApi::class)
 class TranscodeAction(
     private val application: Application
 ) : BaseAction {
@@ -45,6 +33,7 @@ class TranscodeAction(
 
     private val decryptCacheFolder = File(cacheFolder, "decrypt")
     private val ffmpegCacheFolder = File(cacheFolder, "ffmpeg")
+    private val hlsToMp4Transcoder = createHlsToMp4Transcoder(application)
 
 
     inner class TranscodeRunnable(
@@ -167,7 +156,7 @@ class TranscodeAction(
 
     override fun onCancel(cartoonDownloadRuntime: CartoonDownloadRuntime) {
         executor.remove(cartoonDownloadRuntime.transcodeRunnable)
-        scope.launch { cartoonDownloadRuntime.transformer?.cancel() }
+        scope.launch { hlsToMp4Transcoder.cancel() }
         try {
             M3U8Utils.deleteM3U8WithTs(
                 cartoonDownloadRuntime.decryptFile?.absolutePath ?: ""
@@ -377,44 +366,32 @@ class TranscodeAction(
             )
         }
 
-        var finished = false
-        val transformer = Transformer.Builder(application)
-            .setMuxerFactory(InAppMp4Muxer.Factory())
-            .addListener(object : Transformer.Listener {
-                override fun onCompleted(composition: Composition, exportResult: ExportResult) {
-                    finished = true
-                    target.renameTo(realTarget)
-                    M3U8Utils.deleteM3U8WithTs(m3u8.absolutePath)
-                    onCompletely()
-                }
-
-                override fun onError(
-                    composition: Composition,
-                    exportResult: ExportResult,
-                    exportException: ExportException,
-                ) {
-                    finished = true
-                    target.delete()
-                    onError(exportException)
-                }
-            })
-            .build()
-        cartoonDownloadRuntime.transformer = transformer
         scope.launch {
             runCatching {
-                transformer.start(MediaItem.fromUri(m3u8.toUri()), target.absolutePath)
-                val holder = ProgressHolder()
-                while (!cartoonDownloadRuntime.isCanceled() && !finished) {
-                    val progress = if (
-                        transformer.getProgress(holder) == Transformer.PROGRESS_STATE_AVAILABLE
-                    ) holder.progress else -1
-                    cartoonDownloadRuntime.dispatchToBus(
-                        if (progress >= 0) progress / 100f else -1f,
-                        stringRes(com.heyanle.easy_i18n.R.string.transcoding),
-                        if (progress >= 0) "$progress%" else "",
-                    )
-                    delay(500)
-                }
+                hlsToMp4Transcoder.start(
+                    inputPath = m3u8.absolutePath,
+                    outputPath = target.absolutePath,
+                    onProgress = { progress ->
+                        if (cartoonDownloadRuntime.isCanceled()) return@start
+                        val percent = (progress * 100).toInt().coerceIn(0, 100)
+                        scope.launch {
+                            cartoonDownloadRuntime.dispatchToBus(
+                                progress.coerceIn(0f, 1f),
+                                stringRes(com.heyanle.easy_i18n.R.string.transcoding),
+                                "$percent%",
+                            )
+                        }
+                    },
+                    onError = {
+                        target.delete()
+                        onError(it)
+                    },
+                    onCompleted = {
+                        target.renameTo(realTarget)
+                        M3U8Utils.deleteM3U8WithTs(m3u8.absolutePath)
+                        onCompletely()
+                    },
+                )
             }.onFailure {
                 target.delete()
                 onError(it as? Exception ?: IOException(it))

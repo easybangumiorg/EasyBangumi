@@ -53,7 +53,7 @@ jobs:
           cp ./private/google-services.json ./app/google-services.json
           ls app
           chmod +x ./gradlew
-          ./gradlew :app:assembleRelease
+          ./gradlew :app:assembleNormalRelease :app:assembleCompatRelease
         env:
           APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
           BUGLY_APPID: ${{ secrets.BUGLY_APPID }}
@@ -65,8 +65,8 @@ jobs:
         id: getVersion
         run: |
           echo "JSON file content:"
-          cat app/build/outputs/apk/release/output-metadata.json
-          echo "BANGUMI_VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)" >> $GITHUB_ENV
+          cat app/build/outputs/apk/normal/release/output-metadata.json
+          echo "BANGUMI_VERSION=$(jq -r '.elements[0].versionName' app/build/outputs/apk/normal/release/output-metadata.json)" >> $GITHUB_ENV
 
       - name: Setup build tool version variable
         shell: bash
@@ -76,10 +76,10 @@ jobs:
           echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
           echo Last build tool version is: $BUILD_TOOL_VERSION
 
-      - name: sign-apk
+      - name: sign-normal-apk
         uses: r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/apk/release
+          releaseDirectory: app/build/outputs/apk/normal/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PWD }}
@@ -88,20 +88,34 @@ jobs:
           # override default build-tools version (29.0.3) -- optional
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
+      - name: sign-compat-apk
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/compat/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PWD }}
+          keyPassword: ${{ secrets.KEY_PWD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+
       - name: rename-apk
         run: |
-          mv app/build/outputs/apk/release/app-release-unsigned-signed.apk easybangumi-${{ env.BANGUMI_VERSION }}.apk
+          mv app/build/outputs/apk/normal/release/app-normal-release-unsigned-signed.apk easybangumi-${{ env.BANGUMI_VERSION }}.apk
+          mv app/build/outputs/apk/compat/release/app-compat-release-unsigned-signed.apk easybangumi-${{ env.BANGUMI_VERSION }}-compat.apk
 
       - name: Archive apk
         uses: actions/upload-artifact@v4
         with:
-          name: easybangumi-${{ env.BANGUMI_VERSION }}.apk
-          path: easybangumi-${{ env.BANGUMI_VERSION }}.apk
+          name: easybangumi-${{ env.BANGUMI_VERSION }}-apks
+          path: |
+            easybangumi-${{ env.BANGUMI_VERSION }}.apk
+            easybangumi-${{ env.BANGUMI_VERSION }}-compat.apk
           compression-level: 0
 
       - name: Release
         run: |
-          gh release create -d ${{ env.BANGUMI_VERSION }} easybangumi-${{ env.BANGUMI_VERSION }}.apk
+          gh release create -d ${{ env.BANGUMI_VERSION }} easybangumi-${{ env.BANGUMI_VERSION }}.apk easybangumi-${{ env.BANGUMI_VERSION }}-compat.apk
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
@@ -109,24 +123,25 @@ jobs:
         if: ${{ env.BANGUMI_VERSION }} != "" && ${{ env.BANGUMI_VERSION }} != "."
         run: |
           cd private
-          mkdir -p  ./mapping/${{ env.BANGUMI_VERSION }}
-          mv -b --suffix=.old ../app/build/outputs/mapping/release/* ./mapping/${{ env.BANGUMI_VERSION }}
-          mapping_file=./mapping/${{ env.BANGUMI_VERSION }}/mapping.txt
+          mkdir -p ./mapping/${{ env.BANGUMI_VERSION }}/normal ./mapping/${{ env.BANGUMI_VERSION }}/compat
+          mv -b --suffix=.old ../app/build/outputs/mapping/normalRelease/* ./mapping/${{ env.BANGUMI_VERSION }}/normal
+          mv -b --suffix=.old ../app/build/outputs/mapping/compatRelease/* ./mapping/${{ env.BANGUMI_VERSION }}/compat
           # GitHub rejects regular Git objects larger than 100 MiB. Keep a safety margin and
           # gzip only oversized R8 mappings; retrace can consume the file after decompression.
-          if [ -f "$mapping_file" ] && [ "$(stat -c%s "$mapping_file")" -gt 94371840 ]; then
-            gzip -9 "$mapping_file"
+          find ./mapping/${{ env.BANGUMI_VERSION }} -name mapping.txt -type f -size +90M -exec gzip -9 {} \;
+          oversized_file=$(find ./mapping/${{ env.BANGUMI_VERSION }} -type f -size +95M -print -quit)
+          if [ -n "$oversized_file" ]; then
+            echo "::error::Private asset still exceeds the safe Git object limit: $oversized_file"
+            exit 1
           fi
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add .
-          git commit -m "[auto] mapping"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          force: true
-          github_token: ${{ secrets.token }}
-          branch: main
-          directory: private
-          repository: 'easybangumiorg/EasyBangumiPrivate'
+          git add -- ./mapping/${{ env.BANGUMI_VERSION }}
+          if git diff --cached --quiet; then
+            echo "No new mapping assets to push"
+          else
+            git commit -m "[auto] mapping ${{ env.BANGUMI_VERSION }}"
+            # actions/checkout has already configured the private repository's authenticated
+            # origin. A normal fast-forward push avoids overwriting unrelated private assets.
+            git push origin HEAD:main
+          fi

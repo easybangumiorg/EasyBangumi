@@ -20,36 +20,20 @@ import java.io.File
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-data class MpvAnime4KStatus(
-    val enabled: Boolean = false,
-    val inputWidth: Int = 0,
-    val inputHeight: Int = 0,
-    val outputWidth: Int = 0,
-    val outputHeight: Int = 0,
-) {
-    /** Matches Anime4K_Upscale_CNN_x2_S.glsl's //!WHEN expression. */
-    val upscaleCnnActive: Boolean? = when {
-        !enabled -> false
-        inputWidth <= 0 || inputHeight <= 0 || outputWidth <= 0 || outputHeight <= 0 -> null
-        else -> outputWidth > inputWidth / 1.2 && outputHeight > inputHeight / 1.2
-    }
-}
 
 /** libmpv playback core. Anime4K is intentionally owned only by this engine. */
 class MpvPlaybackController(
     context: Context,
     private val preferences: SettingPreferences,
-) : EasyPlayerController, MPVLib.EventObserver {
+) : MpvPlaybackControllerContract, MPVLib.EventObserver {
     private val appContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
     private val listeners = CopyOnWriteArraySet<EasyPlayerController.Listener>()
     private val released = AtomicBoolean(false)
     private val shaderStore = MpvAnime4KShaderStore(appContext)
     private val _anime4KStatus = MutableStateFlow(MpvAnime4KStatus())
-    val anime4KStatus: StateFlow<MpvAnime4KStatus> = _anime4KStatus.asStateFlow()
+    override val anime4KStatus = _anime4KStatus.asStateFlow()
 
     @Volatile private var fileLoaded = false
     @Volatile private var fileLoading = false
@@ -128,7 +112,7 @@ class MpvPlaybackController(
     override val bufferedPosition: Long get() = bufferedMs
     override val speed: Float get() = playbackSpeed
 
-    fun load(
+    override fun load(
         uri: String,
         headers: Map<String, String>,
         startPositionMs: Long,
@@ -156,7 +140,7 @@ class MpvPlaybackController(
         if (surfaceAttached) executeLoad(load)
     }
 
-    fun applyAnime4K() {
+    override fun applyAnime4K() {
         if (released.get()) return
         val enabled = preferences.mpvAnime4kEnabled.get()
         val paths = if (enabled) {
@@ -293,7 +277,7 @@ class MpvPlaybackController(
         listeners -= listener
     }
 
-    fun release() {
+    override fun release() {
         synchronized(SESSION_LOCK) {
             if (!released.compareAndSet(false, true)) return
             releaseNativeLocked()
@@ -605,3 +589,8 @@ private class MpvAnime4KShaderStore(
         const val VERSION = "v4"
     }
 }
+
+internal fun createFlavorMpvPlaybackController(
+    context: Context,
+    preferences: SettingPreferences,
+): MpvPlaybackControllerContract = MpvPlaybackController(context, preferences)

@@ -218,6 +218,32 @@ class RestoreController(
                             )
                         }.getOrDefault(SettingPreferences.PlaybackEngine.EXO_PLAYER)
                     )
+                    fullscreenControlPosition.set(
+                        runCatching {
+                            SettingPreferences.FullscreenControlPosition.valueOf(
+                                spO.optString(
+                                    fullscreenControlPosition.key(),
+                                    fullscreenControlPosition.get().name,
+                                ),
+                            )
+                        }.getOrDefault(SettingPreferences.FullscreenControlPosition.AUTO)
+                    )
+                    playerCutoutAvoidanceMode.set(
+                        runCatching {
+                            SettingPreferences.PlayerCutoutAvoidanceMode.valueOf(
+                                spO.optString(
+                                    playerCutoutAvoidanceMode.key(),
+                                    playerCutoutAvoidanceMode.get().name,
+                                ),
+                            )
+                        }.getOrDefault(SettingPreferences.PlayerCutoutAvoidanceMode.AUTO)
+                    )
+                    playerCutoutManualPaddingDp.set(
+                        spO.optInt(
+                            playerCutoutManualPaddingDp.key(),
+                            playerCutoutManualPaddingDp.get(),
+                        ).coerceIn(0, 96),
+                    )
                     mpvAnime4kEnabled.set(
                         spO.optBoolean(mpvAnime4kEnabled.key(), mpvAnime4kEnabled.get())
                     )
@@ -245,8 +271,14 @@ class RestoreController(
                         spO.optDouble(customSpeed.key(), customSpeed.get().toDouble()).toFloat()
                     )
                     fastWeight.set(spO.optInt(fastWeight.key(), fastWeight.get()))
+                    fastWeightTopMolecule.set(
+                        spO.optInt(fastWeightTopMolecule.key(), fastWeightTopMolecule.get())
+                    )
                     fastSecond.set(spO.optInt(fastSecond.key(), fastSecond.get()))
                     fastTopSecond.set(spO.optInt(fastTopSecond.key(), fastTopSecond.get()))
+                    playerSeekFullWidthTimeMS.set(
+                        spO.optLong(playerSeekFullWidthTimeMS.key(), playerSeekFullWidthTimeMS.get())
+                    )
                     detailedScreenEpisodeGridCount.set(
                         spO.optInt(
                             detailedScreenEpisodeGridCount.key(),

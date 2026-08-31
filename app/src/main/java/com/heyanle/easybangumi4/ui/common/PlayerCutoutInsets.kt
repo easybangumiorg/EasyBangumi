@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.heyanle.easybangumi4.setting.SettingPreferences
 
 /**
  * 全局刘海屏/挖孔屏适配工具。
@@ -23,6 +24,25 @@ object PlayerCutoutInsets {
     val SAFE_WIDTH: Dp = 36.dp
 
     enum class Side { NONE, LEFT, RIGHT, TOP }
+
+    data class Resolved(
+        val detectedSide: Side,
+        val mode: SettingPreferences.PlayerCutoutAvoidanceMode,
+        val manualWidth: Dp,
+    ) {
+        fun paddingFor(targetSide: Side): Dp = when (mode) {
+            SettingPreferences.PlayerCutoutAvoidanceMode.AUTO ->
+                if (targetSide == detectedSide) SAFE_WIDTH else 0.dp
+
+            SettingPreferences.PlayerCutoutAvoidanceMode.DISABLED -> 0.dp
+
+            // Manual mode deliberately pads both horizontal edges. This remains useful on vendor
+            // ROMs that suppress DisplayCutout information, which is precisely when manual
+            // override is needed.
+            SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL ->
+                if (targetSide == Side.LEFT || targetSide == Side.RIGHT) manualWidth else 0.dp
+        }
+    }
 
     private const val TAG = "PlayerCutoutInsets"
 
@@ -62,6 +82,22 @@ object PlayerCutoutInsets {
         val configuration = LocalConfiguration.current
         return remember(configuration.screenWidthDp, configuration.screenHeightDp) {
             cutoutSide(activity)
+        }
+    }
+
+    @Composable
+    fun rememberResolved(
+        activity: Activity,
+        mode: SettingPreferences.PlayerCutoutAvoidanceMode,
+        manualPaddingDp: Int,
+    ): Resolved {
+        val side = rememberCutoutSide(activity)
+        return remember(side, mode, manualPaddingDp) {
+            Resolved(
+                detectedSide = side,
+                mode = mode,
+                manualWidth = manualPaddingDp.coerceIn(0, 96).dp,
+            )
         }
     }
 

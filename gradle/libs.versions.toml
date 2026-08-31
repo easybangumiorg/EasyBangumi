@@ -8,6 +8,7 @@ paging = "3.2.0"
 gson = "2.10"
 leakcanary = "2.7"
 okkv2 = "1.3.5"
+mmkv = "1.3.17"
 junit = "4.13.2"
 
 exoplayer = "2.19.0" # 使用 media 里的
@@ -68,6 +69,7 @@ leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.re
 
 
 okkv2 = { module = "com.github.heyanLE.okkv2:okkv2-mmkv", version.ref = "okkv2" }
+mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 

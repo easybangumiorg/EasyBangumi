@@ -3,6 +3,7 @@
 package com.heyanle.easybangumi4.v2.ui.playback
 
 import android.app.Activity
+import com.heyanle.easybangumi4.BuildConfig
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
@@ -604,13 +605,13 @@ private fun PlaybackDetailV2Content(
                     videoScaleType = videoScaleType,
                     videoScaleOptions = playingVM.videoScaleTypeSelection,
                     onVideoScaleSelected = playingVM::setVideoScaleType,
-                    isMpvEngine = playingVM.isMpvEngine,
+                    isMpvEngine = BuildConfig.HAS_MPV && playingVM.isMpvEngine,
                     mpvAnime4kEnabled = mpvAnime4kEnabled,
                     mpvAnime4kPreset = mpvAnime4kPreset,
                     mpvAnime4kStatus = mpvAnime4kStatus,
                     onMpvAnime4kEnabledChange = playingVM::setMpvAnime4kEnabled,
                     onMpvAnime4kPresetChange = playingVM::setMpvAnime4kPreset,
-                    isExoPlayerEngine = !playingVM.isMpvEngine,
+                    isExoPlayerEngine = !BuildConfig.HAS_MPV || !playingVM.isMpvEngine,
                     exoAdAudioProbeEnabled = exoAdAudioProbeEnabled,
                     exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
                     onExoAdAudioProbeEnabledChange = playingVM::setExoAdAudioProbeEnabled,

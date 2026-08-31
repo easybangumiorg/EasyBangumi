@@ -51,6 +51,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayPreferences
@@ -101,16 +102,20 @@ fun ColumnScope.PlayerSetting(
 
         val playbackEngine by settingPreferences.playbackEngine.flow()
             .collectAsState(settingPreferences.playbackEngine.get())
+        val mpvAvailable = BuildConfig.HAS_MPV && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+        val effectivePlaybackEngine = playbackEngine.takeIf {
+            it != SettingPreferences.PlaybackEngine.MPV || mpvAvailable
+        } ?: SettingPreferences.PlaybackEngine.EXO_PLAYER
         val engineOptions = buildList {
             add(SettingPreferences.PlaybackEngine.EXO_PLAYER to "ExoPlayer")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (mpvAvailable) {
                 add(SettingPreferences.PlaybackEngine.MPV to "mpv（支持 Anime4K）")
             }
         }
         StringSelectPreferenceItem(
             title = { Text("播放引擎") },
             textList = engineOptions.map { it.second },
-            select = engineOptions.indexOfFirst { it.first == playbackEngine }.coerceAtLeast(0),
+            select = engineOptions.indexOfFirst { it.first == effectivePlaybackEngine }.coerceAtLeast(0),
         ) {
             settingPreferences.playbackEngine.set(engineOptions[it].first)
             "重新进入播放页后生效".moeSnackBar()
@@ -129,7 +134,7 @@ fun ColumnScope.PlayerSetting(
             }
         )
 
-        if (playbackEngine != SettingPreferences.PlaybackEngine.MPV) {
+        if (effectivePlaybackEngine != SettingPreferences.PlaybackEngine.MPV) {
             val sizePre by settingPreferences.cacheSize.flow()
                 .collectAsState(settingPreferences.cacheSize.get())
             val size = settingPreferences.cacheSizeSelection

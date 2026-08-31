@@ -20,6 +20,7 @@ android {
     }
 
     targetProjectPath = ":app"
+    flavorDimensions += "playbackCapability"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -40,6 +41,21 @@ android {
             isDebuggable = true
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
+        }
+        create("beta") {
+            initWith(getByName("performance"))
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("performance", "release")
+        }
+    }
+
+    productFlavors {
+        create("normal") {
+            dimension = "playbackCapability"
+        }
+        create("compat") {
+            dimension = "playbackCapability"
         }
     }
 }

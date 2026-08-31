@@ -23,6 +23,22 @@ runCatching {
     // it.printStackTrace()
 }
 
+// Beta builds use a stable local certificate instead of Android's machine-specific debug key.
+// The whole publishing directory is gitignored, so neither the keystore nor its credentials can
+// be committed accidentally. A checkout without these files produces an unsigned Beta artifact
+// rather than silently signing with a different certificate.
+val betaSigningPropertiesFile = project.rootProject.file("publishing/beta-signing.properties")
+val betaSigningProperties = Properties().apply {
+    betaSigningPropertiesFile.takeIf(File::isFile)?.inputStream()?.use(::load)
+}
+val betaSigningStoreFile = betaSigningProperties.getProperty("storeFile")
+    ?.takeIf(String::isNotBlank)
+    ?.let(betaSigningPropertiesFile.parentFile::resolve)
+val hasBetaSigning = betaSigningStoreFile?.isFile == true &&
+    listOf("storePassword", "keyAlias", "keyPassword").all {
+        !betaSigningProperties.getProperty(it).isNullOrBlank()
+    }
+
 val danDanPlayProps = Properties()
 project.rootProject.file("dandanplay.properties")
     .takeIf { it.isFile }
@@ -46,6 +62,18 @@ val danDanPlayAppSecret = danDanPlayCredential("dandanplay.appSecret", "DANDANPL
 android {
     namespace =  "com.heyanle.easybangumi4"
     compileSdk = Android.compileSdk
+    flavorDimensions += "playbackCapability"
+
+    val betaLocalSigningConfig = if (hasBetaSigning) {
+        signingConfigs.create("betaLocal") {
+            storeFile = betaSigningStoreFile
+            storePassword = betaSigningProperties.getProperty("storePassword")
+            keyAlias = betaSigningProperties.getProperty("keyAlias")
+            keyPassword = betaSigningProperties.getProperty("keyPassword")
+        }
+    } else {
+        null
+    }
 
     defaultConfig {
 
@@ -65,7 +93,6 @@ android {
             publishingProps.getProperty("bugly_appid", System.getenv("BUGLY_APPID")?:"")
         manifestPlaceholders["bugly_app_version"] = Android.versionName
         manifestPlaceholders["bugly_app_channel"] = "github"
-        manifestPlaceholders["package_name"] = baseApplicationId
         manifestPlaceholders["label_res"] = "@string/app_name"
         buildConfigField("String", "DANDANPLAY_APP_ID", buildConfigString(danDanPlayAppId))
         buildConfigField("String", "DANDANPLAY_APP_SECRET", buildConfigString(danDanPlayAppSecret))
@@ -78,6 +105,25 @@ android {
             arg(RoomSchemaArgProvider(File(projectDir, "schemas")))
         }
 
+    }
+
+    productFlavors {
+        create("normal") {
+            dimension = "playbackCapability"
+            // Primary package for modern 64-bit devices: mpv + Anime4K, arm64 only.
+            minSdk = 26
+            buildConfigField("boolean", "HAS_MPV", "true")
+            manifestPlaceholders["bugly_app_channel"] = "github-normal"
+            ndk {
+                abiFilters += setOf("arm64-v8a")
+            }
+        }
+        create("compat") {
+            dimension = "playbackCapability"
+            minSdk = Android.minSdk
+            buildConfigField("boolean", "HAS_MPV", "false")
+            manifestPlaceholders["bugly_app_channel"] = "github-compat"
+        }
     }
 
 //    splits {
@@ -108,8 +154,7 @@ android {
             isShrinkResources = false
             proguardFiles("proguard-rules.pro")
 
-            manifestPlaceholders["package_name"] = "$baseApplicationId.debug"
-            manifestPlaceholders["label_res"] = "纯纯看番 Debug"
+            manifestPlaceholders["label_res"] = "@string/app_name"
             buildConfig()
         }
         release {
@@ -117,7 +162,6 @@ android {
             isShrinkResources = true
             proguardFiles("proguard-rules.pro")
 
-            manifestPlaceholders["package_name"] = baseApplicationId
             manifestPlaceholders["label_res"] = "@string/app_name"
             buildConfig()
         }
@@ -132,9 +176,24 @@ android {
             isDebuggable = false
             matchingFallbacks += listOf("release")
 
-            manifestPlaceholders["package_name"] = "$baseApplicationId.performance"
             manifestPlaceholders["label_res"] = "@string/app_name"
             manifestPlaceholders["bugly_app_channel"] = "local-performance"
+            buildConfig()
+        }
+        create("beta") {
+            // Testing is release-equivalent, installable and profileable just like Performance,
+            // but has its own package/version identity and visual treatment.
+            initWith(getByName("performance"))
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = "-beta"
+            // Do not fall back to the per-machine debug key: doing so would make installed Beta
+            // apps impossible to update from a build produced with the fixed certificate.
+            signingConfig = betaLocalSigningConfig
+            isDebuggable = false
+            matchingFallbacks += listOf("performance", "release")
+
+            manifestPlaceholders["label_res"] = "@string/app_name"
+            manifestPlaceholders["bugly_app_channel"] = "local-beta"
             buildConfig()
         }
     }
@@ -159,10 +218,10 @@ android {
 }
 
 baselineProfile {
-    // The profile is collected from the installable performance variant, but both
-    // performance and production release builds should consume the same rules.
+    // The normal performance variant covers the shared launch/navigation paths. The generated
+    // profile is merged into main so both normal and compatibility release variants consume it.
     variants {
-        create("performance") {
+        create("normalPerformance") {
             mergeIntoMain = true
             from(project(":baselineprofile"))
         }
@@ -212,7 +271,10 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 dependencies {
     implementation("io.github.0o755:ad-audio-probe-runtime:0.1.0")
     implementation("io.github.0o755:ad-audio-probe-media3-1.9.2:0.1.0")
-    implementation("dev.jdtech.mpv:libmpv:0.5.1")
+    add("normalImplementation", "dev.jdtech.mpv:libmpv:0.5.1")
+    // The compatibility APK restores the compact FFmpeg build used by 6.0.1. It contains only the
+    // demux/mux/codec surface required to remux local TS/HLS segments into MP4.
+    add("compatImplementation", libs.jeff.m3u8)
     implementation(libs.dfm)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(androidx.bundles.core)
@@ -259,6 +321,10 @@ dependencies {
     //debugImplementation(libs.leakcanary)
 
     implementation(libs.okkv2)
+    // Okkv2 1.3.5 transitively pins MMKV 1.2.15, whose Android native library is only
+    // 4 KiB-aligned. Override it with the 1.x LTS line that preserves 32-bit ABI support and
+    // ships NDK r28/16 KiB page-size compatible binaries.
+    implementation(libs.mmkv)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.coroutines.test)

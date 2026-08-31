@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
 import android.app.Activity
+import com.heyanle.easybangumi4.BuildConfig
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -123,6 +124,7 @@ import com.heyanle.easybangumi4.navigationDlna
 import com.heyanle.easybangumi4.plugin.api.ParserException
 import com.heyanle.easybangumi4.plugin.api.component.BusinessActionType
 import com.heyanle.easybangumi4.plugin.api.component.PlayInfoNeedVerificationBusinessException
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayingViewModel
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.DetailedViewModel
@@ -182,7 +184,13 @@ fun VideoFloat(
 ) {
     val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
-    val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(ctx)
+    val cutoutMode by cartoonPlayingViewModel.playerCutoutAvoidanceMode.collectAsState()
+    val cutoutManualPaddingDp by cartoonPlayingViewModel.playerCutoutManualPaddingDp.collectAsState()
+    val cutoutInsets = PlayerCutoutInsets.rememberResolved(
+        activity = ctx,
+        mode = cutoutMode,
+        manualPaddingDp = cutoutManualPaddingDp,
+    )
     val scaleType by cartoonPlayingViewModel.videoScaleType.collectAsState()
     val mpvAnime4kEnabled by cartoonPlayingViewModel.mpvAnime4kEnabled.collectAsState()
     val mpvAnime4kPreset by cartoonPlayingViewModel.mpvAnime4kPreset.collectAsState()
@@ -295,10 +303,7 @@ fun VideoFloat(
                     .align(Alignment.TopStart)
                     .padding(
                         start = if (controlVM.isFullScreen) {
-                            PlayerCutoutInsets.paddingFor(
-                                cutoutSide = cutoutSide,
-                                targetSide = PlayerCutoutInsets.Side.LEFT,
-                            )
+                            cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT)
                         } else {
                             0.dp
                         },
@@ -339,10 +344,7 @@ fun VideoFloat(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(
-                                start = PlayerCutoutInsets.paddingFor(
-                                    cutoutSide = cutoutSide,
-                                    targetSide = PlayerCutoutInsets.Side.LEFT,
-                                ),
+                                start = cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT),
                             ),
                         onClick = {
                             controlVM.onFullScreen(
@@ -535,7 +537,7 @@ fun VideoFloat(
                 options = cartoonPlayingViewModel.videoScaleTypeSelection,
                 onScaleSelected = cartoonPlayingViewModel::setVideoScaleType,
             )
-            if (cartoonPlayingViewModel.isMpvEngine) {
+            if (BuildConfig.HAS_MPV && cartoonPlayingViewModel.isMpvEngine) {
                 MpvAnime4KSettingsContent(
                     enabled = mpvAnime4kEnabled,
                     preset = mpvAnime4kPreset,
@@ -687,6 +689,15 @@ private fun formatSpeedValue(speed: Float): String {
 
 private fun formatPlaybackSpeed(speed: Float): String = "${formatSpeedValue(speed)}×"
 
+internal fun resolveFullscreenControlOnRight(
+    position: SettingPreferences.FullscreenControlPosition,
+    automaticSideOnRight: Boolean,
+): Boolean = when (position) {
+    SettingPreferences.FullscreenControlPosition.AUTO -> automaticSideOnRight
+    SettingPreferences.FullscreenControlPosition.LEFT -> false
+    SettingPreferences.FullscreenControlPosition.RIGHT -> true
+}
+
 @OptIn(UnstableApi::class)
 @Composable
 fun VideoControl(
@@ -713,7 +724,14 @@ fun VideoControl(
 ) {
     val nav = LocalNavController.current
     val ctx = LocalContext.current as Activity
-    val cutoutSide = PlayerCutoutInsets.rememberCutoutSide(ctx)
+    val cutoutMode by cartoonPlayingVM.playerCutoutAvoidanceMode.collectAsState()
+    val cutoutManualPaddingDp by cartoonPlayingVM.playerCutoutManualPaddingDp.collectAsState()
+    val cutoutInsets = PlayerCutoutInsets.rememberResolved(
+        activity = ctx,
+        mode = cutoutMode,
+        manualPaddingDp = cutoutManualPaddingDp,
+    )
+    val fullscreenControlPosition by cartoonPlayingVM.fullscreenControlPosition.collectAsState()
     val scope = rememberCoroutineScope()
     val screenshotController = rememberPlayerScreenshotController(
         playingViewModel = cartoonPlayingVM,
@@ -729,10 +747,7 @@ fun VideoControl(
             IconButton(
                 modifier = Modifier.padding(
                     start = if (controlVM.isFullScreen) {
-                        PlayerCutoutInsets.paddingFor(
-                            cutoutSide = cutoutSide,
-                            targetSide = PlayerCutoutInsets.Side.LEFT,
-                        )
+                        cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT)
                     } else {
                         0.dp
                     },
@@ -824,10 +839,7 @@ fun VideoControl(
                             .align(Alignment.TopStart)
                             .padding(
                                 start = if (controlVM.isFullScreen) {
-                                    PlayerCutoutInsets.paddingFor(
-                                        cutoutSide = cutoutSide,
-                                        targetSide = PlayerCutoutInsets.Side.LEFT,
-                                    )
+                                    cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT)
                                 } else {
                                     0.dp
                                 },
@@ -852,7 +864,7 @@ fun VideoControl(
             if (controlVM.isFullScreen) {
                 FullScreenVideoTopBar(
                     vm = controlVM,
-                    cutoutSide = cutoutSide,
+                    cutoutInsets = cutoutInsets,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                 ) {
@@ -866,10 +878,13 @@ fun VideoControl(
 
 
             // 控制浮层的水平位置跟随最近一次单击的点击侧。
-            val railOnRight = controlVM.sideControlsOnRight
+            val railOnRight = resolveFullscreenControlOnRight(
+                position = fullscreenControlPosition,
+                automaticSideOnRight = controlVM.sideControlsOnRight,
+            )
             FullScreenRightToolBar(
                 vm = controlVM,
-                cutoutSide = cutoutSide,
+                cutoutInsets = cutoutInsets,
                 railOnRight = railOnRight,
                 modifier = Modifier
                     .fillMaxHeight()
@@ -972,15 +987,9 @@ fun VideoControl(
                 vm = controlVM,
                 modifier = Modifier.align(Alignment.BottomCenter),
                 paddingValues = if (controlVM.isFullScreen) PaddingValues(
-                    start = 16.dp + PlayerCutoutInsets.paddingFor(
-                        cutoutSide = cutoutSide,
-                        targetSide = PlayerCutoutInsets.Side.LEFT,
-                    ),
+                    start = 16.dp + cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT),
                     top = 0.dp,
-                    end = 16.dp + PlayerCutoutInsets.paddingFor(
-                        cutoutSide = cutoutSide,
-                        targetSide = PlayerCutoutInsets.Side.RIGHT,
-                    ),
+                    end = 16.dp + cutoutInsets.paddingFor(PlayerCutoutInsets.Side.RIGHT),
                     bottom = 8.dp,
                 ) else PaddingValues(8.dp, 0.dp),
                 onSHowSpeedWin = {
@@ -1112,6 +1121,9 @@ private fun PlayerSideCircleButton(
         modifier = modifier
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier)
             .size(visualSize + outerPadding * 2)
+            // The interaction lives on the larger touch target, so clip that target itself.
+            // Clipping only the inner visual circle leaves Compose's ripple as a square.
+            .clip(CircleShape)
             .then(
                 if (onLongClick != null) {
                     Modifier.combinedClickable(
@@ -1173,7 +1185,7 @@ fun FullScreenRightToolBar(
     danmakuControlState: PlayerDanmakuControlState? = null,
     onEpisode: (() -> Unit)? = null,
     onLock: (() -> Unit)? = null,
-    cutoutSide: PlayerCutoutInsets.Side = PlayerCutoutInsets.Side.NONE,
+    cutoutInsets: PlayerCutoutInsets.Resolved,
     railOnRight: Boolean = true,
 ) {
 
@@ -1187,14 +1199,16 @@ fun FullScreenRightToolBar(
             // 背后遮罩保持满屏，只将可交互按钮向内避让挖孔。
             // 这样不会在黑色渐变边缘留下一条突兀的透明缝隙。
             modifier = Modifier.padding(
-                start = PlayerCutoutInsets.paddingFor(
-                    cutoutSide = cutoutSide,
-                    targetSide = PlayerCutoutInsets.Side.LEFT,
-                ),
-                end = PlayerCutoutInsets.paddingFor(
-                    cutoutSide = cutoutSide,
-                    targetSide = PlayerCutoutInsets.Side.RIGHT,
-                ),
+                start = if (!railOnRight) {
+                    cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT)
+                } else {
+                    0.dp
+                },
+                end = if (railOnRight) {
+                    cutoutInsets.paddingFor(PlayerCutoutInsets.Side.RIGHT)
+                } else {
+                    0.dp
+                },
             ),
         ) {
             Spacer(Modifier.height(64.dp))
@@ -1369,7 +1383,7 @@ private fun CaptureResultCard(
 @Composable
 fun FullScreenVideoTopBar(
     vm: ControlViewModel,
-    cutoutSide: PlayerCutoutInsets.Side = PlayerCutoutInsets.Side.NONE,
+    cutoutInsets: PlayerCutoutInsets.Resolved,
     modifier: Modifier = Modifier,
     isShowOnNormalScreen: Boolean = false,
     onMoreClick: () -> Unit,
@@ -1383,14 +1397,8 @@ fun FullScreenVideoTopBar(
         // 渐变遮罩保持满宽，仅标题栏内容避让挖孔侧。
         TopControl(
             contentPadding = PaddingValues(
-                start = PlayerCutoutInsets.paddingFor(
-                    cutoutSide = cutoutSide,
-                    targetSide = PlayerCutoutInsets.Side.LEFT,
-                ),
-                end = PlayerCutoutInsets.paddingFor(
-                    cutoutSide = cutoutSide,
-                    targetSide = PlayerCutoutInsets.Side.RIGHT,
-                ),
+                start = cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT),
+                end = cutoutInsets.paddingFor(PlayerCutoutInsets.Side.RIGHT),
             ),
         ) {
             val ctx = LocalContext.current as Activity
