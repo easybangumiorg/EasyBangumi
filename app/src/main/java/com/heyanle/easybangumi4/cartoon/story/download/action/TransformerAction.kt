@@ -282,10 +282,14 @@ class TransformerAction(
         dispatchScope.launch {
             taskList.remove(cartoonDownloadRuntime)
         }
-        mainScope.launch {
-            cartoonDownloadRuntime.transformer?.cancel()
+        transformerScope.launch {
+            try {
+                cartoonDownloadRuntime.transformer?.cancel()
+            } finally {
+                // Transformer 完成取消后再删除输出，避免与 muxer 写入竞争。
+                cartoonDownloadRuntime.transformerFile?.delete()
+            }
         }
-        cartoonDownloadRuntime.transformerFile?.delete()
     }
 
 

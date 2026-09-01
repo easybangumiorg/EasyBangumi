@@ -56,4 +56,36 @@ class PlayerControlPreferenceTest {
         assertEquals(52.dp, manual.paddingFor(PlayerCutoutInsets.Side.LEFT))
         assertEquals(52.dp, manual.paddingFor(PlayerCutoutInsets.Side.RIGHT))
     }
+
+    @Test
+    fun cutoutAvoidance_belowApi28DefaultsToDisabledAndHidesAutomaticMode() {
+        val auto = SettingPreferences.PlayerCutoutAvoidanceMode.AUTO
+        val disabled = SettingPreferences.PlayerCutoutAvoidanceMode.DISABLED
+        val manual = SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL
+
+        assertFalse(SettingPreferences.PlayerCutoutAvoidanceMode.isAutomaticSupported(sdkInt = 27))
+        assertEquals(
+            disabled,
+            SettingPreferences.PlayerCutoutAvoidanceMode.defaultForSdk(sdkInt = 27),
+        )
+        assertEquals(
+            disabled,
+            SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(auto, sdkInt = 27),
+        )
+        assertEquals(
+            listOf(disabled, manual),
+            SettingPreferences.PlayerCutoutAvoidanceMode.selectableValues(sdkInt = 27),
+        )
+
+        assertTrue(SettingPreferences.PlayerCutoutAvoidanceMode.isAutomaticSupported(sdkInt = 28))
+        assertEquals(auto, SettingPreferences.PlayerCutoutAvoidanceMode.defaultForSdk(sdkInt = 28))
+        assertEquals(
+            auto,
+            SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(auto, sdkInt = 28),
+        )
+        assertEquals(
+            listOf(auto, disabled, manual),
+            SettingPreferences.PlayerCutoutAvoidanceMode.selectableValues(sdkInt = 28),
+        )
+    }
 }

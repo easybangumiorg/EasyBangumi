@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.player.exo
 
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.plugin.api.entity.PlayerInfo
@@ -8,6 +9,10 @@ import com.heyanle.easybangumi4.setting.SettingPreferences
 import io.github.fongmi.adaudio.probe.AdAudioProbe
 import io.github.fongmi.adaudio.probe.ProbeMedia
 import io.github.fongmi.adaudio.probe.adapter.media3.v1_9.Media3ProbeAdapterFactory
+import okio.ByteString.Companion.encodeUtf8
+
+internal fun stableProbeMediaId(rawMediaId: String): String =
+    "easybangumi-${rawMediaId.encodeUtf8().sha256().hex()}"
 
 /**
  * ExoPlayer-only bridge for m3u8-ad-audio-probe.
@@ -35,16 +40,26 @@ class ExoAdAudioProbeController(
             else -> return
         }
         val currentProbe = ensureProbe() ?: return
-        val media = ProbeMedia.builder(playerInfo.uri)
-            .setId(mediaId)
-            .setType(mediaType)
-            .apply {
-                playerInfo.header.orEmpty()
-                    .filterKeys(::isSupportedHeader)
-                    .forEach(::setHeader)
-            }
-            .build()
-        currentProbe.open(media)
+        val media = runCatching {
+            ProbeMedia.builder(playerInfo.uri)
+                .setId(stableProbeMediaId(mediaId))
+                .setType(mediaType)
+                .apply {
+                    for ((name, value) in playerInfo.header.orEmpty()) {
+                        if (isSupportedHeader(name)) {
+                            setHeader(name, value)
+                        }
+                    }
+                }
+                .build()
+        }.onFailure {
+            Log.w(TAG, "Skip invalid ad-audio probe media", it)
+        }.getOrNull() ?: return
+        runCatching {
+            currentProbe.open(media)
+        }.onFailure {
+            Log.w(TAG, "Ad-audio probe open failed", it)
+        }
     }
 
     fun notifyHostDiscontinuity() {
@@ -107,6 +122,7 @@ class ExoAdAudioProbeController(
         name.equals("Pragma", true)
 
     private companion object {
+        const val TAG = "ExoAdAudioProbe"
         const val EMPTY_RULES_JSON = """
             {"format":"ad-audio-probe-rules","schemaVersion":1,"revision":1,"algorithm":"spectral-sequence-v1","rules":[]}
         """

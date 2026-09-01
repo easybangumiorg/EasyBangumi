@@ -36,7 +36,7 @@ object FileUtils {
         folder.listFiles()?.forEach {
             traverseFolder(it, path, res)
         }
-        path.removeLast()
+        path.removeAt(path.lastIndex)
     }
 
     fun getFullPathFromTreeUri(treeUri: Uri, con: Context): String? {

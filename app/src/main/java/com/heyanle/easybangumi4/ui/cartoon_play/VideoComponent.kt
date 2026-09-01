@@ -244,10 +244,15 @@ fun VideoFloat(
 
     // 进入全屏时允许内容延伸进刘海区（SHORT_EDGES），控制层用刘海安全边距避让；
     // 退出全屏/离开播放页恢复系统默认模式，避免其他页面残留刘海绘制。
-    DisposableEffect(controlVM.isFullScreen) {
-        if (controlVM.isFullScreen) PlayerCutoutInsets.enableShortEdges(ctx)
+    val cutoutApiSupported = SettingPreferences.PlayerCutoutAvoidanceMode.isAutomaticSupported()
+    DisposableEffect(controlVM.isFullScreen, cutoutApiSupported) {
+        if (cutoutApiSupported && controlVM.isFullScreen) {
+            PlayerCutoutInsets.enableShortEdges(ctx)
+        }
         onDispose {
-            if (controlVM.isFullScreen) PlayerCutoutInsets.resetShortEdges(ctx)
+            if (cutoutApiSupported && controlVM.isFullScreen) {
+                PlayerCutoutInsets.resetShortEdges(ctx)
+            }
         }
     }
 

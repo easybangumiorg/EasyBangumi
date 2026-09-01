@@ -31,7 +31,7 @@ class WebViewManager(
     fun getWebViewOrNull(): WebView? {
         synchronized(lock) {
             if (coreWebViewList.isNotEmpty()) {
-                return coreWebViewList.removeLast()
+                return coreWebViewList.removeAt(coreWebViewList.lastIndex)
             }
 
             if (isMainThread()) {

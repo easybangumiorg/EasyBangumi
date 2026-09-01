@@ -229,14 +229,18 @@ class RestoreController(
                         }.getOrDefault(SettingPreferences.FullscreenControlPosition.AUTO)
                     )
                     playerCutoutAvoidanceMode.set(
-                        runCatching {
-                            SettingPreferences.PlayerCutoutAvoidanceMode.valueOf(
-                                spO.optString(
-                                    playerCutoutAvoidanceMode.key(),
-                                    playerCutoutAvoidanceMode.get().name,
-                                ),
-                            )
-                        }.getOrDefault(SettingPreferences.PlayerCutoutAvoidanceMode.AUTO)
+                        SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(
+                            runCatching {
+                                SettingPreferences.PlayerCutoutAvoidanceMode.valueOf(
+                                    spO.optString(
+                                        playerCutoutAvoidanceMode.key(),
+                                        playerCutoutAvoidanceMode.get().name,
+                                    ),
+                                )
+                            }.getOrDefault(
+                                SettingPreferences.PlayerCutoutAvoidanceMode.defaultForSdk(),
+                            ),
+                        ),
                     )
                     playerCutoutManualPaddingDp.set(
                         spO.optInt(

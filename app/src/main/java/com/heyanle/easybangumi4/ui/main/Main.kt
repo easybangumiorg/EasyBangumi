@@ -1,6 +1,6 @@
 package com.heyanle.easybangumi4.ui.main
 
-import android.content.Intent
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
@@ -155,13 +155,12 @@ fun Main() {
     val pagerState =
         rememberPagerState(initialPage = if (homePageIndexOkkv >= 0 && homePageIndexOkkv < MainPageItems.size) homePageIndexOkkv else 0,0F) { MainPageItems.size }
 
-    val ctx = LocalContext.current
+    val activity = LocalContext.current as Activity
 
     BackHandler {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.addCategory(Intent.CATEGORY_HOME)
-        ctx.startActivity(intent)
+        if (!activity.moveTaskToBack(true)) {
+            activity.finish()
+        }
     }
 
     val scope = rememberCoroutineScope()

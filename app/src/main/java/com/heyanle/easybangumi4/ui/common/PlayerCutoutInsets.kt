@@ -53,6 +53,7 @@ object PlayerCutoutInsets {
      * 都探测不到返回 [Side.NONE]，调用方不做避让。
      */
     fun cutoutSide(activity: Activity): Side {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return logged(Side.NONE)
         activity.window.decorView.rootWindowInsets?.displayCutout?.let { windowCutout ->
             when {
                 windowCutout.safeInsetLeft > 0 -> return logged(Side.LEFT)
@@ -91,11 +92,16 @@ object PlayerCutoutInsets {
         mode: SettingPreferences.PlayerCutoutAvoidanceMode,
         manualPaddingDp: Int,
     ): Resolved {
-        val side = rememberCutoutSide(activity)
-        return remember(side, mode, manualPaddingDp) {
+        val supportedMode = SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(mode)
+        val side = if (supportedMode == SettingPreferences.PlayerCutoutAvoidanceMode.AUTO) {
+            rememberCutoutSide(activity)
+        } else {
+            Side.NONE
+        }
+        return remember(side, supportedMode, manualPaddingDp) {
             Resolved(
                 detectedSide = side,
-                mode = mode,
+                mode = supportedMode,
                 manualWidth = manualPaddingDp.coerceIn(0, 96).dp,
             )
         }
@@ -107,6 +113,7 @@ object PlayerCutoutInsets {
 
     /** 允许窗口内容延伸进刘海/挖孔区域（SHORT_EDGES）。重复调用无副作用。 */
     fun enableShortEdges(activity: Activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
         activity.window.attributes = activity.window.attributes.apply {
             layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -115,6 +122,7 @@ object PlayerCutoutInsets {
 
     /** 恢复系统默认的刘海避让模式（退出全屏时调用）。 */
     fun resetShortEdges(activity: Activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
         activity.window.attributes = activity.window.attributes.apply {
             layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT

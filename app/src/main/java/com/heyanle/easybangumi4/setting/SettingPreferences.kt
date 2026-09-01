@@ -1,6 +1,7 @@
 package com.heyanle.easybangumi4.setting
 
 import android.app.Application
+import android.os.Build
 import com.heyanle.easybangumi4.base.preferences.PreferenceStore
 import com.heyanle.easybangumi4.base.preferences.getEnum
 import com.heyanle.easybangumi4.theme.EasyThemeMode
@@ -64,7 +65,28 @@ class SettingPreferences(
     enum class PlayerCutoutAvoidanceMode {
         AUTO,
         DISABLED,
-        MANUAL,
+        MANUAL;
+
+        companion object {
+            fun isAutomaticSupported(sdkInt: Int = Build.VERSION.SDK_INT): Boolean =
+                sdkInt >= Build.VERSION_CODES.P
+
+            fun normalizeForSdk(
+                mode: PlayerCutoutAvoidanceMode,
+                sdkInt: Int = Build.VERSION.SDK_INT,
+            ): PlayerCutoutAvoidanceMode =
+                if (mode == AUTO && !isAutomaticSupported(sdkInt)) DISABLED else mode
+
+            fun defaultForSdk(sdkInt: Int = Build.VERSION.SDK_INT): PlayerCutoutAvoidanceMode =
+                if (isAutomaticSupported(sdkInt)) AUTO else DISABLED
+
+            fun selectableValues(sdkInt: Int = Build.VERSION.SDK_INT): List<PlayerCutoutAvoidanceMode> =
+                if (isAutomaticSupported(sdkInt)) {
+                    listOf(AUTO, DISABLED, MANUAL)
+                } else {
+                    listOf(DISABLED, MANUAL)
+                }
+        }
     }
 
     enum class MpvAnime4KPreset {
@@ -89,8 +111,17 @@ class SettingPreferences(
     )
     val playerCutoutAvoidanceMode = preferenceStore.getEnum(
         "player_cutout_avoidance_mode",
-        PlayerCutoutAvoidanceMode.AUTO,
+        PlayerCutoutAvoidanceMode.defaultForSdk(),
     )
+
+    init {
+        val storedMode = playerCutoutAvoidanceMode.get()
+        val supportedMode = PlayerCutoutAvoidanceMode.normalizeForSdk(storedMode)
+        if (storedMode != supportedMode) {
+            playerCutoutAvoidanceMode.set(supportedMode)
+        }
+    }
+
     val playerCutoutManualPaddingDp = preferenceStore.getInt(
         "player_cutout_manual_padding_dp",
         36,

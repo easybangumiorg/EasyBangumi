@@ -1166,12 +1166,18 @@ private fun PlayerControlSettingsContent(
         }
 
         SettingsGroupTitle("刘海避让")
-        listOf(
-            SettingPreferences.PlayerCutoutAvoidanceMode.AUTO to ("自动" to "识别刘海位置并避让"),
-            SettingPreferences.PlayerCutoutAvoidanceMode.DISABLED to ("关闭" to "控制器允许进入刘海区域"),
-            SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL to ("手动" to "两侧使用自定义安全距离"),
-        ).forEach { (value, copy) ->
-            val selected = cutoutMode == value
+        val supportedCutoutMode =
+            SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(cutoutMode)
+        SettingPreferences.PlayerCutoutAvoidanceMode.selectableValues().forEach { value ->
+            val copy = when (value) {
+                SettingPreferences.PlayerCutoutAvoidanceMode.AUTO ->
+                    "自动" to "识别刘海位置并避让"
+                SettingPreferences.PlayerCutoutAvoidanceMode.DISABLED ->
+                    "关闭" to "控制器允许进入刘海区域"
+                SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL ->
+                    "手动" to "两侧使用自定义安全距离"
+            }
+            val selected = supportedCutoutMode == value
             ListItem(
                 headlineContent = { Text(copy.first) },
                 supportingContent = { Text(copy.second) },
@@ -1184,7 +1190,7 @@ private fun PlayerControlSettingsContent(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             )
         }
-        if (cutoutMode == SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL) {
+        if (supportedCutoutMode == SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL) {
             PlayerControlSlider(
                 title = "安全距离",
                 valueText = "${manualPadding.coerceIn(0, 96)} dp",
