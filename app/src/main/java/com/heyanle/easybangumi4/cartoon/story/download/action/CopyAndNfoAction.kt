@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
+import com.heyanle.easybangumi4.cartoon.story.bound.BoundMediaCase
 import com.heyanle.easybangumi4.cartoon.story.download.runtime.CartoonDownloadRuntime
 import com.heyanle.easybangumi4.cartoon.story.local.LocalCartoonPreference
 import com.heyanle.easybangumi4.utils.stringRes
@@ -113,6 +114,19 @@ class CopyAndNfoAction: BaseAction {
             targetMediaFile.delete()
             nfoFile.delete()
             throw error
+        }
+
+        // 下载即绑定：把源剧集与本地番源条目的目标集数建立集级绑定
+        try {
+            Inject.get<BoundMediaCase>().bindDownloadedLocalStory(
+                runtime.req.fromCartoonInfo,
+                runtime.req.fromPlayLine,
+                runtime.req.fromEpisode,
+                runtime.req.toLocalItemId,
+                runtime.req.toEpisode,
+            )
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
 
         sourceFile.delete()

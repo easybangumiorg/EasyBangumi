@@ -326,6 +326,7 @@ data class CartoonInfo(
         playLine: PlayLine,
         episode: Episode,
         process: Long,
+        totalTime: Long = lastTotalTile,
     ): CartoonInfo {
         return copy(
             lastHistoryTime = System.currentTimeMillis(), // 如果为 0 则代表没有历史记录
@@ -339,6 +340,7 @@ data class CartoonInfo(
             lastEpisodeLabel = episode.label,
 
             lastProcessTime = process,
+            lastTotalTile = totalTime,
         )
     }
 

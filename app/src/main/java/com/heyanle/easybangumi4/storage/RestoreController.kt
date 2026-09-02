@@ -8,6 +8,7 @@ import com.heyanle.easybangumi4.base.hekv.HeKV
 import com.heyanle.easybangumi4.base.json.JsonFileProvider
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBinding
 import com.heyanle.easybangumi4.plugin.source.SourceController
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.setting.SettingPreferences
@@ -104,6 +105,9 @@ class RestoreController(
                     },
                     async {
                         restoreSourcePreference(File(targetFolder, BackupController.SourcePrefFolderName))
+                    },
+                    async {
+                        restoreEpisodeBinding(File(targetFolder, BackupController.BoundFolderName))
                     }
                 ).forEach {
                     it.await()
@@ -316,6 +320,17 @@ class RestoreController(
         }
 
     }
+
+    /** 恢复集级绑定注册表；视频文件本身不在备份内，失效绑定由绑定层标记。 */
+    private suspend fun restoreEpisodeBinding(folder: File) {
+        val file = File(folder, BackupController.BoundBindingFileName)
+        if (!file.exists() || !file.canRead()) {
+            return
+        }
+        val bindings = file.readText().jsonTo<List<CartoonEpisodeBinding>>().orEmpty()
+        jsonFileProvider.cartoonEpisodeBinding.set(bindings)
+    }
+
     private suspend fun restoreSourcePreference(folder: File){
         if (!folder.exists()){
             return

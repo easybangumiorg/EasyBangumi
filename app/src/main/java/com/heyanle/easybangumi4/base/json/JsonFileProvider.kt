@@ -4,6 +4,7 @@ package com.heyanle.easybangumi4.base.json
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
+import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBinding
 import com.heyanle.easybangumi4.danmaku.DanmakuBangumiCacheEntry
 import com.heyanle.easybangumi4.danmaku.DanmakuBinding
 import com.heyanle.easybangumi4.danmaku.DanmakuCommentCacheEntry
@@ -52,6 +53,15 @@ class JsonFileProvider {
         def = emptyList(),
         scope = scope,
         type = typeOf<List<CartoonDownloadReq>>().javaType
+    )
+
+    // /storage/emulated/0/Android/data/com.heyanle.easybangumi4/files/cartoon/cartoon_episode_binding.json
+    val cartoonEpisodeBinding: JsonFileHelper<List<CartoonEpisodeBinding>> = JsonFileHelper(
+        folder = UniFile.fromFile(File(APP.getFilePath("cartoon")))!!,
+        name = "cartoon_episode_binding.json",
+        def = emptyList(),
+        scope = scope,
+        type = typeOf<List<CartoonEpisodeBinding>>().javaType
     )
 
     val danmakuBindings: JsonFileHelper<List<DanmakuBinding>> = JsonFileHelper(

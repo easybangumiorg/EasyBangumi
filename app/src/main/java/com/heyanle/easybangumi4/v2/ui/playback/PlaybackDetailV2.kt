@@ -108,6 +108,8 @@ import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
+import com.heyanle.easybangumi4.cartoon.story.bound.BoundMedia
+import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBinding
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayPreferences
 import com.heyanle.easybangumi4.danmaku.DanmakuEpisodeContext
@@ -171,6 +173,14 @@ internal object CartoonPlayV2TestTags {
     const val SORT_SHEET = "playback_sort_sheet"
     const val EPISODE_PICKER = "playback_episode_picker"
     const val LINE_PICKER = "playback_line_picker"
+    const val MEDIA_SOURCE_ENTRY = "playback_media_source_entry"
+    const val MEDIA_SOURCE_SHEET = "playback_media_source_sheet"
+    const val MEDIA_SOURCE_SUMMARY = "playback_media_source_summary"
+    const val MEDIA_SOURCE_SWITCH = "playback_media_source_switch"
+    const val MEDIA_SOURCE_STEP = "playback_media_source_step"
+    const val MEDIA_VIDEO_STEP = "playback_media_video_step"
+    const val MEDIA_SOURCE_CLOUD = "playback_media_source_cloud"
+    const val MEDIA_SOURCE_FLAT = "playback_media_source_flat"
     const val DANMAKU_PANEL = "playback_danmaku_panel"
     const val DOWNLOAD_SELECTION = "playback_download_selection"
     const val DOWNLOAD_SELECT_ALL = "playback_download_select_all"
@@ -179,6 +189,8 @@ internal object CartoonPlayV2TestTags {
 
     fun action(label: String): String = "playback_action_$label"
     fun source(id: String): String = "playback_source_$id"
+    fun localSource(id: String): String = "playback_local_source_$id"
+    fun localStory(id: String): String = "playback_local_story_$id"
     fun episode(id: String): String = "playback_episode_$id"
 }
 
@@ -239,7 +251,7 @@ private fun playbackTypography() = MaterialTheme.typography.copy(
 )
 
 @Composable
-private fun PlaybackSheetTheme(content: @Composable () -> Unit) {
+internal fun PlaybackSheetTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = playbackSheetColorScheme(),
         typography = playbackTypography(),
@@ -308,6 +320,7 @@ fun PlaybackDetailV2(
     val playVM = viewModel<CartoonPlayViewModel>(factory = CartoonPlayViewModelFactory(enterData))
     val playingVM = viewModel<CartoonPlayingViewModel>()
     val danmakuVM = viewModel<DanmakuPlaybackViewModel>()
+    val boundMediaVM = viewModel<BoundMediaViewModel>()
     val danmakuDisplayPreferences: DanmakuDisplayPreferences by Inject.injectLazy()
     val isPad = isCurPadeMode()
     val controlVM = ControlViewModelFactory.viewModel(
@@ -318,12 +331,20 @@ fun PlaybackDetailV2(
     val detailState by detailedVM.stateFlow.collectAsState()
     val playState by playVM.curringPlayState.collectAsState()
     val playingState by playingVM.playingState.collectAsState()
+    val isPlayingLocal by playingVM.isPlayingLocal.collectAsState()
+    val boundLocalMedia by boundMediaVM.localMedia.collectAsState()
+    val boundCurrentBindings by boundMediaVM.currentBindings.collectAsState()
     val danmakuState by danmakuVM.state.collectAsState()
     val danmakuDisplayConfig by remember(danmakuDisplayPreferences) {
         danmakuDisplayPreferences.configFlow()
     }.collectAsState(danmakuDisplayPreferences.getConfig())
 
     EasyPlayerStateSync(controlVM)
+
+    // 路由入参的播放变体偏好（本地/云端）只在会话首次建立时生效
+    LaunchedEffect(Unit) {
+        playingVM.initPlaybackVariantPreference(enterData?.preferLocal)
+    }
 
     LaunchedEffect(detailState.cartoonInfo) {
         detailState.cartoonInfo?.let(playVM::onCartoonInfoChange)
@@ -334,6 +355,7 @@ fun PlaybackDetailV2(
         playState?.playLine?.playLine?.id,
         playState?.episode?.id,
     ) {
+        boundMediaVM.onPlayStateChanged(playState)
         playingVM.changePlay(playState, playVM.adviceProgress)
         playVM.adviceProgress = -1L
     }
@@ -400,9 +422,13 @@ fun PlaybackDetailV2(
                         detailedVM = detailedVM,
                         playVM = playVM,
                         playingVM = playingVM,
+                        boundMediaVM = boundMediaVM,
                         detailState = detailState,
                         playState = playState,
                         playingState = playingState,
+                        isPlayingLocal = isPlayingLocal,
+                        boundLocalMedia = boundLocalMedia,
+                        boundCurrentBindings = boundCurrentBindings,
                         danmakuState = danmakuState,
                         danmakuDisplayConfig = danmakuDisplayConfig,
                         onDanmakuDisplayConfigChange = danmakuDisplayPreferences::setConfig,
@@ -436,9 +462,13 @@ private fun PlaybackDetailV2Content(
     detailedVM: DetailedViewModel,
     playVM: CartoonPlayViewModel,
     playingVM: CartoonPlayingViewModel,
+    boundMediaVM: BoundMediaViewModel,
     detailState: DetailedViewModel.DetailState,
     playState: CartoonPlayViewModel.CartoonPlayState?,
     playingState: CartoonPlayingViewModel.PlayingState,
+    isPlayingLocal: Boolean,
+    boundLocalMedia: BoundMedia?,
+    boundCurrentBindings: List<CartoonEpisodeBinding>,
     danmakuState: DanmakuPlaybackState,
     danmakuDisplayConfig: DanmakuDisplayConfig,
     onDanmakuDisplayConfigChange: (DanmakuDisplayConfig) -> Unit,
@@ -476,6 +506,7 @@ private fun PlaybackDetailV2Content(
         initial = settingPreferences.playerOrientationMode.get(),
     )
     var downloadRequest by remember { mutableStateOf<Triple<CartoonInfo, PlayLineWrapper, List<Episode>>?>(null) }
+    var showExternalPlayChooser by remember { mutableStateOf(false) }
     // Own the native danmaku view at the page level. AndroidView holders are allowed to come and
     // go during configuration changes without releasing the DFM clock or its prepared item set.
     val danmakuRenderer = remember { DfmDanmakuRenderer() }
@@ -651,7 +682,14 @@ private fun PlaybackDetailV2Content(
                             onDownload = { line, episodes ->
                                 downloadRequest = Triple(detailState.cartoonInfo, line, episodes)
                             },
-                            onExternalPlay = playingVM::playCurrentExternal,
+                            onExternalPlay = {
+                                // 当前集同时有本地文件与云端解析时，外部播放提供本地/云端二选一
+                                if (boundLocalMedia != null) {
+                                    showExternalPlayChooser = true
+                                } else {
+                                    playingVM.playCurrentExternal()
+                                }
+                            },
                             hasCustomPlaybackHeaders = playingVM.hasCustomPlaybackHeaders(),
                             onMediaData = { playingVM.playbackDiagnostic() },
                             onCast = {
@@ -688,6 +726,24 @@ private fun PlaybackDetailV2Content(
                             onOpenDanmakuDisplaySettings = {
                                 openPlayerSettings(PlayerSettingsSection.Danmaku)
                             },
+                            isPlayingLocal = isPlayingLocal,
+                            localMedia = boundLocalMedia,
+                            sourceLabel = detailState.cartoonInfo.sourceName.ifBlank {
+                                detailState.cartoonInfo.source
+                            },
+                            currentBinding = remember(playState, boundCurrentBindings) {
+                                playState?.let {
+                                    boundMediaVM.currentBindingOf(it, boundCurrentBindings)
+                                }
+                            },
+                            localBoundOrders = boundCurrentBindings.map { it.episodeOrder }.toSet(),
+                            onSwitchToLocal = {
+                                playingVM.switchPlaybackVariant(toLocal = true, forceReload = true)
+                            },
+                            onSwitchToCloud = { playingVM.switchPlaybackVariant(false) },
+                            onReResolve = { playingVM.reResolveCloud() },
+                            onInvalidateLocal = { playingVM.invalidateLocalVariant() },
+                            boundMediaVM = boundMediaVM,
                         )
                     }
                 }
@@ -702,6 +758,46 @@ private fun PlaybackDetailV2Content(
                 playerLineWrapper = request.second,
                 episodes = request.third,
                 onDismissRequest = { downloadRequest = null },
+            )
+        }
+    }
+    if (showExternalPlayChooser) {
+        PlaybackSheetTheme {
+            AlertDialog(
+                onDismissRequest = { showExternalPlayChooser = false },
+                title = { Text("外部播放来源") },
+                text = {
+                    Column {
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showExternalPlayChooser = false
+                                playingVM.playLocalExternal()
+                            },
+                        ) {
+                            Text(
+                                text = "本地 · " + (boundLocalMedia?.displayName ?: ""),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                showExternalPlayChooser = false
+                                playingVM.playCurrentExternal()
+                            },
+                        ) {
+                            Text("在线播放")
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showExternalPlayChooser = false }) {
+                        Text("取消")
+                    }
+                },
             )
         }
     }
@@ -796,12 +892,24 @@ private fun CartoonPlayV2Detail(
     onManualMatch: () -> Unit,
     onDanmakuRetry: () -> Unit,
     onOpenDanmakuDisplaySettings: () -> Unit,
+    // 播放来源（本地/云端）区域
+    isPlayingLocal: Boolean,
+    localMedia: BoundMedia?,
+    sourceLabel: String,
+    currentBinding: CartoonEpisodeBinding?,
+    localBoundOrders: Set<Int>,
+    onSwitchToLocal: () -> Unit,
+    onSwitchToCloud: () -> Unit,
+    onReResolve: () -> Unit,
+    onInvalidateLocal: () -> Unit,
+    boundMediaVM: BoundMediaViewModel,
 ) {
     var showPlaybackLines by remember { mutableStateOf(false) }
     var showAllEpisodes by remember { mutableStateOf(false) }
     var showSort by remember { mutableStateOf(false) }
     var showDanmakuPanel by remember { mutableStateOf(false) }
     var showMoreActions by remember { mutableStateOf(false) }
+    var showMediaSourceSheet by remember { mutableStateOf(false) }
     var showMediaData by remember { mutableStateOf<CartoonPlayingViewModel.PlaybackDiagnostic?>(null) }
     var downloadSelection by remember(cartoon.id, cartoon.source) {
         mutableStateOf<DownloadEpisodeSelection?>(null)
@@ -858,6 +966,17 @@ private fun CartoonPlayV2Detail(
             )
             PlayerDividerV2()
         }
+        if (shouldShowPlaybackSource(cartoon.source)) {
+            item {
+                V2MediaSourceSection(
+                    isPlayingLocal = isPlayingLocal,
+                    sourceLabel = sourceLabel,
+                    currentBinding = currentBinding,
+                    onOpen = { showMediaSourceSheet = true },
+                )
+                PlayerDividerV2()
+            }
+        }
         item {
             DanmakuEntryV2(
                 state = danmakuState,
@@ -901,6 +1020,7 @@ private fun CartoonPlayV2Detail(
             selectedLineIndex = selectedLineIndex,
             playingState = playingState,
             sortState = sortState,
+            localBoundOrders = localBoundOrders,
             onEpisodeSelect = { line, episode ->
                 if (activeDownloadSelection == null) {
                     onEpisodeSelect(line, episode)
@@ -987,6 +1107,52 @@ private fun CartoonPlayV2Detail(
             onDismiss = { showMediaData = null },
         )
     }
+    if (showMediaSourceSheet && playingState != null) {
+        val boundState = playingState!!
+        BoundMediaBottomSheetV2(
+            isPlayingLocal = isPlayingLocal,
+            sourceKey = cartoon.source,
+            sourceLabel = sourceLabel,
+            cloudDetail = listOf(
+                boundState.playLine.playLine.label,
+                boundState.episode.label,
+            ).filter(String::isNotBlank).joinToString(" · "),
+            localMedia = localMedia,
+            currentBinding = currentBinding,
+            flatVideos = boundMediaVM.flatVideos.collectAsState().value,
+            storyItems = boundMediaVM.storyItems.collectAsState().value,
+            onSelectCloud = onSwitchToCloud,
+            onReResolve = onReResolve,
+            onDownload = {
+                playLines.getOrNull(selectedLineIndex)?.let { selectedLine ->
+                    downloadSelection = DownloadEpisodeSelection(lineId = selectedLine.playLine.id)
+                    showAllEpisodes = true
+                }
+            },
+            onBindFlatFile = { fileName ->
+                boundMediaVM.manualBindFlatFile(cartoon, boundState, fileName) {
+                    onInvalidateLocal()
+                    onSwitchToLocal()
+                }
+            },
+            onBindLocalStory = { itemId, episode ->
+                boundMediaVM.manualBindLocalStory(cartoon, boundState, itemId, episode) {
+                    onInvalidateLocal()
+                    onSwitchToLocal()
+                }
+            },
+            onUnbind = {
+                boundMediaVM.unbind(boundState)
+                onInvalidateLocal()
+                if (isPlayingLocal) onSwitchToCloud()
+            },
+            onDismiss = { showMediaSourceSheet = false },
+        )
+    }
+}
+
+internal fun shouldShowPlaybackSource(source: String): Boolean {
+    return source != LocalSource.LOCAL_SOURCE_KEY
 }
 
 @Composable
@@ -1246,7 +1412,7 @@ internal fun DanmakuStatusBottomSheetV2(
 }
 
 @Composable
-private fun PlaybackSettingRowV2(
+internal fun PlaybackSettingRowV2(
     title: String,
     value: String,
     onClick: () -> Unit,
@@ -1631,6 +1797,7 @@ internal fun EpisodeRailButton(
     episode: Episode,
     selected: Boolean,
     selectionMode: Boolean = false,
+    localBadge: Boolean = false,
     unselectedContainerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     onClick: () -> Unit,
 ) {
@@ -1646,7 +1813,7 @@ internal fun EpisodeRailButton(
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .testTag(CartoonPlayV2TestTags.episode(episode.id))
@@ -1661,27 +1828,47 @@ internal fun EpisodeRailButton(
                         selectionMode -> "未选中"
                         selected -> "当前播放"
                         else -> "未播放"
-                    }
+                    } + if (localBadge) "，有本地视频" else ""
                 }
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
         ) {
-            if (selected && selectionMode) {
-                Icon(
-                    modifier = Modifier.size(18.dp),
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = null,
+            Row(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                if (selected && selectionMode) {
+                    Icon(
+                        modifier = Modifier.size(18.dp),
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(7.dp))
+                }
+                Text(
+                    text = episode.label,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                 )
-                Spacer(Modifier.width(7.dp))
             }
-            Text(
-                text = episode.label,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            )
+            if (localBadge) {
+                Surface(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    shape = RoundedCornerShape(topEnd = 14.dp, bottomStart = 7.dp),
+                ) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                        text = "本地",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
         }
     }
 }
@@ -1693,6 +1880,7 @@ internal fun EpisodePickerBottomSheet(
     selectedLineIndex: Int,
     playingState: CartoonPlayViewModel.CartoonPlayState?,
     sortState: SortState<Episode>,
+    localBoundOrders: Set<Int> = emptySet(),
     onEpisodeSelect: (PlayLineWrapper, Episode) -> Unit,
     onSort: () -> Unit,
     downloadSelection: DownloadEpisodeSelection? = null,
@@ -1831,6 +2019,7 @@ internal fun EpisodePickerBottomSheet(
                             playingState?.playLine?.playLine?.id == selectedLine?.playLine?.id &&
                                 playingState?.episode?.id == episode.id
                         },
+                        localBadge = !isDownloadMode && episode.order in localBoundOrders,
                         selectionMode = isDownloadMode,
                         unselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         onClick = { selectedLine?.let { onEpisodeSelect(it, episode) } },

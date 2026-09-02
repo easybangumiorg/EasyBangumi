@@ -37,6 +37,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,6 +60,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -69,6 +71,7 @@ import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.STORY
 import com.heyanle.easybangumi4.base.DataResult
+import com.heyanle.easybangumi4.cartoon.entity.DownloadDestination
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
@@ -80,6 +83,37 @@ import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.moeSnackBar
 import com.heyanle.easybangumi4.utils.stringRes
 import com.heyanle.easybangumi4.utils.toast
+
+internal object CartoonDownloadTestTags {
+    const val DESTINATION_LOCAL_STORY = "download_destination_local_story"
+    const val DESTINATION_LOCAL_CACHE = "download_destination_local_cache"
+}
+
+@Composable
+internal fun DownloadDestinationToggle(
+    isFlat: Boolean,
+    onDestinationChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilterChip(
+            modifier = Modifier.testTag(CartoonDownloadTestTags.DESTINATION_LOCAL_STORY),
+            selected = !isFlat,
+            onClick = { onDestinationChange(DownloadDestination.LOCAL_STORY) },
+            label = { Text(text = stringResource(id = R.string.download_to_local_cartoon)) },
+        )
+        FilterChip(
+            modifier = Modifier.testTag(CartoonDownloadTestTags.DESTINATION_LOCAL_CACHE),
+            selected = isFlat,
+            onClick = { onDestinationChange(DownloadDestination.FLAT) },
+            label = { Text(text = stringResource(id = R.string.download_to_flat_dir)) },
+        )
+    }
+}
 
 /**
  * Created by heyanle on 2024/7/8.
@@ -110,10 +144,12 @@ fun CartoonDownloadDialog(
     val focusRequester = remember { FocusRequester() }
 
     BackHandler {
-        if (sta.keyword == null)
-            onDismissRequest()
-        else
-            model.changeKeyword(null)
+        when {
+            sta.keyword != null -> model.changeKeyword(null)
+            sta.isFlat -> onDismissRequest()
+            sta.targetLocalInfo == null -> onDismissRequest()
+            else -> model.targetLocalItem(null)
+        }
     }
 
     Column(
@@ -128,12 +164,12 @@ fun CartoonDownloadDialog(
         TopAppBar(
             navigationIcon = {
                 IconButton(onClick = {
-                    if (sta.keyword == null)
-                        if (sta.targetLocalInfo == null)
-                            onDismissRequest()
-                        else model.targetLocalItem(null)
-                    else
-                        model.changeKeyword(null)
+                    when {
+                        sta.keyword != null -> model.changeKeyword(null)
+                        sta.isFlat -> onDismissRequest()
+                        sta.targetLocalInfo == null -> onDismissRequest()
+                        else -> model.targetLocalItem(null)
+                    }
                 }) {
                     Icon(Icons.Filled.ArrowBack, contentDescription = "back")
                 }
@@ -174,7 +210,15 @@ fun CartoonDownloadDialog(
                             )
                         })
                 } else {
-                    Text(text = stringResource(id = if (sta.targetLocalInfo == null) com.heyanle.easy_i18n.R.string.download_to else com.heyanle.easy_i18n.R.string.edit_episode_msg))
+                    Text(
+                        text = stringResource(
+                            id = if (sta.targetLocalInfo == null) {
+                                com.heyanle.easy_i18n.R.string.download_to
+                            } else {
+                                R.string.edit_local_media_number
+                            },
+                        ),
+                    )
 
                 }
             },
@@ -231,10 +275,99 @@ fun CartoonDownloadDialog(
                     model.retry()
                 }
             )
+        } else if (sta.isFlat) {
+            val nav = LocalNavController.current
+            DownloadDestinationToggle(
+                isFlat = true,
+                onDestinationChange = model::changeDestination,
+            )
+            if (sta.flatNameRepeat) {
+                ListItem(headlineContent = {
+                    Text(
+                        text = stringResource(id = R.string.flat_file_name_repeat),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                })
+            } else {
+                ListItem(
+                    headlineContent = {
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.flat_dir_tip),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        model.changeQuickMode(!sta.isQuickMode)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    modifier = Modifier.padding(0.dp), checked = sta.isQuickMode, onCheckedChange = {
+                                        model.changeQuickMode(it)
+                                    })
+                                Text(text = stringResource(id = R.string.quick_download_mode))
+                                Spacer(modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    },
+                    trailingContent = {
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .padding(16.dp, 0.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            onClick = {
+                                onDismissRequest()
+                                model.pushReq(sta)
+                                stringRes(R.string.add_download_completely).moeSnackBar(
+                                    confirmLabel = stringRes(R.string.click_to_view),
+                                    onConfirm = {
+                                        nav.navigate(STORY+"?defIndex=2")
+                                    }
+                                )
+                            }) {
+                            Text(stringResource(id = R.string.next))
+
+                        }
+                    }
+
+                )
+
+            }
+            Divider()
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(4.dp, 4.dp, 4.dp, 88.dp)
+            ) {
+                items(
+                    sta.reqList
+                ) { req ->
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            model.showChangeFlatFileName(req.uuid, req.flatFileName.orEmpty())
+                        },
+                        headlineContent = {
+                            Text(text = req.flatFileName.orEmpty(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        }
+                    )
+                }
+            }
         } else if (sta.targetLocalInfo == null || sta.reqList.isEmpty()) {
+            DownloadDestinationToggle(
+                isFlat = false,
+                onDestinationChange = model::changeDestination,
+            )
             LazyVerticalGrid(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .weight(1f),
                 columns = GridCells.Adaptive(100.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
@@ -293,7 +426,7 @@ fun CartoonDownloadDialog(
             if (sta.isRepeat) {
                 ListItem(headlineContent = {
                     Text(
-                        text = stringResource(id = R.string.episode_repeat),
+                        text = stringResource(id = R.string.local_media_number_repeat),
                         color = MaterialTheme.colorScheme.error
                     )
                 })
@@ -330,7 +463,7 @@ fun CartoonDownloadDialog(
                                 stringRes(R.string.add_download_completely).moeSnackBar(
                                     confirmLabel = stringRes(R.string.click_to_view),
                                     onConfirm = {
-                                        nav.navigate(STORY+"?defIndex=1")
+                                        nav.navigate(STORY+"?defIndex=2")
                                     }
                                 )
                             }) {
@@ -366,7 +499,7 @@ fun CartoonDownloadDialog(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(width = 72.dp, height = 40.dp)
                                     .clip(RoundedCornerShape(4.dp))
                                     .background(
                                         if (repeat) MaterialTheme.colorScheme.error else
@@ -382,9 +515,11 @@ fun CartoonDownloadDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = req.toEpisode.toString(),
+                                    text = "${stringResource(id = R.string.local_media_number)} ${req.toEpisode}",
                                     color = if (repeat) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.titleLarge
+                                    style = MaterialTheme.typography.labelLarge,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                             }
                         },
@@ -530,7 +665,7 @@ fun CartoonDownloadDialog(
             AlertDialog(
                 onDismissRequest = { model.dismissDialog() },
                 title = {
-                    Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.edit_episode_msg))
+                    Text(text = stringResource(id = R.string.edit_local_media_number))
                 },
                 text = {
 
@@ -542,7 +677,7 @@ fun CartoonDownloadDialog(
                                 textEpisode.value = it
                             },
                             label = {
-                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.episode))
+                                Text(text = stringResource(id = R.string.local_media_number))
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
 
@@ -553,7 +688,7 @@ fun CartoonDownloadDialog(
                                 textLabel.value = it
                             },
                             label = {
-                                Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.episode_label))
+                                Text(text = stringResource(id = R.string.local_media_name))
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 
@@ -573,7 +708,7 @@ fun CartoonDownloadDialog(
                                 return@TextButton
                             }
                             if (sta.cantEpisodeSet.contains(i)) {
-                                stringRes(R.string.episode_repeat).toast()
+                                stringRes(R.string.local_media_number_repeat).toast()
                                 return@TextButton
                             }
                             if (textLabel.value.isEmpty()) {
@@ -594,6 +729,60 @@ fun CartoonDownloadDialog(
                 dismissButton = {
                     TextButton(onClick = { model.dismissDialog() }) {
                         Text(text = stringResource(id = com.heyanle.easy_i18n.R.string.cancel))
+                    }
+                }
+            )
+        }
+
+        is CartoonDownloadReqModel.Dialog.ChangeFlatFileName -> {
+
+            val textName = remember {
+                mutableStateOf(dialog.name)
+            }
+            val fq = remember { FocusRequester() }
+            LaunchedEffect(key1 = Unit){
+                try {
+                    fq.requestFocus()
+                }catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            AlertDialog(
+                onDismissRequest = { model.dismissDialog() },
+                title = {
+                    Text(text = stringResource(id = R.string.edit_flat_file_name))
+                },
+                text = {
+                    TextField(
+                        modifier = Modifier.focusRequester(fq),
+                        value = textName.value,
+                        onValueChange = {
+                            textName.value = it
+                        },
+                        label = {
+                            Text(text = stringResource(id = R.string.flat_file_name))
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (textName.value.isBlank()) {
+                                stringRes(R.string.label_empty).toast()
+                                return@TextButton
+                            }
+                            model.dismissDialog()
+                            model.changeFlatFileName(dialog.uuid, textName.value)
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { model.dismissDialog() }) {
+                        Text(text = stringResource(id = R.string.cancel))
                     }
                 }
             )

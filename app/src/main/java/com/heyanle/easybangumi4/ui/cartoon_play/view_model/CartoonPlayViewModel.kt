@@ -45,6 +45,10 @@ class CartoonPlayViewModel(
         val episodeIndex: Int,
 
         val adviceProgress: Long,
+
+        // 播放变体偏好：null=默认（有本地即本地）；true=本地优先；false=云端优先。
+        // 旧路由数据缺失该字段时 Gson 反序列化为 null。
+        val preferLocal: Boolean? = null,
     ){
         fun isEffective(): Boolean {
             return playLineId.isNotEmpty() || playLineLabel.isNotEmpty() || playLineIndex >= 0

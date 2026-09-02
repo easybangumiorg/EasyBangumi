@@ -434,20 +434,28 @@ private fun HistoryItemV2(
             )
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "观看至 ${cartoon.lastEpisodeLabel.ifBlank { TimeUtils.toString(cartoon.lastProcessTime) }}",
+                    text = "观看至 ${cartoon.lastEpisodeLabel.ifBlank { "当前视频" }}",
                     modifier = Modifier.weight(1f),
                     color = V2Tokens.TextSecondary,
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(TimeUtils.toString(cartoon.lastTotalTile), color = V2Tokens.TextSecondary, fontSize = 12.sp)
+                Text(
+                    text = historyProgressText(
+                        positionMs = cartoon.lastProcessTime,
+                        durationMs = cartoon.lastTotalTile,
+                    ),
+                    color = V2Tokens.TextSecondary,
+                    fontSize = 12.sp,
+                )
             }
             LinearProgressIndicator(
                 progress = {
-                    if (cartoon.lastTotalTile > 0L) {
-                        (cartoon.lastProcessTime.toFloat() / cartoon.lastTotalTile).coerceIn(0f, 1f)
-                    } else 0f
+                    historyProgressFraction(
+                        positionMs = cartoon.lastProcessTime,
+                        durationMs = cartoon.lastTotalTile,
+                    )
                 },
                 modifier = Modifier.fillMaxWidth().height(2.dp),
                 color = V2Theme.colors.accent,
@@ -464,6 +472,22 @@ private fun HistoryItemV2(
         modifier = Modifier.padding(start = 116.dp),
         color = V2Tokens.Divider,
     )
+}
+
+internal fun historyProgressText(positionMs: Long, durationMs: Long): String {
+    val position = positionMs.coerceAtLeast(0L)
+    val duration = durationMs.coerceAtLeast(0L)
+    val positionText = TimeUtils.toString(position).toString()
+    return if (duration > 0L) {
+        "$positionText / ${TimeUtils.toString(duration)}"
+    } else {
+        positionText
+    }
+}
+
+internal fun historyProgressFraction(positionMs: Long, durationMs: Long): Float {
+    if (durationMs <= 0L) return 0f
+    return (positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
 }
 
 private fun historyDayLabel(timestamp: Long): String {

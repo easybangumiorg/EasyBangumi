@@ -20,6 +20,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.story.bound.BoundMedia
+import com.heyanle.easybangumi4.cartoon.story.bound.BoundMediaCase
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.exo.CartoonMediaSourceFactory
@@ -98,6 +100,15 @@ class CartoonPlayingViewModel(
             hasResolvedTarget && playerHasMedia -> ContinuationAction.KEEP_PLAYER
             hasResolvedTarget -> ContinuationAction.LOAD_RESOLVED_MEDIA
             else -> ContinuationAction.RESOLVE_SOURCE
+        }
+
+        internal fun shouldUseLocalVariant(
+            sessionPreference: Boolean?,
+            hasResolvedLocal: Boolean,
+        ): Boolean = when (sessionPreference) {
+            true -> true
+            false -> false
+            null -> hasResolvedLocal
         }
 
         internal fun isSamePlaybackTarget(
@@ -230,6 +241,16 @@ class CartoonPlayingViewModel(
     private var playingInfo: PlayerInfo? = null
     private var playingInfoIsCache: Boolean = false
     private var resolvedPlayback: ResolvedPlayback? = null
+
+    // 本地代播槽：同一播放目标在本地/云端之间反复切换时，避免重复查绑定与重复解析
+    private var resolvedLocal: ResolvedLocal? = null
+
+    // 播放变体偏好：null=默认（有本地即本地）；true=本地优先；false=云端优先。
+    // 由路由入参初始化，会话内手动切换后覆盖，不持久化。
+    private var sessionPreferLocal: Boolean? = null
+    private val _isPlayingLocal = MutableStateFlow(false)
+    val isPlayingLocal: StateFlow<Boolean> = _isPlayingLocal.asStateFlow()
+
     private var forceNoCacheRetrying: Boolean = false
     private var forceClearMediaCacheRetrying: Boolean = false
     private val playbackResumeCheckpoint = PlaybackResumeCheckpoint()
@@ -260,6 +281,19 @@ class CartoonPlayingViewModel(
                 episode == state.episode
     }
 
+    private data class ResolvedLocal(
+        val summary: CartoonSummary,
+        val playLine: PlayLine,
+        val episode: Episode,
+        val uri: String,
+        val displayName: String,
+    ) {
+        fun matches(state: CartoonPlayViewModel.CartoonPlayState): Boolean =
+            summary == state.cartoonSummary &&
+                playLine == state.playLine.playLine &&
+                episode == state.episode
+    }
+
     private val _playingState = MutableStateFlow<PlayingState>(PlayingState())
     val playingState = _playingState.asStateFlow()
 
@@ -279,6 +313,7 @@ class CartoonPlayingViewModel(
     private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
     private val cartoonMediaSourceFactory: CartoonMediaSourceFactory by Inject.injectLazy()
     private val sourceStateCase: SourceStateCase by Inject.injectLazy()
+    private val boundMediaCase: BoundMediaCase by Inject.injectLazy()
     init {
         playerController.addListener(object : EasyPlayerController.Listener {
             override fun onPlaybackStateChanged(state: EasyPlaybackState) {
@@ -293,7 +328,10 @@ class CartoonPlayingViewModel(
                         }
                     }
                     EasyPlaybackState.ENDED -> {
-                        trySaveHistory(playerController.duration)
+                        trySaveHistory(
+                            positionMs = playerController.duration,
+                            durationMs = playerController.duration,
+                        )
                         _playingState.update { it.copy(isLoading = false, isPlaying = false) }
                     }
                     EasyPlaybackState.IDLE -> Unit
@@ -464,6 +502,75 @@ class CartoonPlayingViewModel(
 
     }
 
+    // 播放变体（本地/云端）管理 =====================================
+
+    /** 路由入参初始化播放变体偏好；仅在会话尚未有手动选择时生效。 */
+    fun initPlaybackVariantPreference(preferLocal: Boolean?) {
+        if (sessionPreferLocal == null) {
+            sessionPreferLocal = preferLocal
+        }
+    }
+
+    /** 当前集的本地代播媒体（供 UI 与外部播放使用）；无绑定或文件缺失时为 null。 */
+    suspend fun currentLocalMedia(): BoundMedia? {
+        val state = cartoonPlayingState ?: return null
+        return runCatching {
+            boundMediaCase.findLocalMedia(
+                state.cartoonSummary,
+                state.playLine.playLine.id,
+                state.episode,
+            )
+        }.getOrNull()
+    }
+
+    /**
+     * 在本地/云端之间切换当前集播放并保持当前进度。
+     * 换绑到另一个本地文件时用 [forceReload] 重新装载，避免继续播放旧绑定。
+     */
+    fun switchPlaybackVariant(toLocal: Boolean, forceReload: Boolean = false) {
+        val state = cartoonPlayingState ?: return
+        if (!forceReload && _isPlayingLocal.value == toLocal) return
+        val position = if (playerController.hasMedia) playerController.currentPosition else -1L
+        sessionPreferLocal = toLocal
+        lastJob?.cancel()
+        changePlay(state, position)
+    }
+
+    /** 清除云端解析缓存并强制绕过源缓存重新解析；正在本地播放时不打断播放。 */
+    fun reResolveCloud() {
+        resolvedPlayback = null
+        if (_isPlayingLocal.value) return
+        val state = cartoonPlayingState ?: return
+        sessionPreferLocal = false
+        val position = if (playerController.hasMedia) playerController.currentPosition else -1L
+        lastJob?.cancel()
+        lastJob = scope.launch {
+            innerPlay(
+                cartoonPlayingState = state,
+                adviceProcess = position,
+                canCache = false,
+            )
+        }
+    }
+
+    /** 绑定变更（换绑/解绑）后使本地槽失效；正在本地播放时保留当前媒体。 */
+    fun invalidateLocalVariant() {
+        resolvedLocal = null
+    }
+
+    /** 用本地文件调用外部播放器；无绑定或文件缺失时忽略。 */
+    fun playLocalExternal() {
+        scope.launch {
+            val bound = currentLocalMedia() ?: return@launch
+            innerPlayExternal(
+                PlayerInfo(
+                    decodeType = PlayerInfo.DECODE_TYPE_OTHER,
+                    uri = bound.uri,
+                )
+            )
+        }
+    }
+
     private fun tryRefreshNoCache() {
         if (forceNoCacheRetrying) return
         forceNoCacheRetrying = true
@@ -515,11 +622,17 @@ class CartoonPlayingViewModel(
                     explicitPositionMs = adviceProcess,
                 )
                 val resolved = resolvedPlayback?.takeIf { it.matches(cartoonPlayingState) }
+                val local = resolvedLocal?.takeIf { it.matches(cartoonPlayingState) }
+                // 明确选择本地但尚未解析本地绑定时，也必须进入 RESOLVE_SOURCE，
+                // 让 innerPlay 查询刚刚写入的绑定，不能继续沿用云端播放器。
+                val wantLocal = shouldUseLocalVariant(sessionPreferLocal, local != null)
+                // 变体（本地/云端）与播放器现有媒体不一致时必须重新装载，不能 KEEP_PLAYER
+                val playerMatchesVariant = _isPlayingLocal.value == wantLocal
                 val action = continuationAction(
-                    hasResolvedTarget = resolved != null,
-                    playerHasMedia = playerController.hasMedia,
+                    hasResolvedTarget = if (wantLocal) local != null else resolved != null,
+                    playerHasMedia = playerController.hasMedia && playerMatchesVariant,
                 )
-                "play-target previousSource=${previousSummary?.source} previousId=${previousSummary?.id} previousUri=$previousPlayerUri nextSource=${cartoonPlayingState.cartoonSummary.source} nextId=${cartoonPlayingState.cartoonSummary.id} lineId=${cartoonPlayingState.playLine.playLine.id} episodeId=${cartoonPlayingState.episode.id} action=$action vm=${System.identityHashCode(this@CartoonPlayingViewModel)}".logi(TAG)
+                "play-target previousSource=${previousSummary?.source} previousId=${previousSummary?.id} previousUri=$previousPlayerUri nextSource=${cartoonPlayingState.cartoonSummary.source} nextId=${cartoonPlayingState.cartoonSummary.id} lineId=${cartoonPlayingState.playLine.playLine.id} episodeId=${cartoonPlayingState.episode.id} action=$action wantLocal=$wantLocal vm=${System.identityHashCode(this@CartoonPlayingViewModel)}".logi(TAG)
                 when (action) {
                     ContinuationAction.KEEP_PLAYER -> {
                         if (resumeDirective.positionMs >= 0) {
@@ -535,15 +648,34 @@ class CartoonPlayingViewModel(
                         }
                     }
                     ContinuationAction.LOAD_RESOLVED_MEDIA -> {
-                        val cached = checkNotNull(resolved)
-                        "play-media action=restore-resolved uri=${cached.playerInfo.uri} source=${cached.summary.source} cartoonId=${cached.summary.id}".logi(TAG)
-                        playingInfoIsCache = cached.sourceResultIsCache
-                        innerPlay(
-                            playerInfo = cached.playerInfo,
-                            adviceProcess = resumeDirective.positionMs,
-                            canMediaCache = cached.canMediaCache,
-                            playWhenReady = resumeDirective.playWhenReady,
-                        )
+                        if (wantLocal) {
+                            val cachedLocal = checkNotNull(local)
+                            "play-media action=restore-local uri=${cachedLocal.uri} source=${cachedLocal.summary.source} cartoonId=${cachedLocal.summary.id}".logi(TAG)
+                            playingPlayLine = cachedLocal.playLine
+                            playingEpisode = cachedLocal.episode
+                            playingInfoIsCache = false
+                            _isPlayingLocal.value = true
+                            innerPlay(
+                                playerInfo = PlayerInfo(
+                                    decodeType = PlayerInfo.DECODE_TYPE_OTHER,
+                                    uri = cachedLocal.uri,
+                                ),
+                                adviceProcess = resumeDirective.positionMs,
+                                canMediaCache = false,
+                                playWhenReady = resumeDirective.playWhenReady,
+                            )
+                        } else {
+                            val cached = checkNotNull(resolved)
+                            "play-media action=restore-resolved uri=${cached.playerInfo.uri} source=${cached.summary.source} cartoonId=${cached.summary.id}".logi(TAG)
+                            playingInfoIsCache = cached.sourceResultIsCache
+                            _isPlayingLocal.value = false
+                            innerPlay(
+                                playerInfo = cached.playerInfo,
+                                adviceProcess = resumeDirective.positionMs,
+                                canMediaCache = cached.canMediaCache,
+                                playWhenReady = resumeDirective.playWhenReady,
+                            )
+                        }
                     }
                     ContinuationAction.RESOLVE_SOURCE -> innerPlay(
                         cartoonPlayingState = cartoonPlayingState,
@@ -627,6 +759,40 @@ class CartoonPlayingViewModel(
         playWhenReady: Boolean = true,
     ) {
 
+        // 本地代播拦截：有可用绑定且偏好本地时，直接播放本地文件，不解析源。
+        // 播放目标身份保持为远程番剧/线路/剧集，历史与续播进度因此天然统一。
+        if (sessionPreferLocal != false) {
+            val bound = runCatching {
+                boundMediaCase.findLocalMedia(
+                    cartoonPlayingState.cartoonSummary,
+                    cartoonPlayingState.playLine.playLine.id,
+                    cartoonPlayingState.episode,
+                )
+            }.getOrNull()
+            if (bound != null) {
+                resolvedLocal = ResolvedLocal(
+                    summary = cartoonPlayingState.cartoonSummary,
+                    playLine = cartoonPlayingState.playLine.playLine,
+                    episode = cartoonPlayingState.episode,
+                    uri = bound.uri,
+                    displayName = bound.displayName,
+                )
+                playingPlayLine = cartoonPlayingState.playLine.playLine
+                playingEpisode = cartoonPlayingState.episode
+                playingInfoIsCache = false
+                _isPlayingLocal.value = true
+                innerPlay(
+                    playerInfo = PlayerInfo(
+                        decodeType = PlayerInfo.DECODE_TYPE_OTHER,
+                        uri = bound.uri,
+                    ),
+                    adviceProcess = adviceProcess,
+                    canMediaCache = false,
+                    playWhenReady = playWhenReady,
+                )
+                return
+            }
+        }
 
         playerController.pause()
         _playingState.update {
@@ -708,6 +874,7 @@ class CartoonPlayingViewModel(
                     sourceResultIsCache = it.isCache,
                 )
                 forceNoCacheRetrying = false
+                _isPlayingLocal.value = false
                 innerPlay(
                     playerInfo = it.data,
                     adviceProcess = adviceProcess,
@@ -724,6 +891,24 @@ class CartoonPlayingViewModel(
                         errorMsg = state.throwable?.message?:"解析失败",
                         errorThrowable = state.throwable
                     )
+                }
+                // 解析失败兜底：本集有本地绑定时提供一键切换本地播放
+                if (sessionPreferLocal != true && !_isPlayingLocal.value) {
+                    val bound = runCatching {
+                        boundMediaCase.findLocalMedia(
+                            cartoonPlayingState.cartoonSummary,
+                            cartoonPlayingState.playLine.playLine.id,
+                            cartoonPlayingState.episode,
+                        )
+                    }.getOrNull()
+                    if (bound != null) {
+                        stringRes(com.heyanle.easy_i18n.R.string.play_with_local_file).moeSnackBar(
+                            confirmLabel = stringRes(com.heyanle.easy_i18n.R.string.switch_to_play_source_local),
+                            onConfirm = {
+                                switchPlaybackVariant(toLocal = true)
+                            }
+                        )
+                    }
                 }
             }
 
@@ -852,34 +1037,37 @@ class CartoonPlayingViewModel(
         }
     }
     var duringTemp = -1L
-    fun trySaveHistory(ps: Long = -1) {
-
-        "save1".logi(TAG)
+    fun trySaveHistory(
+        positionMs: Long = -1L,
+        durationMs: Long = -1L,
+    ) {
         val line = playingPlayLine ?: return
         val epi = playingEpisode ?: return
         val cartoon = cartoonPlayingState?.cartoonSummary ?: return
+        val playbackState = playerController.playbackState
+        val controllerPosition = playerController.currentPosition
+        val controllerDuration = playerController.duration
+        val positionSnapshot = when {
+            positionMs >= 0L -> positionMs
+            playbackState == EasyPlaybackState.BUFFERING ||
+                playbackState == EasyPlaybackState.READY -> controllerPosition
+            playbackState == EasyPlaybackState.ENDED -> {
+                controllerDuration.takeIf { it > 0L }
+                    ?: duringTemp.takeIf { it > 0L }
+                    ?: return
+            }
+            else -> return
+        }
+        val durationSnapshot = sequenceOf(durationMs, controllerDuration, duringTemp)
+            .firstOrNull { it > 0L }
+            ?: 0L
+        val normalizedPosition = if (durationSnapshot > 0L) {
+            positionSnapshot.coerceIn(0L, durationSnapshot)
+        } else {
+            positionSnapshot.coerceAtLeast(0L)
+        }
         CoroutineProvider.globalMainScope.launch {
-
             runCatching {
-                var po = if (ps >= 0) ps else playerController.currentPosition
-                if (ps < 0L) {
-                    when (playerController.playbackState) {
-                        EasyPlaybackState.BUFFERING, EasyPlaybackState.READY -> {
-                            po = playerController.currentPosition
-                        }
-                        EasyPlaybackState.ENDED -> {
-                            if (duringTemp > 0) {
-                                po = duringTemp
-                            } else {
-                                return@launch
-                            }
-                        }
-                        EasyPlaybackState.IDLE -> return@launch
-                    }
-                }
-                "save $po".logi(TAG)
-//            if (exoPlayer.playbackState == ExoPlayer.STATE_ENDED)
-                val process = po
                 cartoonInfoDao.transaction {
                     val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
                     if (old != null) {
@@ -890,8 +1078,8 @@ class CartoonPlayingViewModel(
                                     lineIndex,
                                     line,
                                     epi,
-                                    process
-
+                                    normalizedPosition,
+                                    durationSnapshot,
                                 )
                             )
                         }
@@ -906,6 +1094,7 @@ class CartoonPlayingViewModel(
     // onDispose
     fun onExit() {
         val exitPosition = playerController.currentPosition
+        val exitDuration = playerController.duration
         playbackResumeCheckpoint.capture(
             summary = cartoonPlayingState?.cartoonSummary,
             playLine = playingPlayLine,
@@ -913,7 +1102,7 @@ class CartoonPlayingViewModel(
             positionMs = exitPosition,
             playWhenReady = playerController.playWhenReady,
         )
-        trySaveHistory(exitPosition)
+        trySaveHistory(positionMs = exitPosition, durationMs = exitDuration)
         lastJob?.cancel()
         playerController.pause()
     }
@@ -937,6 +1126,18 @@ class CartoonPlayingViewModel(
             Log.e(TAG, "playback cause[$level]: ${cause::class.java.name}: ${cause.message}", cause)
             cause = cause.cause
             level++
+        }
+        if (_isPlayingLocal.value) {
+            // 本地文件播放失败（被删除/损坏等），自动回退云端解析
+            _isPlayingLocal.value = false
+            resolvedLocal = null
+            val state = cartoonPlayingState
+            if (state != null) {
+                "本地文件播放失败，已自动回退在线播放".moeSnackBar()
+                lastJob?.cancel()
+                changePlay(state, -1L)
+                return
+            }
         }
         if (error.hasReadPositionOutOfRangeCause() && tryClearMediaCacheAndRetry()) {
             return

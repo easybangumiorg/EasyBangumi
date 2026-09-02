@@ -75,6 +75,22 @@ class CartoonPlayingViewModelTest {
     }
 
     @Test
+    fun explicitLocalSelectionResolvesNewBindingBeforeReusingCloudPlayer() {
+        assertTrue(
+            CartoonPlayingViewModel.shouldUseLocalVariant(
+                sessionPreference = true,
+                hasResolvedLocal = false,
+            ),
+        )
+        assertFalse(
+            CartoonPlayingViewModel.shouldUseLocalVariant(
+                sessionPreference = false,
+                hasResolvedLocal = true,
+            ),
+        )
+    }
+
+    @Test
     fun samePlaybackTargetConsumesPageResumePosition() {
         val checkpoint = CartoonPlayingViewModel.PlaybackResumeCheckpoint()
         val summary = CartoonSummary("cartoon-a", "kazumi.baimao")

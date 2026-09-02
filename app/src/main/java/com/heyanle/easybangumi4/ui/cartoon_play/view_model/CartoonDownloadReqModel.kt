@@ -2,6 +2,9 @@ package com.heyanle.easybangumi4.ui.cartoon_play.view_model
 
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.base.map
+import com.heyanle.easybangumi4.cartoon.entity.DownloadDestination
+import com.heyanle.easybangumi4.cartoon.story.bound.FlatDownloadController
+import com.heyanle.easybangumi4.cartoon.story.bound.FlatFileNameSanitizer
 import com.heyanle.easybangumi4.cartoon.story.download.req.CartoonDownloadReqFactory
 import com.heyanle.easybangumi4.cartoon.entity.CartoonDownloadReq
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
@@ -36,6 +39,8 @@ class CartoonDownloadReqModel(
 
     private val cartoonStoryController: CartoonStoryController by Inject.injectLazy()
 
+    private val flatDownloadController: FlatDownloadController by Inject.injectLazy()
+
 
     data class State(
         val storyList: DataResult<List<CartoonStoryItem>> = DataResult.Loading(),
@@ -49,8 +54,12 @@ class CartoonDownloadReqModel(
 
         val isQuickMode: Boolean = true,
 
+        val destination: Int = DownloadDestination.LOCAL_STORY,
+
         val dialog: Dialog? = null,
     ) {
+
+        val isFlat: Boolean get() = destination == DownloadDestination.FLAT
 
         // 该集合可能会缺少调用后才进入下载错误阶段的任务
         val cantEpisodeSet: Set<Int> by lazy {
@@ -65,6 +74,11 @@ class CartoonDownloadReqModel(
 
         val isRepeat: Boolean by lazy {
             reqEpisode.size != reqList.size || reqEpisode.any { cantEpisodeSet.contains(it) }
+        }
+
+        val flatNameRepeat: Boolean by lazy {
+            reqList.mapNotNull { it.flatFileName }.size != reqList.size ||
+                    reqList.mapNotNull { it.flatFileName }.toSet().size != reqList.size
         }
     }
 
@@ -141,6 +155,11 @@ class CartoonDownloadReqModel(
             val title: String,
             val episode: Int
         ) : Dialog()
+
+        data class ChangeFlatFileName(
+            val uuid: String,
+            val name: String,
+        ) : Dialog()
     }
 
 
@@ -160,6 +179,67 @@ class CartoonDownloadReqModel(
         _state.update {
             it.copy(
                 isQuickMode = quickMode
+            )
+        }
+    }
+
+    fun changeDestination(destination: Int) {
+        _state.update { sta ->
+            if (sta.destination == destination) {
+                sta
+            } else {
+                sta.copy(
+                    destination = destination,
+                    targetLocalInfo = null,
+                    reqList = if (destination == DownloadDestination.FLAT) {
+                        newFlatReqList(sta)
+                    } else {
+                        emptyList()
+                    },
+                )
+            }
+        }
+    }
+
+    private fun newFlatReqList(sta: State): List<CartoonDownloadReq> {
+        val existingNames = flatDownloadController.flatVideos.value.map {
+            it.fileName.removeSuffix(".mp4").removeSuffix(".mkv")
+        }.toSet()
+        return CartoonDownloadReqFactory.newFlatReqList(
+            cartoonInfo,
+            playerLineWrapper.playLine,
+            episodes,
+            sta.isQuickMode,
+            existingNames,
+        )
+    }
+
+    fun showChangeFlatFileName(uuid: String, name: String) {
+        _state.update {
+            it.copy(
+                dialog = Dialog.ChangeFlatFileName(uuid, name)
+            )
+        }
+    }
+
+    fun changeFlatFileName(uuid: String, name: String) {
+        _state.update { sta ->
+            val sanitized = FlatFileNameSanitizer.sanitize(name)
+            val others = sta.reqList.filter { it.uuid != uuid }.mapNotNull { it.flatFileName }
+            var final = sanitized
+            var attempt = 2
+            while (others.contains(final)) {
+                final = FlatFileNameSanitizer.sanitize("$sanitized-$attempt")
+                attempt++
+            }
+            sta.copy(
+                reqList = sta.reqList.map {
+                    if (it.uuid == uuid) {
+                        it.copy(flatFileName = final)
+                    } else {
+                        it
+                    }
+                }
             )
         }
     }

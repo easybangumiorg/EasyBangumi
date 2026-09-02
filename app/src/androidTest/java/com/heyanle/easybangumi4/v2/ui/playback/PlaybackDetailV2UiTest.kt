@@ -41,7 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.espresso.Espresso.pressBack
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
+import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
+import com.heyanle.easybangumi4.cartoon.entity.CartoonStoryItem
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
+import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBinding
+import com.heyanle.easybangumi4.cartoon.story.bound.FlatVideoItem
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.Episode
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
@@ -51,6 +56,7 @@ import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -78,6 +84,24 @@ class PlaybackDetailV2UiTest {
             .assertWidthIsEqualTo(72.dp)
             .assertHeightIsEqualTo(48.dp)
             .assertHasClickAction()
+    }
+
+    @Test
+    fun episodeRailButton_localVideoUsesCornerBadgeWithoutGrowingButton() {
+        val episode = Episode("episode-local", "第 1 集", 1)
+        setMaterialContent {
+            EpisodeRailButton(
+                episode = episode,
+                selected = false,
+                localBadge = true,
+                onClick = {},
+            )
+        }
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.episode(episode.id))
+            .assertWidthIsEqualTo(72.dp)
+            .assertHeightIsEqualTo(48.dp)
+        composeRule.onNodeWithText("本地").assertExists()
     }
 
     @Test
@@ -232,6 +256,156 @@ class PlaybackDetailV2UiTest {
 
         composeRule.runOnIdle {
             assertEquals(listOf("追番", "换源", "下载", "投屏", "媒体数据", "外播"), clicks)
+        }
+    }
+
+    @Test
+    fun mediaSourceEntry_isOneClickableRow_andShowsActualPlaybackKind() {
+        var isPlayingLocal by mutableStateOf(false)
+        var openCount = 0
+        val binding = testFlatBinding("episode-03.mkv")
+        setMaterialContent {
+            V2MediaSourceSection(
+                isPlayingLocal = isPlayingLocal,
+                sourceLabel = "测试番源",
+                currentBinding = binding,
+                onOpen = { openCount++ },
+            )
+        }
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_ENTRY)
+            .assertHasClickAction()
+            .performClick()
+        composeRule.onNodeWithText("播放来源").assertExists()
+        composeRule.onNodeWithText("在线播放").assertExists()
+        composeRule.onNodeWithText("测试番源").assertDoesNotExist()
+        composeRule.runOnIdle {
+            assertEquals(1, openCount)
+            isPlayingLocal = true
+        }
+        composeRule.onNodeWithText("本地缓存").assertExists()
+        composeRule.onNodeWithText("测试番源").assertDoesNotExist()
+    }
+
+    @Test
+    fun mediaSourceSheet_separatesNowPlayingFromChoices_andSelectsFlatVideo() {
+        val selectedFiles = mutableListOf<String>()
+        val binding = testFlatBinding("episode-03.mkv")
+        setMaterialContent {
+            var visible by remember { mutableStateOf(true) }
+            if (visible) {
+                BoundMediaBottomSheetV2(
+                    isPlayingLocal = false,
+                    sourceLabel = "测试番源",
+                    cloudDetail = "线路 A · 第 3 集",
+                    localMedia = null,
+                    currentBinding = binding,
+                    flatVideos = listOf(
+                        FlatVideoItem(
+                            fileName = "episode-03.mkv",
+                            uri = "content://flat/episode-03.mkv",
+                            size = 1024L,
+                            lastModified = 0L,
+                        ),
+                    ),
+                    storyItems = emptyList(),
+                    onSelectCloud = {},
+                    onReResolve = {},
+                    onDownload = {},
+                    onBindFlatFile = { selectedFiles += it },
+                    onBindLocalStory = { _, _ -> },
+                    onUnbind = {},
+                    onDismiss = { visible = false },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_SHEET).assertExists()
+        composeRule.onNodeWithText("正在播放").assertExists()
+        composeRule.onNodeWithText("在线播放").assertExists()
+        composeRule.onNodeWithText("测试番源 · 线路 A · 第 3 集").assertExists()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_SUMMARY).assertExists()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_SWITCH).performClick()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_STEP).assertIsSelected()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_CLOUD).assertIsSelected()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_FLAT).performClick()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_VIDEO_STEP).assertIsSelected()
+        composeRule.onNodeWithText("已绑定当前剧集", substring = true).assertExists()
+        composeRule.onNodeWithText("episode-03.mkv").assertIsSelected().performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(listOf("episode-03.mkv"), selectedFiles)
+        }
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_SHEET).assertDoesNotExist()
+    }
+
+    @Test
+    fun mediaSourceSheet_usesTwoStepsForLocalStory_andUsesNumberNaming() {
+        val selectedLocalVideos = mutableListOf<Pair<String, Int>>()
+        val story = CartoonStoryItem(
+            cartoonLocalItem = CartoonLocalItem(
+                folderUri = "",
+                nfoUri = "",
+                itemId = "local-story",
+                title = "本地收藏",
+                desc = "",
+                cover = "https://example.com/cover.jpg",
+                genre = emptyList(),
+                episodes = listOf(
+                    CartoonLocalEpisode(
+                        title = "测试集名称",
+                        episode = 7,
+                        addTime = "",
+                        mediaUri = "content://local/7",
+                        nfoUri = "",
+                    ),
+                ),
+            ),
+            downloadInfoList = emptyList(),
+        )
+        setMaterialContent {
+            var visible by remember { mutableStateOf(true) }
+            if (visible) {
+                BoundMediaBottomSheetV2(
+                    isPlayingLocal = false,
+                    sourceLabel = "测试番源",
+                    cloudDetail = "线路 A · 正片",
+                    localMedia = null,
+                    currentBinding = null,
+                    flatVideos = emptyList(),
+                    storyItems = listOf(story),
+                    onSelectCloud = {},
+                    onReResolve = {},
+                    onDownload = {},
+                    onBindFlatFile = {},
+                    onBindLocalStory = { itemId, number ->
+                        selectedLocalVideos += itemId to number
+                    },
+                    onUnbind = {},
+                    onDismiss = { visible = false },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_SWITCH).performClick()
+        composeRule.onNodeWithText("在线播放").assertExists()
+        composeRule.onNodeWithText("测试番源").assertExists()
+        composeRule.onNodeWithText("本地番源").assertExists()
+        composeRule.onNodeWithText("搜索本地番源").assertExists()
+        composeRule.runOnIdle {
+            val headingTop = composeRule.onNodeWithText("本地番源")
+                .fetchSemanticsNode().boundsInRoot.top
+            val searchTop = composeRule.onNodeWithText("搜索本地番源")
+                .fetchSemanticsNode().boundsInRoot.top
+            assertTrue(searchTop > headingTop)
+        }
+        composeRule.onNodeWithText("搜索本地番源").performTextInput("本地")
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.localStory("local-story")).performClick()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_SOURCE_SHEET).assertExists()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.MEDIA_VIDEO_STEP).assertIsSelected()
+        composeRule.onNodeWithText("7、测试集名称").assertExists().performClick()
+        composeRule.runOnIdle {
+            assertEquals(listOf("local-story" to 7), selectedLocalVideos)
         }
     }
 
@@ -430,6 +604,23 @@ class PlaybackDetailV2UiTest {
         composeRule.onNodeWithContentDescription("切换排序").performClick()
         composeRule.onNodeWithTag(CartoonPlayV2TestTags.SORT_SHEET).assertExists()
     }
+
+    private fun testFlatBinding(fileName: String) = CartoonEpisodeBinding(
+        source = "source-1",
+        cartoonId = "cartoon-1",
+        cartoonTitle = "测试番剧",
+        cartoonCover = "",
+        lineId = "line-a",
+        episodeId = "episode-3",
+        episodeOrder = 3,
+        episodeLabel = "第 3 集",
+        targetType = CartoonEpisodeBinding.TARGET_FLAT_FILE,
+        flatFileName = fileName,
+        localItemId = "",
+        localEpisode = 0,
+        bindFrom = CartoonEpisodeBinding.FROM_MANUAL,
+        bindTime = 0L,
+    )
 
     private fun clickSortOption(label: String) {
         composeRule.onNode(

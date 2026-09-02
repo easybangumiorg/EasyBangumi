@@ -15,9 +15,14 @@ import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryController
 import com.heyanle.easybangumi4.cartoon.story.CartoonStoryControllerImpl
+import com.heyanle.easybangumi4.cartoon.story.bound.BoundMediaCase
+import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBindingController
+import com.heyanle.easybangumi4.cartoon.story.bound.FlatDownloadController
+import com.heyanle.easybangumi4.cartoon.story.bound.FlatDownloadPreference
 import com.heyanle.easybangumi4.cartoon.story.download.action.AriaAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.BaseAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.CopyAndNfoAction
+import com.heyanle.easybangumi4.cartoon.story.download.action.CopyToFlatAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.ParseAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.TranscodeAction
 import com.heyanle.easybangumi4.cartoon.story.download.action.TransformerAction
@@ -92,6 +97,7 @@ class CartoonModule(
                 TranscodeAction.NAME -> TranscodeAction(application)
                 TransformerAction.NAME -> TransformerAction(get(), get())
                 CopyAndNfoAction.NAME -> CopyAndNfoAction()
+                CopyToFlatAction.NAME -> CopyToFlatAction(get(), get(), get())
                 else -> throw IllegalArgumentException("not found action: $it")
             }
         }
@@ -136,6 +142,24 @@ class CartoonModule(
 
         addSingletonFactory {
             LocalCartoonPreference(get(), get(), get())
+        }
+
+        // bound（扁平下载目录与集级绑定）
+
+        addSingletonFactory {
+            FlatDownloadPreference(get(), get())
+        }
+
+        addSingletonFactory {
+            CartoonEpisodeBindingController(get())
+        }
+
+        addSingletonFactory {
+            FlatDownloadController(get())
+        }
+
+        addSingletonFactory {
+            BoundMediaCase(get(), get(), get())
         }
 
 

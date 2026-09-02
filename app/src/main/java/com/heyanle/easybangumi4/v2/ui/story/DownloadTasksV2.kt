@@ -193,7 +193,7 @@ private fun DownloadTaskCardV2(
                     }
                 }
                 Text(
-                    text = "第 ${item.req.toEpisode} 集 · ${item.req.toEpisodeTitle}",
+                    text = "编号 ${item.req.toEpisode} · ${item.req.toEpisodeTitle}",
                     modifier = Modifier.padding(top = 5.dp),
                     color = V2Tokens.TextSecondary,
                     fontSize = 12.sp,

@@ -671,5 +671,40 @@
 
     <string name="go_to_manage_source">跳转到拓展管理</string>
 
+    <string name="download_to_local_cartoon">本地剧集</string>
+    <string name="download_to_flat_dir">本地缓存</string>
+    <string name="flat_dir_tip">缓存视频不写入本地番源元数据，下载完成后自动绑定当前番剧</string>
+    <string name="flat_file_name">文件名</string>
+    <string name="edit_flat_file_name">编辑文件名</string>
+    <string name="flat_file_name_repeat">文件名重复，将自动追加序号</string>
+
+    <string name="playback_source">播放来源</string>
+    <string name="play_source_local">本地</string>
+    <string name="play_source_cloud">在线播放</string>
+    <string name="re_resolve_cloud">重新解析</string>
+    <string name="rebind_media">换绑</string>
+    <string name="unbind_media">解绑</string>
+    <string name="bind_to_flat_video">绑定到本地缓存视频</string>
+    <string name="bind_to_local_cartoon_episode">绑定到本地剧集</string>
+    <string name="download_new_video">下载新视频</string>
+    <string name="current_binding">当前绑定</string>
+    <string name="no_binding">未绑定</string>
+    <string name="local_file_missing">本地文件丢失</string>
+    <string name="flat_dir_unavailable">扁平下载目录不可用</string>
+    <string name="play_with_local_file">使用本地文件播放</string>
+    <string name="switch_to_play_source_local">切换为本地播放</string>
+    <string name="switch_to_play_source_cloud">切换为在线播放</string>
+    <string name="local_media_number">编号</string>
+    <string name="edit_local_media_number">编辑编号与名称</string>
+    <string name="local_media_name">集名称</string>
+    <string name="local_media_number_repeat">编号冲突，请选择其他编号</string>
+
+    <string name="flat_unbound_title">未绑定的视频</string>
+    <string name="flat_unbound_msg">该文件尚未绑定到任何番剧集数。\n绑定方法：在对应番剧播放页的「切换来源」中选择该文件，或直接下载到本地缓存自动绑定。</string>
+    <string name="open_externally">外部打开</string>
+    <string name="flat_file_list">本地缓存</string>
+    <string name="flat_file_bind_count">%1$d 个绑定</string>
+    <string name="bound_cartoon_list">绑定到此文件的番剧</string>
+    <string name="external_play_source">外部播放来源</string>
 
 </resources>

@@ -80,6 +80,8 @@ import kotlinx.coroutines.launch
  * only transient presentation state, such as confirmation snapshots, so cancellation never
  * mutates the legacy selection state.
  */
+internal val STORY_V2_TAB_LABELS = listOf("本地番剧", "本地缓存", "下载任务")
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun StoryV2(initialPage: Int = 0) {
@@ -87,18 +89,19 @@ internal fun StoryV2(initialPage: Int = 0) {
     val localViewModel = viewModel<LocalViewModel>()
     val downloadViewModel = viewModel<DownloadViewModel>()
     val coverStarViewModel = viewModel<CoverStarViewModel>()
+    val flatLibraryViewModel = viewModel<FlatLibraryViewModel>()
     val localState by localViewModel.state.collectAsState()
     val downloadState by downloadViewModel.state.collectAsState()
     val starState by coverStarViewModel.stateFlow.collectAsState()
-    val pagerState = rememberPagerState(initialPage = initialPage.coerceIn(0, 1)) { 2 }
+    val pagerState = rememberPagerState(initialPage = initialPage.coerceIn(0, 2)) { 3 }
     val scope = rememberCoroutineScope()
     val localSelectionActive = localState.selection.isNotEmpty()
     val downloadSelectionActive = downloadState.selectionIds.isNotEmpty()
     val selectionActive = localSelectionActive || downloadSelectionActive
-    val handlesBack = if (pagerState.currentPage == 0) {
-        localSelectionActive || localState.searchKey != null
-    } else {
-        downloadSelectionActive
+    val handlesBack = when (pagerState.currentPage) {
+        0 -> localSelectionActive || localState.searchKey != null
+        2 -> downloadSelectionActive
+        else -> false
     }
     val focusRequester = remember { FocusRequester() }
     var pendingLocalDelete by remember { mutableStateOf<Set<CartoonStoryItem>?>(null) }
@@ -107,7 +110,7 @@ internal fun StoryV2(initialPage: Int = 0) {
     BackHandler(enabled = handlesBack) {
         if (pagerState.currentPage == 0) {
             if (localSelectionActive) localViewModel.clearSelection() else localViewModel.changeKey(null)
-        } else if (downloadSelectionActive) {
+        } else if (pagerState.currentPage == 2 && downloadSelectionActive) {
             downloadViewModel.clearSelection()
         }
     }
@@ -125,7 +128,7 @@ internal fun StoryV2(initialPage: Int = 0) {
                 onInvert = localViewModel::selectInvert,
             )
 
-            pagerState.currentPage == 1 && downloadSelectionActive -> StorySelectionHeaderV2(
+            pagerState.currentPage == 2 && downloadSelectionActive -> StorySelectionHeaderV2(
                 selectedCount = downloadState.selectionIds.size,
                 onExit = downloadViewModel::clearSelection,
                 onSelectAll = downloadViewModel::selectAll,
@@ -157,7 +160,7 @@ internal fun StoryV2(initialPage: Int = 0) {
         }
 
         V2ScrollableTabs(
-            labels = listOf("本地番剧", "下载任务"),
+            labels = STORY_V2_TAB_LABELS,
             selectedIndex = pagerState.currentPage,
             onSelected = { page ->
                 if (!selectionActive) {
@@ -187,6 +190,8 @@ internal fun StoryV2(initialPage: Int = 0) {
                     onItemLongPress = localViewModel::onSelectionLongPress,
                 )
 
+                1 -> FlatLibraryV2(flatViewModel = flatLibraryViewModel)
+
                 else -> DownloadTasksV2(
                     state = downloadState,
                     onItemClick = { item ->
@@ -198,6 +203,7 @@ internal fun StoryV2(initialPage: Int = 0) {
                     },
                     onItemLongPress = downloadViewModel::onSelectionLongPress,
                 )
+
             }
         }
 
@@ -217,7 +223,7 @@ internal fun StoryV2(initialPage: Int = 0) {
                 },
                 onDelete = { pendingLocalDelete = localState.selection },
             )
-        } else if (pagerState.currentPage == 1 && downloadSelectionActive) {
+        } else if (pagerState.currentPage == 2 && downloadSelectionActive) {
             DownloadSelectionBarV2(
                 selectedCount = downloadState.selectionIds.size,
                 onDelete = { pendingDownloadDelete = downloadState.selectionIds },
