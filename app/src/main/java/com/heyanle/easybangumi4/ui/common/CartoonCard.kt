@@ -57,6 +57,7 @@ fun CartoonCardWithCover(
     onClick: (CartoonCover) -> Unit,
     onLongPress: ((CartoonCover) -> Unit)? = null,
     v2Presentation: Boolean = false,
+    sourceLabel: String? = null,
 ) {
 
     Column(
@@ -85,6 +86,23 @@ fun CartoonCardWithCover(
                 contentDescription = cartoonCover.title,
                 errorRes = R.drawable.placeholder,
             )
+            sourceLabel?.takeIf(String::isNotBlank)?.let { label ->
+                Text(
+                    fontSize = 10.sp,
+                    text = label,
+                    color = V2Tokens.Surface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(4.dp)
+                        .background(
+                            V2Tokens.TextPrimary.copy(alpha = 0.78f),
+                            RoundedCornerShape(5.dp),
+                        )
+                        .padding(horizontal = 5.dp, vertical = 2.dp),
+                )
+            }
             if (star) {
                 if (v2Presentation) {
                     Surface(

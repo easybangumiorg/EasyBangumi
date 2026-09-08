@@ -50,7 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easy_i18n.R
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.LocalNavController
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBinding
 import com.heyanle.easybangumi4.cartoon.story.bound.CartoonEpisodeBindingController
 import com.heyanle.easybangumi4.cartoon.story.bound.FlatDownloadController
@@ -77,7 +77,7 @@ class FlatLibraryViewModel : ViewModel() {
 
     private val flatDownloadController: FlatDownloadController by Inject.injectLazy()
     private val bindingController: CartoonEpisodeBindingController by Inject.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
 
     val flatVideos: StateFlow<List<FlatVideoItem>> = flatDownloadController.flatVideos
 
@@ -105,7 +105,7 @@ class FlatLibraryViewModel : ViewModel() {
     /** 若该番历史进度停留在绑定集上，则跳转时从历史进度续播 */
     suspend fun historyProgressFor(binding: CartoonEpisodeBinding): Long {
         return runCatching {
-            val info = cartoonInfoDao.getByCartoonSummary(binding.cartoonId, binding.source)
+            val info = cartoonRepository.cachedCartoonInfo(binding.cartoonId, binding.source)
             if (info != null &&
                 binding.episodeId.isNotEmpty() &&
                 info.lastEpisodeId == binding.episodeId &&

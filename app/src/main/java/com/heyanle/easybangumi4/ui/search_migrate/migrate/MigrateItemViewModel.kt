@@ -3,9 +3,10 @@ package com.heyanle.easybangumi4.ui.search_migrate.migrate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.PlayLineWrapper
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.StarMigrationResult
 import com.heyanle.easybangumi4.case.SourceStateCase
 import com.heyanle.easybangumi4.plugin.api.component.search.SearchComponent
@@ -62,7 +63,7 @@ class MigrateItemViewModel(
     val flow = _flow.asStateFlow()
 
     private val sourceStateCase: SourceStateCase by Inject.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
     private val sourceCase: SourceStateCase by Inject.injectLazy()
 
     private var initJob: Job? = null
@@ -165,17 +166,6 @@ class MigrateItemViewModel(
     fun changeCover(cartoonCover: CartoonCover) {
         loadPlayJob?.cancel()
         loadPlayJob = viewModelScope.launch {
-            val bundle = sourceStateCase.awaitBundle()
-            val detailed = bundle.detailed(cartoonCover.source)
-            if (detailed == null) {
-                _flow.update {
-                    it.copy(
-                        isLoadingPlay = false,
-                        playLineList = emptyList(),
-                    )
-                }
-                return@launch
-            }
             _flow.update {
                 it.copy(
                     cartoonCover = cartoonCover,
@@ -183,25 +173,23 @@ class MigrateItemViewModel(
                     playLineList = emptyList(),
                 )
             }
-            detailed.getAll(
-                CartoonSummary(
-                    cartoonCover.id,
-                    cartoonCover.source,
-                )
-            )
-                .complete { complete ->
-                    yield()
+            when (val result = cartoonRepository.awaitCartoonInfoWithPlayLines(
+                CartoonSummary(cartoonCover.id, cartoonCover.source),
+                forceRefresh = true,
+            )) {
+                is DataResult.Ok -> {
+                    val loaded = result.data
                     _flow.update {
                         it.copy(
                             isLoadingPlay = false,
-                            playLineList = complete.data.second,
-                            cartoon = complete.data.first
+                            playLineList = loaded.playLine,
+                            cartoon = loaded.toCartoon(),
                         )
                     }
                     yield()
                     val oldPlayState = cartoonInfo.matchHistoryEpisode
                     if (oldPlayState == null) {
-                        val first = complete.data.second.firstOrNull()
+                        val first = loaded.playLine.firstOrNull()
                         if (first != null) {
                             changeEpisode(
                                 PlayLineWrapper.SORT_DEFAULT_KEY,
@@ -211,8 +199,8 @@ class MigrateItemViewModel(
                         }
                     } else {
                         val playLine =
-                            complete.data.second.find { it.episode.size == oldPlayState.first.playLine.episode.size }
-                                ?: complete.data.second.firstOrNull()
+                            loaded.playLine.find { it.episode.size == oldPlayState.first.playLine.episode.size }
+                                ?: loaded.playLine.firstOrNull()
                         if (playLine != null) {
                             val episode =
                                 playLine.episode.find { it.order == oldPlayState.second.order }
@@ -225,8 +213,9 @@ class MigrateItemViewModel(
                         }
                     }
                 }
-                .error {
-                    yield()
+                is DataResult.Error,
+                is DataResult.Loading,
+                -> {
                     _flow.update {
                         it.copy(
                             isLoadingPlay = false,
@@ -234,6 +223,7 @@ class MigrateItemViewModel(
                         )
                     }
                 }
+            }
         }
     }
 
@@ -291,7 +281,7 @@ class MigrateItemViewModel(
                     lastProcessTime = 0,
                 )
 
-                cartoonInfoDao.migrateStar(cartoonInfo.id, cartoonInfo.source, targetCartoon)
+                cartoonRepository.migrateStar(cartoonInfo.id, cartoonInfo.source, targetCartoon)
             }.getOrElse {
                 _flow.update { state -> state.copy(isMigrating = false) }
                 onError(it.message ?: "迁移失败")

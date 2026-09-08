@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewQuilt
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PlayCircle
@@ -63,6 +64,7 @@ internal fun SettingV2(router: String) {
             )
             SettingPage.Appearance -> AppearanceSettingV2(Modifier.weight(1f))
             SettingPage.Player -> PlayerSettingV2(Modifier.weight(1f))
+            SettingPage.Danmaku -> DanmakuSettingV2(Modifier.weight(1f))
             SettingPage.Download -> DownloadSettingV2(Modifier.weight(1f))
             SettingPage.Developers -> DevelopersSettingV2(Modifier.weight(1f))
             SettingPage.LocalSource -> LocalSourceSettingV2(Modifier.weight(1f))
@@ -76,6 +78,7 @@ private fun SettingPage.titleText(): String = when (this) {
     SettingPage.First -> stringResource(R.string.setting)
     SettingPage.Appearance -> stringResource(R.string.appearance_setting)
     SettingPage.Player -> stringResource(R.string.player_setting)
+    SettingPage.Danmaku -> stringResource(R.string.danmaku_setting)
     SettingPage.Download -> stringResource(R.string.download_setting)
     SettingPage.Developers -> stringResource(R.string.developers_setting)
     SettingPage.LocalSource -> stringResource(R.string.local_extension_setting)
@@ -118,8 +121,15 @@ private fun FirstSettingV2(modifier: Modifier = Modifier) {
             V2ActionRow(
                 icon = Icons.Filled.PlayCircle,
                 title = stringResource(R.string.player_setting),
-                subtitle = "播放器、手势和弹幕显示",
+                subtitle = "播放器、全屏控制和手势",
                 onClick = { navController.navigationSetting(SettingPage.Player) },
+            )
+            V2SectionDivider()
+            V2ActionRow(
+                icon = Icons.Filled.ClosedCaption,
+                title = stringResource(R.string.danmaku_setting),
+                subtitle = "显示区域、样式、数量和屏蔽词",
+                onClick = { navController.navigationSetting(SettingPage.Danmaku) },
             )
             V2SectionDivider()
             V2ActionRow(

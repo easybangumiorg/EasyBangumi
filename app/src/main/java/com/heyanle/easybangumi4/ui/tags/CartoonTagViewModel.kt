@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
 import com.heyanle.easybangumi4.cartoon.old.entity.CartoonTagOld
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
 import com.heyanle.easybangumi4.cartoon.star.isALL
@@ -28,7 +28,7 @@ class CartoonTagViewModel : ViewModel() {
     var tags by mutableStateOf<List<CartoonTag>>(emptyList())
         private set
 
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
     private val cartoonStarController: CartoonStarController by Inject.injectLazy()
 
     sealed class Dialog {
@@ -132,7 +132,7 @@ class CartoonTagViewModel : ViewModel() {
                     label = label
                 )
             )
-            cartoonInfoDao.renameTag(cartoonTag.label, label)
+            cartoonRepository.renameTag(cartoonTag.label, label)
 
         }
     }

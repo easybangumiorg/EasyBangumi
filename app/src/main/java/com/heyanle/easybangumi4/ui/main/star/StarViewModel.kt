@@ -3,7 +3,7 @@ package com.heyanle.easybangumi4.ui.main.star
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.star.CartoonTagsController
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.cartoon.CartoonUpdateController
@@ -86,7 +86,7 @@ class StarViewModel : ViewModel() {
     }
 
     private val cartoonStarController: CartoonStarController by Inject.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
     private val settingPreferences: SettingPreferences by Inject.injectLazy()
     private val cartoonTagsController: CartoonTagsController by Inject.injectLazy()
 
@@ -139,7 +139,7 @@ class StarViewModel : ViewModel() {
 
     fun deleteSelection(selection: Set<CartoonInfo>) {
         viewModelScope.launch {
-            cartoonInfoDao.deleteStar(selection.toList())
+            cartoonRepository.clearStar(selection)
             dialogDismiss()
             onSelectionExit()
         }
@@ -153,10 +153,7 @@ class StarViewModel : ViewModel() {
             }
             tt.loge("StarViewModel")
             tag.loge("StarViewModel")
-            val target = selection.map {
-                it.copy(tags = tag)
-            }.toList()
-            cartoonInfoDao.modify(target)
+            cartoonRepository.updateTags(selection, tag)
         }
     }
 
@@ -305,12 +302,13 @@ class StarViewModel : ViewModel() {
         viewModelScope.launch {
             val old = _stateFlow.value
             var start = System.currentTimeMillis()
-            val set = old.selection.map {
-                it.copy(
-                    upTime = if (it.upTime == 0L) start++ else 0
-                )
+            cartoonRepository.mutateCartoonInfo(
+                old.selection.map {
+                    CartoonRepository.MutationTarget(it.id, it.source, it)
+                },
+            ) { _, current ->
+                current?.copy(upTime = if (current.upTime == 0L) start++ else 0L)
             }
-            cartoonInfoDao.modify(set)
             onSelectionExit()
             dialogDismiss()
         }

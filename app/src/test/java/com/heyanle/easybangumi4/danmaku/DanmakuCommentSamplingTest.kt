@@ -85,4 +85,40 @@ class DanmakuCommentSamplingTest {
 
         assertEquals(emptyList<DanmakuComment>(), result)
     }
+
+    @Test
+    fun textAndRegexRulesFilterBeforeSampling() {
+        val comments = listOf(
+            comment(0, "这里有剧透"),
+            comment(1, "AD-123"),
+            comment(2, "正常弹幕"),
+        )
+
+        val result = comments.applyDisplaySampling(
+            densityRatio = 1f,
+            mergeRepeatWindowMillis = 0L,
+            blockedTextRules = setOf("剧透"),
+            blockedRegexRules = setOf("^AD-\\d+$", "[invalid"),
+        )
+
+        assertEquals(listOf("正常弹幕"), result.map { it.text })
+    }
+
+    @Test
+    fun disabledBlockRulesKeepCommentsWithoutDeletingRules() {
+        val comments = listOf(
+            comment(0, "这里有剧透"),
+            comment(1, "AD-123"),
+        )
+
+        val result = comments.applyDisplaySampling(
+            densityRatio = 1f,
+            mergeRepeatWindowMillis = 0L,
+            blockRulesEnabled = false,
+            blockedTextRules = setOf("剧透"),
+            blockedRegexRules = setOf("^AD-\\d+$"),
+        )
+
+        assertEquals(comments, result)
+    }
 }

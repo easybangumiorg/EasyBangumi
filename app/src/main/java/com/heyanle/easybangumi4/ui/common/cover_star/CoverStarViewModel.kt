@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonTag
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.star.CartoonStarController
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonCover
 import com.heyanle.easybangumi4.ui.common.MoeDialogData
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
  */
 class CoverStarViewModel : ViewModel() {
 
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
     private val cartoonStarController: CartoonStarController by Inject.injectLazy()
     private val pendingStarDialogs = mutableSetOf<String>()
 
@@ -51,7 +51,7 @@ class CoverStarViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            cartoonInfoDao.flowAllStar().collectLatest { list ->
+            cartoonRepository.flowAllStar().collectLatest { list ->
                 _stateFlow.update {
                     it.copy(
                         startList = list
@@ -77,10 +77,13 @@ class CoverStarViewModel : ViewModel() {
         viewModelScope.launch {
             var dialogShown = false
             try {
-                cartoonInfoDao.transaction {
-                val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
+                val old = cartoonRepository.cachedCartoonInfo(cartoonCover.id, cartoonCover.source)
                 if (old != null && old.starTime > 0) {
-                    cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
+                    cartoonRepository.updateCartoonInfo(
+                        cartoonCover.id,
+                        cartoonCover.source,
+                    ) { it.copy(starTime = 0, tags = "", upTime = 0) }
+                    return@launch
                 }
                 val tl = cartoonStarController.cartoonTagFlow.first().tagList
                 if (tl.find { !it.isInner && !it.isDefault } != null) {
@@ -103,7 +106,6 @@ class CoverStarViewModel : ViewModel() {
                 } else {
                     realStar(cartoonCover)
                 }
-            }
             } finally {
                 if (!dialogShown) releasePendingStarDialog(pendingKey)
             }
@@ -112,25 +114,21 @@ class CoverStarViewModel : ViewModel() {
 
     fun realStar(cartoonCover: CartoonCover, tagList: List<CartoonTag>? = null) {
         viewModelScope.launch {
-            cartoonInfoDao.transaction {
-                val old = cartoonInfoDao.getByCartoonSummary(cartoonCover.id, cartoonCover.source)
-                if (old == null) {
-                    cartoonInfoDao.insert(
-                        CartoonInfo.fromCartoonCover(cartoonCover, tagList)
-                            .copy(starTime = System.currentTimeMillis())
-                    )
+            val fallback = CartoonInfo.fromCartoonCover(cartoonCover, tagList)
+            cartoonRepository.updateCartoonInfo(
+                cartoonCover.id,
+                cartoonCover.source,
+                fallback = fallback,
+            ) { old ->
+                if (old.starTime > 0) {
+                    old.copy(starTime = 0, tags = "", upTime = 0)
                 } else {
-                    if (old.starTime > 0) {
-                        cartoonInfoDao.modify(old.copy(starTime = 0, tags = "", upTime = 0))
-                    } else {
-                        cartoonInfoDao.modify(
-                            old.copy(
-                                starTime = System.currentTimeMillis(),
-                                tags = tagList?.joinToString(", ") { it.label } ?: ""))
-                    }
+                    old.copy(
+                        starTime = System.currentTimeMillis(),
+                        tags = tagList?.joinToString(", ") { it.label }.orEmpty(),
+                    )
                 }
             }
-
         }
     }
 

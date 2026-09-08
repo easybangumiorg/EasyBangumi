@@ -6,11 +6,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.base.DataResult
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.case.CartoonInfoCase
-import com.heyanle.easybangumi4.case.SourceStateCase
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
-import com.heyanle.easybangumi4.utils.CoroutineProvider
 import com.heyanle.easybangumi4.utils.ViewModelOwnerMap
 import com.heyanle.inject.core.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,11 +28,7 @@ class MigrateViewModel(
     private val ownerMap = ViewModelOwnerMap<CartoonInfo>()
 
 
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
-    private val cartoonInfoCase: CartoonInfoCase by Inject.injectLazy()
-    private val sourceCase: SourceStateCase by Inject.injectLazy()
-
-    private val migrateDispatcher = CoroutineProvider.SINGLE
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
 
     var customSearchCartoonInfo = mutableStateOf<CartoonInfo?>(null)
 
@@ -55,7 +48,7 @@ class MigrateViewModel(
     init {
         viewModelScope.launch {
             val infoList = summaries.map {
-                cartoonInfoCase.awaitCartoonInfoWithPlayLines(it.id, it.source)
+                cartoonRepository.awaitCartoonInfoWithPlayLines(it)
             }.filterIsInstance<DataResult.Ok<CartoonInfo>>()
                 .map {
                     it.data

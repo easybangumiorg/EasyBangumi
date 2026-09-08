@@ -280,6 +280,18 @@ class DanmakuRendererSyncPolicyTest {
         )
         assertEquals(
             DanmakuRendererConfigEffect.REPLACE_ITEMS,
+            classifyDanmakuConfigChange(default, default.copy(blockedTextRules = setOf("剧透"))),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.REPLACE_ITEMS,
+            classifyDanmakuConfigChange(default, default.copy(blockRulesEnabled = false)),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.STYLE,
+            classifyDanmakuConfigChange(default, default.copy(syncScrollSpeedWithPlayback = false)),
+        )
+        assertEquals(
+            DanmakuRendererConfigEffect.REPLACE_ITEMS,
             classifyDanmakuConfigChange(
                 default,
                 default.copy(densityRatio = 0.5f, fontSizeSp = 24f),

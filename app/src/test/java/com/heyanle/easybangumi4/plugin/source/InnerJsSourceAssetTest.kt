@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.source
 import com.heyanle.easybangumi4.plugin.source.js.SourceMetadata
 import com.heyanle.easybangumi4.plugin.source.js.source.JsSource
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mozilla.javascript.Context
@@ -14,10 +15,16 @@ import java.net.URI
 class InnerJsSourceAssetTest {
 
     @Test
-    fun mainAssetsUseRepositoryInnerSourceDirectory() {
+    fun repositorySourcesAreDebugOnlyAndExcludedFromReleaseAssets() {
         val buildFile = File("build.gradle.kts")
+        val buildScript = buildFile.readText()
         assertTrue(
-            buildFile.readText().contains("assets.srcDir(rootProject.file(\"inner_source\"))"),
+            "debug builds should retain repository sources for development and tests",
+            buildScript.contains("getByName(\"debug\").assets.srcDir(rootProject.file(\"inner_source\"))"),
+        )
+        assertFalse(
+            "main assets would leak repository sources into release APKs",
+            buildScript.contains("getByName(\"main\").assets.srcDir(rootProject.file(\"inner_source\"))"),
         )
     }
 

@@ -4,10 +4,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.inject.core.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Created by HeYanLe on 2023/3/16 22:14.
@@ -46,7 +44,7 @@ class HistoryViewModel : ViewModel() {
     }
 
     private val settingPreferences: SettingPreferences by Inject.injectLazy()
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
 
 
     private val _stateFlow = MutableStateFlow(HistoryState())
@@ -59,7 +57,7 @@ class HistoryViewModel : ViewModel() {
         viewModelScope.launch {
             // 搜索和加载
             combine(
-                cartoonInfoDao.flowAllHistory().distinctUntilChanged(),
+                cartoonRepository.flowAllHistory().distinctUntilChanged(),
                 stateFlow.map { it.searchKey }.distinctUntilChanged(),
             ) { data, key ->
                 if (key.isNullOrEmpty()) {
@@ -209,25 +207,19 @@ class HistoryViewModel : ViewModel() {
 
     fun delete(cartoonHistory: CartoonInfo) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                cartoonInfoDao.deleteHistory(cartoonHistory)
-            }
+            cartoonRepository.deleteHistory(listOf(cartoonHistory))
         }
     }
 
     fun delete(cartoonHistory: List<CartoonInfo>) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                cartoonInfoDao.deleteHistory(cartoonHistory)
-            }
+            cartoonRepository.deleteHistory(cartoonHistory)
         }
     }
 
     fun clear() {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                cartoonInfoDao.clearHistory()
-            }
+            cartoonRepository.clearHistory()
         }
     }
 

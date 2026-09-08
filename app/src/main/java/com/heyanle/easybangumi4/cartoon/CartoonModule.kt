@@ -68,7 +68,11 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonRepository(get(), get(), get(), get())
+            CartoonRepository(
+                cartoonInfoDao = get(),
+                cartoonNetworkDataSource = get(),
+                sourceStateCase = get(),
+            )
         }
 
 //        addSingletonFactory {
@@ -84,7 +88,7 @@ class CartoonModule(
         }
 
         addSingletonFactory {
-            CartoonUpdateController(get(), get())
+            CartoonUpdateController(get())
         }
 
         // download

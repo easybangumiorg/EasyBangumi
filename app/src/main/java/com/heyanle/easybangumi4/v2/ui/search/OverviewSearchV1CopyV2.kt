@@ -83,6 +83,7 @@ import com.heyanle.easybangumi4.v2.theme.V2Tokens
 
 private data class V2OverviewResult(
     val sourceKey: String,
+    val sourceLabel: String,
     val sourceIndex: Int,
     val resultIndex: Int,
     val cover: CartoonCover,
@@ -130,7 +131,13 @@ internal fun ColumnScope.OverviewSearchV1CopyV2(searchViewModel: SearchViewModel
         .takeIf { selectedIndex.intValue > 0 }
     val allResults = pages.flatMapIndexed { sourceIndex, sourcePage ->
         sourcePage.page.itemSnapshotList.items.take(10).mapIndexed { resultIndex, cover ->
-            V2OverviewResult(sourcePage.source.source.key, sourceIndex, resultIndex, cover)
+            V2OverviewResult(
+                sourceKey = sourcePage.source.source.key,
+                sourceLabel = sourcePage.source.source.label,
+                sourceIndex = sourceIndex,
+                resultIndex = resultIndex,
+                cover = cover,
+            )
         }
     }.sortedWith(overviewResultComparator(request.keyword))
     val selectedPage = selectedSourceKey?.let { key ->
@@ -218,7 +225,13 @@ internal fun ColumnScope.OverviewSearchV1CopyV2(searchViewModel: SearchViewModel
                                 "${request.sequence}:${it.sourceKey}:${it.resultIndex}"
                             },
                         ) { item ->
-                            OverviewCoverV2(item.cover, item.cover.toIdentify() in starred, nav::navigationDetailed, starViewModel::dispatchStar)
+                            OverviewCoverV2(
+                                cover = item.cover,
+                                sourceLabel = item.sourceLabel,
+                                starred = item.cover.toIdentify() in starred,
+                                onClick = nav::navigationDetailed,
+                                onStar = starViewModel::dispatchStar,
+                            )
                         }
                         if (pendingFirstPageCount > 0) {
                             item(
@@ -237,7 +250,13 @@ internal fun ColumnScope.OverviewSearchV1CopyV2(searchViewModel: SearchViewModel
                             key = { index -> "${request.sequence}:$sourceKey:$index" },
                         ) { index ->
                             selectedPage.page[index]?.let { cover ->
-                                OverviewCoverV2(cover, cover.toIdentify() in starred, nav::navigationDetailed, starViewModel::dispatchStar)
+                                OverviewCoverV2(
+                                    cover = cover,
+                                    sourceLabel = selectedPage.source.source.label,
+                                    starred = cover.toIdentify() in starred,
+                                    onClick = nav::navigationDetailed,
+                                    onStar = starViewModel::dispatchStar,
+                                )
                             }
                         }
                         item(
@@ -594,6 +613,7 @@ private fun OverviewVerificationCardV2(
 @Composable
 private fun OverviewCoverV2(
     cover: CartoonCover,
+    sourceLabel: String,
     starred: Boolean,
     onClick: (CartoonCover) -> Unit,
     onStar: (CartoonCover) -> Unit,
@@ -608,6 +628,7 @@ private fun OverviewCoverV2(
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         },
         v2Presentation = true,
+        sourceLabel = sourceLabel,
     )
 }
 

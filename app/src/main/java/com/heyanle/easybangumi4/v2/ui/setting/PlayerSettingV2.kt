@@ -14,16 +14,25 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import com.heyanle.easybangumi4.danmaku.SCROLL_OCCLUSION_HELP
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Cached
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.PlayCircle
@@ -32,9 +41,16 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.VerticalAlignCenter
 import androidx.compose.material.icons.filled.ViewDay
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
@@ -53,19 +69,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easy_i18n.R
-import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
 import com.heyanle.easybangumi4.danmaku.DANMAKU_AREA_RATIO_TIERS
 import com.heyanle.easybangumi4.danmaku.DANMAKU_SCROLL_SPEED_TIERS
 import com.heyanle.easybangumi4.danmaku.DanmakuDisplayConfig
-import com.heyanle.easybangumi4.danmaku.DanmakuDisplayPreferences
 import com.heyanle.easybangumi4.danmaku.danmakuAreaRatioLabel
 import com.heyanle.easybangumi4.danmaku.danmakuOpacityLabel
 import com.heyanle.easybangumi4.danmaku.danmakuScrollSpeedLabel
@@ -84,14 +100,20 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private enum class PlayerChoiceDialogV2 { Engine, Orientation, Cache, Speed }
+private enum class PlayerChoiceDialogV2 {
+    Engine,
+    Orientation,
+    Cache,
+    Speed,
+    FullscreenControls,
+    CutoutAvoidance,
+}
 
 @Composable
 internal fun PlayerSettingV2(
     modifier: Modifier = Modifier,
 ) {
     val preferences: SettingPreferences by Inject.injectLazy()
-    val danmakuPreferences: DanmakuDisplayPreferences by Inject.injectLazy()
 
     val externalPlayer by preferences.useExternalVideoPlayer.flow().collectAsState(
         preferences.useExternalVideoPlayer.get(),
@@ -109,6 +131,15 @@ internal fun PlayerSettingV2(
     val orientationMode by preferences.playerOrientationMode.flow().collectAsState(
         preferences.playerOrientationMode.get(),
     )
+    val fullscreenControlPosition by preferences.fullscreenControlPosition.flow().collectAsState(
+        preferences.fullscreenControlPosition.get(),
+    )
+    val cutoutAvoidanceMode by preferences.playerCutoutAvoidanceMode.flow().collectAsState(
+        preferences.playerCutoutAvoidanceMode.get(),
+    )
+    val cutoutManualPadding by preferences.playerCutoutManualPaddingDp.flow().collectAsState(
+        preferences.playerCutoutManualPaddingDp.get(),
+    )
     val cacheSize by preferences.cacheSize.flow().collectAsState(preferences.cacheSize.get())
     val seekWidthTime by preferences.playerSeekFullWidthTimeMS.flow().collectAsState(
         preferences.playerSeekFullWidthTimeMS.get(),
@@ -124,39 +155,31 @@ internal fun PlayerSettingV2(
 
     val rawFastWeight by preferences.fastWeight.flow().collectAsState(preferences.fastWeight.get())
     val fastWeight = rawFastWeight.takeIf { abs(it) in preferences.fastWeightSelection }
-        ?: preferences.fastWeightSelection.first()
+        ?: 5
     val rawFastTopWeight by preferences.fastWeightTopMolecule.flow().collectAsState(
         preferences.fastWeightTopMolecule.get(),
     )
     val fastTopWeight = rawFastTopWeight.takeIf {
         abs(it) in preferences.fastWeightTopMoleculeSelection
-    } ?: preferences.fastWeightTopMoleculeSelection.first()
+    } ?: -(preferences.fastWeightTopDenominator / 2)
     val fastSeconds by preferences.fastSecond.flow().collectAsState(preferences.fastSecond.get())
     val fastTopSeconds by preferences.fastTopSecond.flow().collectAsState(
         preferences.fastTopSecond.get(),
     )
 
-    val danmakuConfig by remember(danmakuPreferences) {
-        danmakuPreferences.configFlow()
-    }.collectAsState(danmakuPreferences.getConfig())
-    val enabledProvenance by danmakuPreferences.enabledProvenance.flow().collectAsState(
-        danmakuPreferences.enabledProvenance.get(),
-    )
-
     var choiceDialog by remember { mutableStateOf<PlayerChoiceDialogV2?>(null) }
-    var confirmDanmakuReset by remember { mutableStateOf(false) }
 
     LaunchedEffect(defaultSpeedStored, speedOptions) {
         if (speedOptions.none { it.first == defaultSpeedStored }) preferences.defaultSpeed.set(1f)
     }
     LaunchedEffect(rawFastWeight) {
         if (abs(rawFastWeight) !in preferences.fastWeightSelection) {
-            preferences.fastWeight.set(preferences.fastWeightSelection.first())
+            preferences.fastWeight.set(5)
         }
     }
     LaunchedEffect(rawFastTopWeight) {
         if (abs(rawFastTopWeight) !in preferences.fastWeightTopMoleculeSelection) {
-            preferences.fastWeightTopMolecule.set(preferences.fastWeightTopMoleculeSelection.first())
+            preferences.fastWeightTopMolecule.set(-(preferences.fastWeightTopDenominator / 2))
         }
     }
 
@@ -223,44 +246,30 @@ internal fun PlayerSettingV2(
                 subtitle = speedOptions.firstOrNull { it.first == defaultSpeed }?.second.orEmpty(),
                 onClick = { choiceDialog = PlayerChoiceDialogV2.Speed },
             )
-            V2SectionDivider()
-            val seekSeconds = (seekWidthTime / 1_000L).coerceIn(60L, 1_800L)
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-                PlayerValueSliderV2(
-                    title = stringResource(R.string.player_seek_full_width_time_ms),
-                    valueLabel = "${seekSeconds / 60} 分钟",
-                    value = seekSeconds.toFloat(),
-                    valueRange = 60f..1_800f,
-                    steps = 28,
-                    onValueChange = {
-                        val seconds = (it / 60f).roundToInt().coerceIn(1, 30) * 60L
-                        preferences.playerSeekFullWidthTimeMS.set(seconds * 1_000L)
-                    },
-                )
-            }
         }
 
-        DoubleTapFastSettingV2(
+        FullscreenControlSettingV2(
             preferences = preferences,
+            controlPosition = fullscreenControlPosition,
+            cutoutMode = cutoutAvoidanceMode,
+            manualPadding = cutoutManualPadding,
+            onControlPositionClick = {
+                choiceDialog = PlayerChoiceDialogV2.FullscreenControls
+            },
+            onCutoutModeClick = {
+                choiceDialog = PlayerChoiceDialogV2.CutoutAvoidance
+            },
+        )
+
+        GestureSettingV2(
+            preferences = preferences,
+            seekWidthTime = seekWidthTime,
             fastWeight = fastWeight,
             fastTopWeight = fastTopWeight,
             fastSeconds = fastSeconds,
             fastTopSeconds = fastTopSeconds,
         )
 
-        DanmakuDisplaySettingV2(
-            config = danmakuConfig,
-            dandanPlayEnabled = DANDANPLAY_SOURCE_ID in enabledProvenance,
-            onConfigChange = danmakuPreferences::setConfig,
-            onDandanPlayChange = { enabled ->
-                danmakuPreferences.enabledProvenance.set(
-                    enabledProvenance.toMutableSet().apply {
-                        if (enabled) add(DANDANPLAY_SOURCE_ID) else remove(DANDANPLAY_SOURCE_ID)
-                    },
-                )
-            },
-            onReset = { confirmDanmakuReset = true },
-        )
         Box(Modifier.height(24.dp))
     }
 
@@ -312,30 +321,109 @@ internal fun PlayerSettingV2(
                 choiceDialog = null
             },
         )
+        PlayerChoiceDialogV2.FullscreenControls -> PlayerChoiceDialog(
+            title = "全屏侧边按钮",
+            options = listOf(
+                SettingPreferences.FullscreenControlPosition.AUTO to "自动（跟随唤出控制器时的点击侧）",
+                SettingPreferences.FullscreenControlPosition.LEFT to "固定左侧",
+                SettingPreferences.FullscreenControlPosition.RIGHT to "固定右侧",
+            ),
+            selected = fullscreenControlPosition,
+            onDismiss = { choiceDialog = null },
+            onSelected = {
+                preferences.fullscreenControlPosition.set(it)
+                choiceDialog = null
+            },
+        )
+        PlayerChoiceDialogV2.CutoutAvoidance -> {
+            val supportedMode = SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(
+                cutoutAvoidanceMode,
+            )
+            PlayerChoiceDialog(
+                title = "刘海避让",
+                options = SettingPreferences.PlayerCutoutAvoidanceMode.selectableValues().map {
+                    it to it.cutoutLabelV2()
+                },
+                selected = supportedMode,
+                onDismiss = { choiceDialog = null },
+                onSelected = {
+                    preferences.playerCutoutAvoidanceMode.set(it)
+                    choiceDialog = null
+                },
+            )
+        }
         null -> Unit
     }
 
-    if (confirmDanmakuReset) {
+}
+
+@Composable
+private fun FullscreenControlSettingV2(
+    preferences: SettingPreferences,
+    controlPosition: SettingPreferences.FullscreenControlPosition,
+    cutoutMode: SettingPreferences.PlayerCutoutAvoidanceMode,
+    manualPadding: Int,
+    onControlPositionClick: () -> Unit,
+    onCutoutModeClick: () -> Unit,
+) {
+    val supportedCutoutMode = SettingPreferences.PlayerCutoutAvoidanceMode.normalizeForSdk(
+        cutoutMode,
+    )
+    var showControlHelp by remember { mutableStateOf(false) }
+
+    V2Section(title = "全屏控制") {
+        V2ActionRow(
+            icon = Icons.Filled.VerticalAlignCenter,
+            title = "全屏侧边按钮",
+            subtitle = controlPosition.fullscreenControlLabelV2(),
+            onClick = onControlPositionClick,
+            trailing = {
+                IconButton(onClick = { showControlHelp = true }) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.HelpOutline,
+                        contentDescription = "全屏侧边按钮 说明",
+                        tint = V2Tokens.TextSecondary,
+                    )
+                }
+            },
+        )
+        V2SectionDivider()
+        V2ActionRow(
+            icon = Icons.Filled.ScreenRotation,
+            title = "刘海避让",
+            subtitle = supportedCutoutMode.cutoutLabelV2(),
+            onClick = onCutoutModeClick,
+        )
+        if (supportedCutoutMode == SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL) {
+            V2SectionDivider()
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                PlayerValueSliderV2(
+                    title = "安全距离",
+                    valueLabel = "${manualPadding.coerceIn(0, 96)} dp",
+                    value = manualPadding.coerceIn(0, 96).toFloat(),
+                    valueRange = 0f..96f,
+                    steps = 23,
+                    onValueChange = {
+                        preferences.playerCutoutManualPaddingDp.set((it / 4f).roundToInt() * 4)
+                    },
+                )
+            }
+        }
+    }
+
+    if (showControlHelp) {
         AlertDialog(
-            onDismissRequest = { confirmDanmakuReset = false },
-            title = { Text("恢复弹幕默认设置？", color = V2Tokens.TextPrimary) },
+            onDismissRequest = { showControlHelp = false },
+            title = { Text("全屏侧边按钮", color = V2Tokens.TextPrimary) },
             text = {
                 Text(
-                    "将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度、数量、复读合并和时间偏移。",
+                    "控制横屏全屏时截图、倍速、弹幕、选集和锁定按钮出现在哪一侧。自动模式跟随本次唤出控制器时的点击侧；固定模式始终停靠在指定一侧。",
                     color = V2Tokens.TextSecondary,
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    confirmDanmakuReset = false
-                    danmakuPreferences.resetToDefaults()
-                }) {
-                    Text("恢复", color = V2Theme.colors.accent)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmDanmakuReset = false }) {
-                    Text("取消", color = V2Tokens.TextSecondary)
+                TextButton(onClick = { showControlHelp = false }) {
+                    Text("知道了", color = V2Theme.colors.accent)
                 }
             },
             containerColor = V2Tokens.Surface,
@@ -344,8 +432,9 @@ internal fun PlayerSettingV2(
 }
 
 @Composable
-private fun DoubleTapFastSettingV2(
+private fun GestureSettingV2(
     preferences: SettingPreferences,
+    seekWidthTime: Long,
     fastWeight: Int,
     fastTopWeight: Int,
     fastSeconds: Int,
@@ -353,86 +442,107 @@ private fun DoubleTapFastSettingV2(
 ) {
     val enabled = fastWeight > 0
     val topEnabled = fastTopWeight > 0
+    val widthOptions = preferences.fastWeightSelection
+    val widthValue = abs(fastWeight).takeIf { it in widthOptions } ?: widthOptions.first()
+    val widthIndex = widthOptions.indexOf(widthValue)
+    val topOptions = preferences.fastWeightTopMoleculeSelection
+    val topValue = abs(fastTopWeight).takeIf { it in topOptions }
+        ?: preferences.fastWeightTopDenominator / 2
+    val topIndex = topOptions.indexOf(topValue).coerceAtLeast(0)
+    val seekSeconds = (seekWidthTime / 1_000L).coerceIn(60L, 1_800L)
 
-    V2Section(title = "双击快进快退") {
+    V2Section(title = "手势设置") {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+            PlayerValueSliderV2(
+                title = "横滑满屏时长",
+                valueLabel = "${seekSeconds / 60} 分钟",
+                value = seekSeconds.toFloat(),
+                valueRange = 60f..1_800f,
+                steps = 28,
+                onValueChange = {
+                    val seconds = (it / 60f).roundToInt().coerceIn(1, 30) * 60L
+                    preferences.playerSeekFullWidthTimeMS.set(seconds * 1_000L)
+                },
+                helpDescription = "表示手指横向滑过整个播放器宽度时对应的进度跨度。数值越小，滑动跳转越快；数值越大，进度调整越精细。",
+            )
+        }
+        V2SectionDivider()
         V2ActionRow(
             icon = Icons.Filled.FastForward,
-            title = stringResource(R.string.double_tap_fast),
-            subtitle = "双击画面两侧快速后退或前进",
-            onClick = { preferences.fastWeight.set(toggleSignedSetting(fastWeight, 5)) },
+            title = "启用双击手势",
+            subtitle = "点击画面两侧快速后退或前进",
+            onClick = {
+                preferences.fastWeight.set(signedSettingValue(widthValue, !enabled))
+            },
             trailing = {
-                PlayerSwitchV2(
-                    checked = enabled,
-                    onCheckedChange = { preferences.fastWeight.set(toggleSignedSetting(fastWeight, 5)) },
-                )
+                PlayerSwitchV2(enabled) { checked ->
+                    preferences.fastWeight.set(signedSettingValue(widthValue, checked))
+                }
             },
         )
         if (enabled) {
             V2SectionDivider()
-            V2ActionRow(
-                icon = Icons.Filled.VerticalAlignCenter,
-                title = stringResource(R.string.double_tap_fast_top),
-                subtitle = "为画面上半部分设置独立快进时间",
-                onClick = {
-                    preferences.fastWeightTopMolecule.set(
-                        toggleSignedSetting(fastTopWeight, preferences.fastWeightTopDenominator / 2),
-                    )
-                },
-                trailing = {
-                    PlayerSwitchV2(
-                        checked = topEnabled,
-                        onCheckedChange = {
-                            preferences.fastWeightTopMolecule.set(
-                                toggleSignedSetting(
-                                    fastTopWeight,
-                                    preferences.fastWeightTopDenominator / 2,
-                                ),
-                            )
-                        },
-                    )
-                },
-            )
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
                 PlayerValueSliderV2(
                     title = "两侧响应宽度",
-                    valueLabel = "屏幕宽度的 1/$fastWeight",
-                    value = preferences.fastWeightSelection.indexOf(fastWeight).coerceAtLeast(0).toFloat(),
-                    valueRange = 0f..preferences.fastWeightSelection.lastIndex.toFloat(),
-                    steps = preferences.fastWeightSelection.size - 2,
+                    valueLabel = "各占屏幕 1/$widthValue",
+                    value = widthIndex.toFloat(),
+                    valueRange = 0f..widthOptions.lastIndex.toFloat(),
+                    steps = (widthOptions.size - 2).coerceAtLeast(0),
                     onValueChange = { position ->
-                        preferences.fastWeightSelection.getOrNull(position.toInt())?.let {
-                            preferences.fastWeight.set(it)
-                        }
+                        preferences.fastWeight.set(
+                            widthOptions[position.roundToInt().coerceIn(widthOptions.indices)],
+                        )
                     },
                 )
-                if (topEnabled) {
-                    PlayerValueSliderV2(
-                        title = "上区域高度",
-                        valueLabel = "$fastTopWeight/${preferences.fastWeightTopDenominator}",
-                        value = preferences.fastWeightTopMoleculeSelection
-                            .indexOf(fastTopWeight)
-                            .coerceAtLeast(0)
-                            .toFloat(),
-                        valueRange = 0f..preferences.fastWeightTopMoleculeSelection.lastIndex.toFloat(),
-                        steps = preferences.fastWeightTopMoleculeSelection.size - 2,
-                        onValueChange = { position ->
-                            preferences.fastWeightTopMoleculeSelection
-                                .getOrNull(position.toInt())
-                                ?.let { preferences.fastWeightTopMolecule.set(it) }
-                        },
-                    )
-                }
-                DoubleTapPreviewV2(
-                    fastWeight = fastWeight,
-                    fastTopWeight = fastTopWeight,
-                    topDenominator = preferences.fastWeightTopDenominator,
+                PlayerValueSliderV2(
+                    title = "两侧快进快退时长",
+                    valueLabel = "${fastSeconds.coerceIn(5, 60)} 秒",
+                    value = fastSeconds.coerceIn(5, 60).toFloat(),
+                    valueRange = 5f..60f,
+                    steps = 10,
+                    onValueChange = {
+                        preferences.fastSecond.set(
+                            (it / 5f).roundToInt().coerceIn(1, 12) * 5,
+                        )
+                    },
                 )
             }
             V2SectionDivider()
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
-                if (topEnabled) {
+            V2ActionRow(
+                icon = Icons.Filled.VerticalAlignCenter,
+                title = "顶部独立区域",
+                subtitle = "顶部区域可使用不同的跳转时长",
+                onClick = {
+                    preferences.fastWeightTopMolecule.set(
+                        signedSettingValue(topValue, !topEnabled),
+                    )
+                },
+                trailing = {
+                    PlayerSwitchV2(topEnabled) { checked ->
+                        preferences.fastWeightTopMolecule.set(
+                            signedSettingValue(topValue, checked),
+                        )
+                    }
+                },
+            )
+            if (topEnabled) {
+                V2SectionDivider()
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
                     PlayerValueSliderV2(
-                        title = stringResource(R.string.fast_time_top),
+                        title = "顶部区域高度",
+                        valueLabel = "屏幕高度的 $topValue/${preferences.fastWeightTopDenominator}",
+                        value = topIndex.toFloat(),
+                        valueRange = 0f..topOptions.lastIndex.toFloat(),
+                        steps = (topOptions.size - 2).coerceAtLeast(0),
+                        onValueChange = { position ->
+                            preferences.fastWeightTopMolecule.set(
+                                topOptions[position.roundToInt().coerceIn(topOptions.indices)],
+                            )
+                        },
+                    )
+                    PlayerValueSliderV2(
+                        title = "顶部快进快退时长",
                         valueLabel = "${fastTopSeconds.coerceIn(5, 120)} 秒",
                         value = fastTopSeconds.coerceIn(5, 120).toFloat(),
                         valueRange = 5f..120f,
@@ -444,19 +554,19 @@ private fun DoubleTapFastSettingV2(
                         },
                     )
                 }
-                PlayerValueSliderV2(
-                    title = stringResource(
-                        if (topEnabled) R.string.fast_time_bottom else R.string.fast_time,
-                    ),
-                    valueLabel = "${fastSeconds.coerceIn(5, 60)} 秒",
-                    value = fastSeconds.coerceIn(5, 60).toFloat(),
-                    valueRange = 5f..60f,
-                    steps = 10,
-                    onValueChange = {
-                        preferences.fastSecond.set(
-                            (it / 5f).roundToInt().coerceIn(1, 12) * 5,
-                        )
-                    },
+            }
+            V2SectionDivider()
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                Text(
+                    "区域预览",
+                    color = V2Tokens.TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                DoubleTapPreviewV2(
+                    fastWeight = widthValue,
+                    fastTopWeight = if (topEnabled) topValue else -1,
+                    topDenominator = preferences.fastWeightTopDenominator,
                 )
             }
         }
@@ -470,24 +580,30 @@ private fun DoubleTapPreviewV2(
     topDenominator: Int,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-            .aspectRatio(16f / 9f)
-            .background(V2Tokens.Divider, RoundedCornerShape(12.dp)),
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
     ) {
-        DoubleTapPreviewSideV2(
-            modifier = Modifier.align(Alignment.CenterStart),
-            widthFraction = 1f / fastWeight,
-            topFraction = if (fastTopWeight > 0) fastTopWeight.toFloat() / topDenominator else null,
-            icon = Icons.Filled.FastRewind,
-        )
-        DoubleTapPreviewSideV2(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            widthFraction = 1f / fastWeight,
-            topFraction = if (fastTopWeight > 0) fastTopWeight.toFloat() / topDenominator else null,
-            icon = Icons.Filled.FastForward,
-        )
+        Box(
+            modifier = Modifier
+                .widthIn(max = 420.dp)
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .aspectRatio(16f / 9f)
+                .background(V2Tokens.Divider, RoundedCornerShape(12.dp)),
+        ) {
+            DoubleTapPreviewSideV2(
+                modifier = Modifier.align(Alignment.CenterStart),
+                widthFraction = 1f / fastWeight,
+                topFraction = if (fastTopWeight > 0) fastTopWeight.toFloat() / topDenominator else null,
+                icon = Icons.Filled.FastRewind,
+            )
+            DoubleTapPreviewSideV2(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                widthFraction = 1f / fastWeight,
+                topFraction = if (fastTopWeight > 0) fastTopWeight.toFloat() / topDenominator else null,
+                icon = Icons.Filled.FastForward,
+            )
+        }
     }
 }
 
@@ -531,13 +647,26 @@ private fun DoubleTapPreviewSideV2(
 }
 
 @Composable
-private fun DanmakuDisplaySettingV2(
+internal fun DanmakuDisplaySettingV2(
     config: DanmakuDisplayConfig,
     dandanPlayEnabled: Boolean,
     onConfigChange: (DanmakuDisplayConfig) -> Unit,
     onDandanPlayChange: (Boolean) -> Unit,
     onReset: () -> Unit,
+    onOpenBlockRules: () -> Unit,
 ) {
+    var showOcclusionHelp by remember { mutableStateOf(false) }
+    if (showOcclusionHelp) {
+        AlertDialog(
+            onDismissRequest = { showOcclusionHelp = false },
+            title = { Text("弹幕防覆盖") },
+            text = { Text(SCROLL_OCCLUSION_HELP) },
+            confirmButton = {
+                TextButton(onClick = { showOcclusionHelp = false }) { Text("知道了") }
+            },
+            containerColor = V2Tokens.Surface,
+        )
+    }
     V2Section(title = stringResource(R.string.danmaku_setting)) {
         V2ActionRow(
             icon = Icons.Filled.ViewDay,
@@ -573,14 +702,23 @@ private fun DanmakuDisplaySettingV2(
                     onConfigChange(config.copy(showBottom = !config.showBottom))
                 }
             }
+            val areaIndex = DANMAKU_AREA_RATIO_TIERS.indexOf(config.areaRatio)
+                .takeIf { it >= 0 }
+                ?: DANMAKU_AREA_RATIO_TIERS.lastIndex
             PlayerValueSliderV2(
                 title = "显示区域",
                 valueLabel = danmakuAreaRatioLabel(config.areaRatio),
-                value = config.areaRatio,
-                valueRange = DANMAKU_AREA_RATIO_TIERS.first()..DANMAKU_AREA_RATIO_TIERS.last(),
+                value = areaIndex.toFloat(),
+                valueRange = 0f..DANMAKU_AREA_RATIO_TIERS.lastIndex.toFloat(),
                 steps = DANMAKU_AREA_RATIO_TIERS.size - 2,
                 onValueChange = {
-                    onConfigChange(config.copy(areaRatio = it).normalized())
+                    onConfigChange(
+                        config.copy(
+                            areaRatio = DANMAKU_AREA_RATIO_TIERS[
+                                it.roundToInt().coerceIn(DANMAKU_AREA_RATIO_TIERS.indices)
+                            ],
+                        ),
+                    )
                 },
             )
             PlayerValueSliderV2(
@@ -639,6 +777,7 @@ private fun DanmakuDisplaySettingV2(
                 onValueChange = {
                     onConfigChange(config.copy(densityRatio = it).normalized())
                 },
+                helpDescription = "在完成类型和屏蔽规则过滤后，按时间顺序等距保留指定比例的弹幕。",
             )
             PlayerValueSliderV2(
                 title = "复读合并",
@@ -658,6 +797,7 @@ private fun DanmakuDisplaySettingV2(
                         ),
                     )
                 },
+                helpDescription = "在所选时间窗口内遇到相同文字时只保留第一条；设为不合并可完整显示复读弹幕。",
             )
             Text(
                 text = "时间校准",
@@ -695,6 +835,50 @@ private fun DanmakuDisplaySettingV2(
                 Text("恢复默认", color = V2Theme.colors.accent)
             }
         }
+        V2SectionDivider()
+        V2ActionRow(
+            icon = Icons.Filled.Block,
+            title = "弹幕屏蔽词",
+            subtitle = if (config.blockRulesEnabled) {
+                "已开启 · ${config.blockedTextRules.size} 条文本 · ${config.blockedRegexRules.size} 条正则"
+            } else {
+                "已关闭 · 规则已保留"
+            },
+            onClick = onOpenBlockRules,
+        )
+        V2SectionDivider()
+        V2ActionRow(
+            icon = Icons.Filled.Speed,
+            title = "倍速同步弹幕速度",
+            subtitle = "手动倍速和长按快进时同步加速滚动弹幕",
+            onClick = {
+                onConfigChange(
+                    config.copy(syncScrollSpeedWithPlayback = !config.syncScrollSpeedWithPlayback),
+                )
+            },
+            trailing = {
+                PlayerSwitchV2(config.syncScrollSpeedWithPlayback) {
+                    onConfigChange(config.copy(syncScrollSpeedWithPlayback = it))
+                }
+            },
+        )
+        V2SectionDivider()
+        V2ActionRow(
+            icon = Icons.Filled.ViewDay,
+            title = "弹幕防覆盖",
+            subtitle = "前一条完全入场后再显示下一条，超时丢弃",
+            onClick = { onConfigChange(config.copy(preventScrollOcclusion = !config.preventScrollOcclusion)) },
+            trailing = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { showOcclusionHelp = true }) {
+                        Icon(Icons.AutoMirrored.Outlined.HelpOutline, contentDescription = "弹幕防覆盖说明")
+                    }
+                    PlayerSwitchV2(config.preventScrollOcclusion) {
+                        onConfigChange(config.copy(preventScrollOcclusion = it))
+                    }
+                }
+            },
+        )
         V2SectionDivider()
         V2ActionRow(
             icon = Icons.Filled.ViewDay,
@@ -739,15 +923,30 @@ private fun PlayerValueSliderV2(
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int,
     onValueChange: (Float) -> Unit,
+    helpDescription: String? = null,
 ) {
+    var showHelp by remember { mutableStateOf(false) }
     Column(modifier = Modifier.padding(top = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = title,
-                modifier = Modifier.weight(1f),
                 color = V2Tokens.TextPrimary,
                 fontSize = 14.sp,
             )
+            if (helpDescription != null) {
+                IconButton(
+                    onClick = { showHelp = true },
+                    modifier = Modifier.size(28.dp),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.HelpOutline,
+                        contentDescription = "$title 说明",
+                        tint = V2Tokens.TextSecondary,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+            Box(Modifier.weight(1f))
             Text(
                 text = valueLabel,
                 color = V2Tokens.TextSecondary,
@@ -767,6 +966,229 @@ private fun PlayerValueSliderV2(
                 inactiveTickColor = V2Tokens.TextSecondary,
             ),
         )
+    }
+    if (showHelp && helpDescription != null) {
+        AlertDialog(
+            onDismissRequest = { showHelp = false },
+            title = { Text(title, color = V2Tokens.TextPrimary) },
+            text = { Text(helpDescription, color = V2Tokens.TextSecondary) },
+            confirmButton = {
+                TextButton(onClick = { showHelp = false }) {
+                    Text("知道了", color = V2Theme.colors.accent)
+                }
+            },
+            containerColor = V2Tokens.Surface,
+        )
+    }
+}
+
+private enum class DanmakuBlockRuleMode { Text, Regex }
+
+@Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+internal fun DanmakuBlockRulesBottomSheet(
+    config: DanmakuDisplayConfig,
+    onUpdateConfig: ((DanmakuDisplayConfig) -> DanmakuDisplayConfig) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var mode by remember { mutableStateOf(DanmakuBlockRuleMode.Text) }
+    var input by remember { mutableStateOf("") }
+    val normalizedInput = input.trim()
+    val regexError = mode == DanmakuBlockRuleMode.Regex &&
+        normalizedInput.isNotEmpty() && runCatching { Regex(normalizedInput) }.isFailure
+    val rules = when (mode) {
+        DanmakuBlockRuleMode.Text -> config.blockedTextRules
+        DanmakuBlockRuleMode.Regex -> config.blockedRegexRules
+    }.sorted()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = V2Tokens.Surface,
+        contentColor = V2Tokens.TextPrimary,
+        tonalElevation = 0.dp,
+        scrimColor = Color.Black.copy(alpha = 0.56f),
+        dragHandle = {
+            BottomSheetDefaults.DragHandle(color = V2Tokens.Divider)
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 640.dp)
+                .padding(horizontal = 20.dp),
+        ) {
+            Text(
+                "弹幕屏蔽词",
+                color = V2Tokens.TextPrimary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                "文本模式忽略大小写并匹配包含关系；正则模式按完整正则表达式查找。非法正则不会保存。",
+                color = V2Tokens.TextSecondary,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .clickable {
+                        onUpdateConfig { current ->
+                            current.copy(blockRulesEnabled = !current.blockRulesEnabled)
+                        }
+                    },
+                shape = RoundedCornerShape(16.dp),
+                color = V2Tokens.SurfaceMuted,
+                contentColor = V2Tokens.TextPrimary,
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("启用屏蔽词", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "关闭后保留全部规则，但暂停匹配",
+                            color = V2Tokens.TextSecondary,
+                            fontSize = 13.sp,
+                        )
+                    }
+                    PlayerSwitchV2(config.blockRulesEnabled) { enabled ->
+                        onUpdateConfig { current -> current.copy(blockRulesEnabled = enabled) }
+                    }
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 12.dp),
+            ) {
+                FilterChip(
+                    selected = mode == DanmakuBlockRuleMode.Text,
+                    onClick = {
+                        mode = DanmakuBlockRuleMode.Text
+                        input = ""
+                    },
+                    label = { Text("文本匹配") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = V2Tokens.SurfaceMuted,
+                        labelColor = V2Tokens.TextSecondary,
+                        selectedContainerColor = V2Theme.colors.accentContainer,
+                        selectedLabelColor = V2Theme.colors.onAccentContainer,
+                    ),
+                )
+                FilterChip(
+                    selected = mode == DanmakuBlockRuleMode.Regex,
+                    onClick = {
+                        mode = DanmakuBlockRuleMode.Regex
+                        input = ""
+                    },
+                    label = { Text("正则匹配") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = V2Tokens.SurfaceMuted,
+                        labelColor = V2Tokens.TextSecondary,
+                        selectedContainerColor = V2Theme.colors.accentContainer,
+                        selectedLabelColor = V2Theme.colors.onAccentContainer,
+                    ),
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = { input = it.take(256) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    isError = regexError,
+                    label = { Text(if (mode == DanmakuBlockRuleMode.Text) "屏蔽文字" else "正则表达式") },
+                    supportingText = if (regexError) {
+                        { Text("正则表达式无效") }
+                    } else {
+                        null
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = V2Tokens.TextPrimary,
+                        unfocusedTextColor = V2Tokens.TextPrimary,
+                        focusedBorderColor = V2Theme.colors.accent,
+                        unfocusedBorderColor = V2Tokens.Divider,
+                        focusedLabelColor = V2Theme.colors.accent,
+                        unfocusedLabelColor = V2Tokens.TextSecondary,
+                        cursorColor = V2Theme.colors.accent,
+                        errorBorderColor = V2Tokens.Error,
+                        errorLabelColor = V2Tokens.Error,
+                        errorSupportingTextColor = V2Tokens.Error,
+                    ),
+                )
+                IconButton(
+                    enabled = normalizedInput.isNotEmpty() && !regexError,
+                    onClick = {
+                        when (mode) {
+                            DanmakuBlockRuleMode.Text -> onUpdateConfig { current ->
+                                current.copy(blockedTextRules = current.blockedTextRules + normalizedInput)
+                            }
+                            DanmakuBlockRuleMode.Regex -> onUpdateConfig { current ->
+                                current.copy(blockedRegexRules = current.blockedRegexRules + normalizedInput)
+                            }
+                        }
+                        input = ""
+                    },
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "添加屏蔽规则")
+                }
+            }
+            if (rules.isEmpty()) {
+                Text(
+                    "当前模式暂无屏蔽规则",
+                    color = V2Tokens.TextSecondary,
+                    modifier = Modifier.padding(vertical = 24.dp),
+                )
+            } else {
+                LazyColumn(modifier = Modifier.weight(1f, fill = false).padding(vertical = 8.dp)) {
+                    items(rules, key = { it }) { rule ->
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            color = V2Tokens.SurfaceMuted,
+                            contentColor = V2Tokens.TextPrimary,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(start = 14.dp, end = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    rule,
+                                    modifier = Modifier.weight(1f),
+                                    color = V2Tokens.TextPrimary,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                IconButton(onClick = {
+                                    when (mode) {
+                                        DanmakuBlockRuleMode.Text -> onUpdateConfig { current ->
+                                            current.copy(blockedTextRules = current.blockedTextRules - rule)
+                                        }
+                                        DanmakuBlockRuleMode.Regex -> onUpdateConfig { current ->
+                                            current.copy(blockedRegexRules = current.blockedRegexRules - rule)
+                                        }
+                                    }
+                                }) {
+                                    Icon(
+                                        Icons.Filled.Delete,
+                                        contentDescription = "删除规则",
+                                        tint = V2Tokens.Error,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
+                Text("完成", color = V2Theme.colors.accent)
+            }
+        }
     }
 }
 
@@ -851,8 +1273,22 @@ private fun SettingPreferences.PlayerOrientationMode.orientationLabelV2(): Strin
     }
 }
 
-private fun toggleSignedSetting(value: Int, defaultValue: Int): Int {
-    return if (value == 0) defaultValue else -value
+private fun SettingPreferences.FullscreenControlPosition.fullscreenControlLabelV2(): String =
+    when (this) {
+        SettingPreferences.FullscreenControlPosition.AUTO -> "自动 · 跟随点击侧"
+        SettingPreferences.FullscreenControlPosition.LEFT -> "固定左侧"
+        SettingPreferences.FullscreenControlPosition.RIGHT -> "固定右侧"
+    }
+
+private fun SettingPreferences.PlayerCutoutAvoidanceMode.cutoutLabelV2(): String = when (this) {
+    SettingPreferences.PlayerCutoutAvoidanceMode.AUTO -> "自动识别刘海位置"
+    SettingPreferences.PlayerCutoutAvoidanceMode.DISABLED -> "关闭避让"
+    SettingPreferences.PlayerCutoutAvoidanceMode.MANUAL -> "手动设置安全距离"
+}
+
+private fun signedSettingValue(magnitude: Int, enabled: Boolean): Int {
+    val normalized = abs(magnitude).coerceAtLeast(1)
+    return if (enabled) normalized else -normalized
 }
 
 private fun formatFactorV2(value: Float): String = String.format(Locale.US, "%.1f", value)

@@ -192,8 +192,8 @@ class CartoonPlayViewModel(
         }
     }
 
-    fun tryNext(){
-        val current = _curringPlayStatus.value ?: return
+    fun tryNext(): Boolean {
+        val current = _curringPlayStatus.value ?: return false
         val latestLine = latestPlayLines.firstOrNull {
             it.playLine.id == current.playLine.playLine.id
         } ?: current.playLine
@@ -201,7 +201,7 @@ class CartoonPlayViewModel(
         val currentIndex = episodes.indexOfFirst { it.id == current.episode.id }
         val nextIndex = currentIndex + 1
         if(currentIndex < 0 || nextIndex >= episodes.size){
-            return
+            return false
         }
         selectLineById(latestLine.playLine.id)
         _curringPlayStatus.update {
@@ -212,7 +212,19 @@ class CartoonPlayViewModel(
                 current.cartoon,
             )
         }
+        return true
 
+    }
+
+    fun hasNext(): Boolean {
+        val current = _curringPlayStatus.value ?: return false
+        val latestLine = latestPlayLines.firstOrNull {
+            it.playLine.id == current.playLine.playLine.id
+        } ?: current.playLine
+        val currentIndex = latestLine.sortedEpisodeList.indexOfFirst {
+            it.id == current.episode.id
+        }
+        return currentIndex >= 0 && currentIndex < latestLine.sortedEpisodeList.lastIndex
     }
 
     /** 根据稳定线路 id，在调用方持有的最新列表中解析 UI index。 */

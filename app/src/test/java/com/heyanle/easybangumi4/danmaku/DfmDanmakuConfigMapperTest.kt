@@ -11,14 +11,14 @@ class DfmDanmakuConfigMapperTest {
             DfmDanmakuStyle(
                 textSizePx = 36f,
                 marginPx = 7,
-                scrollDurationFactor = 1f,
+                scrollPixelsPerMediaSecond = 200f,
             ),
             DanmakuDisplayConfig.DEFAULT.toDfmStyle(scaledDensity = 2f),
         )
     }
 
     @Test
-    fun fasterUserSpeedMapsToShorterDfmScrollDuration() {
+    fun fasterUserSpeedMapsToGreaterLinearVelocity() {
         val slow = DanmakuDisplayConfig.DEFAULT
             .copy(scrollSpeed = 0.5f)
             .toDfmStyle(scaledDensity = 1f)
@@ -26,8 +26,8 @@ class DfmDanmakuConfigMapperTest {
             .copy(scrollSpeed = 2f)
             .toDfmStyle(scaledDensity = 1f)
 
-        assertEquals(2f, slow.scrollDurationFactor, 0f)
-        assertEquals(0.5f, fast.scrollDurationFactor, 0f)
+        assertEquals(50f, slow.scrollPixelsPerMediaSecond, 0f)
+        assertEquals(200f, fast.scrollPixelsPerMediaSecond, 0f)
     }
 
     @Test
@@ -39,8 +39,32 @@ class DfmDanmakuConfigMapperTest {
             .copy(scrollSpeed = 3f)
             .toDfmStyle(scaledDensity = 1f)
 
-        assertEquals(4f, slowest.scrollDurationFactor, 0f)
-        assertEquals(1f / 3f, fastest.scrollDurationFactor, 0.001f)
+        assertEquals(25f, slowest.scrollPixelsPerMediaSecond, 0f)
+        assertEquals(300f, fastest.scrollPixelsPerMediaSecond, 0f)
+    }
+
+    @Test
+    fun syncedMotionUsesMediaVelocityAndNaturallySpeedsUpOnTheWallClock() {
+        val style = DanmakuDisplayConfig.DEFAULT.toDfmStyle(
+            scaledDensity = 1f,
+            playbackSpeed = 2f,
+        )
+
+        assertEquals(100f, style.scrollPixelsPerMediaSecond, 0f)
+        assertEquals(200f, style.scrollPixelsPerMediaSecond * 2f, 0f)
+    }
+
+    @Test
+    fun disablingSyncCancelsPlaybackSpeedButRetainsConfiguredSpeed() {
+        val style = DanmakuDisplayConfig.DEFAULT.copy(
+            scrollSpeed = 3f,
+            syncScrollSpeedWithPlayback = false,
+        ).toDfmStyle(scaledDensity = 3f, density = 2f, playbackSpeed = 4f)
+        assertEquals(150f, style.scrollPixelsPerMediaSecond, 0f)
+        assertEquals(600f, style.scrollPixelsPerMediaSecond * 4f, 0f)
+        val largerFont = DanmakuDisplayConfig.DEFAULT.copy(fontSizeSp = 36f)
+            .toDfmStyle(scaledDensity = 3f, density = 2f)
+        assertEquals(200f, largerFont.scrollPixelsPerMediaSecond, 0f)
     }
 
     @Test

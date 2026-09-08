@@ -7,6 +7,7 @@ import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class CartoonPlayViewModelTest {
@@ -91,6 +92,18 @@ class CartoonPlayViewModelTest {
         assertEquals("line-2", viewModel.selectedLineId)
         assertEquals(1, viewModel.selectedLineIndex)
         assertEquals(1, viewModel.resolveSelectedLineIndex(lines))
+    }
+
+    @Test
+    fun tryNextReportsFalseAtLastEpisode() {
+        val episode = Episode("episode-1", "第 1 集", 1)
+        val line = wrapper(PlayLine("line-1", "线路一", arrayListOf(episode)), compareBy { it.order })
+        val viewModel = CartoonPlayViewModel(enterFor("line-1", "episode-1"))
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(line))
+
+        assertFalse(viewModel.tryNext())
+        assertFalse(viewModel.hasNext())
+        assertEquals("episode-1", viewModel.curringPlayState.value?.episode?.id)
     }
 
     private fun wrapper(

@@ -474,7 +474,8 @@ class ControlViewModel(
     fun isShowOverlay(): Boolean {        return when (controlState) {
             ControlState.Normal -> isNormalLockedControlShow
             ControlState.Locked -> false
-            ControlState.Ended -> false
+            // 末集播放完成后控制栏固定展示，配合画面中央的重播按钮形成明确结束态。
+            ControlState.Ended -> true
             else -> true
         }
     }

@@ -6,6 +6,10 @@ import android.content.Context
 import android.os.Build
 import android.os.Looper
 import android.os.Process
+import coil.Coil
+import coil.ImageLoader
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import com.heyanle.easybangumi4.setting.SettingMMKVPreferences
 import com.heyanle.easybangumi4.utils.WebViewCompatibilityModeGuard
 import com.heyanle.inject.core.Inject
@@ -67,6 +71,22 @@ class App : Application() {
         super.onCreate()
         APP = this
         if (isMainProcess()) {
+            Coil.setImageLoader(
+                ImageLoader.Builder(this)
+                    .memoryCache {
+                        MemoryCache.Builder(this)
+                            .maxSizePercent(0.20)
+                            .build()
+                    }
+                    .diskCache {
+                        DiskCache.Builder()
+                            .directory(cacheDir.resolve("coil_image_cache"))
+                            .maxSizeBytes(256L * 1024L * 1024L)
+                            .build()
+                    }
+                    .crossfade(true)
+                    .build()
+            )
             Scheduler.runOnAppCreate(this)
         }
 

@@ -259,11 +259,11 @@ fun CartoonDownloadDialog(
 
         val sl = sta.storyList
 
-        if (sl is DataResult.Loading) {
+        if (sl is DataResult.Loading && !sta.isFlat) {
             LoadingPage(
                 modifier = Modifier.fillMaxSize()
             )
-        } else if (sl is DataResult.Error) {
+        } else if (sl is DataResult.Error && !sta.isFlat) {
             ErrorPage(
                 modifier = Modifier.fillMaxSize(),
                 errorMsg = sl.errorMsg,

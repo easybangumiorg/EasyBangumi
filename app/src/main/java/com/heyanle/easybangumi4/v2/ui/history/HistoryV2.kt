@@ -387,7 +387,8 @@ private fun HistoryItemV2(
     onDelete: () -> Unit,
 ) {
     val sourceController = LocalSourceBundleController.current
-    val sourceLabel = sourceController.source(cartoon.source)?.label ?: cartoon.source
+    val sourceLabel = sourceController.source(cartoon.source)?.label
+        ?: cartoon.sourceName.ifBlank { cartoon.source }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -406,6 +407,21 @@ private fun HistoryItemV2(
                 contentDescription = cartoon.name,
                 modifier = Modifier.fillMaxSize(),
                 errorRes = com.heyanle.easybangumi4.R.drawable.placeholder,
+            )
+            Text(
+                text = sourceLabel,
+                color = V2Tokens.Surface,
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(4.dp)
+                    .background(
+                        V2Tokens.TextPrimary.copy(alpha = 0.78f),
+                        RoundedCornerShape(5.dp),
+                    )
+                    .padding(horizontal = 5.dp, vertical = 2.dp),
             )
             if (selected) {
                 Icon(

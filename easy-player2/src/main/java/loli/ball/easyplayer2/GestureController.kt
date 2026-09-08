@@ -167,13 +167,15 @@ fun GestureController(
                     }
                 )
             }
-            .pointerInput("长按倍速", enableFullscreenGestures) {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { vm.onLongPress() },
-                    onDragCancel = { vm.onActionUP() },
-                    onDragEnd = { vm.onActionUP() },
-                    onDrag = { _, _ -> }
-                )
+            .pointerInput("长按倍速", enableSeekGestures) {
+                if (enableSeekGestures) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { vm.onLongPress() },
+                        onDragCancel = { vm.onActionUP() },
+                        onDragEnd = { vm.onActionUP() },
+                        onDrag = { _, _ -> }
+                    )
+                }
             }
             .pointerInput("横向滑动", enableSeekGestures) {
                 var horizontalOffset = 0F
@@ -291,13 +293,15 @@ fun GestureController(
                     }
                 )
             }
-            .pointerInput("长按倍速", enableFullscreenGestures) {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { vm.onLongPress() },
-                    onDragCancel = { vm.onActionUP() },
-                    onDragEnd = { vm.onActionUP() },
-                    onDrag = { _, _ -> }
-                )
+            .pointerInput("长按倍速", enableSeekGestures) {
+                if (enableSeekGestures) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { vm.onLongPress() },
+                        onDragCancel = { vm.onActionUP() },
+                        onDragEnd = { vm.onActionUP() },
+                        onDrag = { _, _ -> }
+                    )
+                }
             }
             .pointerInput("横向滑动", enableSeekGestures) {
                 var horizontalOffset = 0F

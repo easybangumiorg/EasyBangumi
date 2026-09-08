@@ -71,6 +71,13 @@ sealed class SettingPage(
         PlayerSetting(nestedScrollConnection = it)
     })
 
+    /** V2 owns the dedicated display page; legacy falls back to its combined player settings. */
+    data object Danmaku : SettingPage("danmaku", {
+        Text(text = stringResource(id = R.string.danmaku_setting))
+    }, {
+        PlayerSetting(nestedScrollConnection = it)
+    })
+
     data object Download : SettingPage("download", {
         Text(text = stringResource(id = R.string.download_setting))
     }, {
@@ -100,6 +107,7 @@ sealed class SettingPage(
 val settingPages = mapOf(
     SettingPage.Appearance.router to SettingPage.Appearance,
     SettingPage.Player.router to SettingPage.Player,
+    SettingPage.Danmaku.router to SettingPage.Danmaku,
     SettingPage.Download.router to SettingPage.Download,
     SettingPage.First.router to SettingPage.First,
     SettingPage.Developers.router to SettingPage.Developers,

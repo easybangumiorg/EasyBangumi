@@ -3,14 +3,18 @@ package com.heyanle.easybangumi4.ui.cartoon_play
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.heyanle.easybangumi4.danmaku.DANDANPLAY_SOURCE_ID
 import com.heyanle.easybangumi4.danmaku.DanmakuComment
@@ -20,7 +24,10 @@ import com.heyanle.easybangumi4.danmaku.DanmakuDisplayMode
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererCommand
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererConfigEffect
 import com.heyanle.easybangumi4.danmaku.DanmakuRendererSyncPolicy
+import com.heyanle.easybangumi4.danmaku.PlaybackTimelineClock
 import com.heyanle.easybangumi4.danmaku.classifyDanmakuConfigChange
+import com.heyanle.easybangumi4.danmaku.resolveDanmakuCanvasHeightPx
+import com.heyanle.easybangumi4.danmaku.normalizedPlaybackSpeed
 import com.heyanle.easybangumi4.danmaku.toDfmStyle
 import kotlinx.coroutines.delay
 import loli.ball.easyplayer2.EasyPlayerController
@@ -33,6 +40,7 @@ import master.flame.danmaku.danmaku.model.android.DanmakuContext
 import master.flame.danmaku.danmaku.model.android.Danmakus
 import master.flame.danmaku.danmaku.parser.BaseDanmakuParser
 import master.flame.danmaku.ui.widget.DanmakuView
+import kotlin.math.roundToInt
 
 /** Imperative adapter around DanmakuFlameMaster; the caller owns normalized comment state. */
 class DfmDanmakuRenderer {
@@ -41,6 +49,8 @@ class DfmDanmakuRenderer {
     private var pendingComments: List<DanmakuComment> = emptyList()
     private var pendingBindingOffsetMillis: Long = 0L
     private var appliedConfig = DanmakuDisplayConfig.DEFAULT
+    private var playbackSpeed = 1f
+    private val playbackTimelineClock = PlaybackTimelineClock()
     private val renderedItems = mutableListOf<RenderedDanmaku>()
     private val syncPolicy = DanmakuRendererSyncPolicy()
 
@@ -113,11 +123,14 @@ class DfmDanmakuRenderer {
                 }
             }
 
-            override fun updateTimer(timer: DanmakuTimer) = Unit
+            override fun updateTimer(timer: DanmakuTimer) {
+                timer.update(playbackTimelineClock.positionAt(SystemClock.elapsedRealtime()))
+            }
             override fun danmakuShown(danmaku: BaseDanmaku) = Unit
             override fun drawingFinished() = Unit
         })
         view.prepare(EmptyDanmakuParser(), newContext)
+        (view as? PlaybackAwareDanmakuView)?.enablePlayerClock()
     }
 
     /**
@@ -173,6 +186,9 @@ class DfmDanmakuRenderer {
     }
 
     fun seekTo(positionMillis: Long) {
+        renderedItems.forEach { rendered ->
+            (rendered.item as? FixedSpeedScrollDanmaku)?.requestTimelineReset()
+        }
         execute(syncPolicy.onPositionDiscontinuity(positionMillis))
     }
 
@@ -187,6 +203,33 @@ class DfmDanmakuRenderer {
 
     fun setVisible(visible: Boolean) {
         view?.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        val normalized = speed.normalizedPlaybackSpeed()
+        if (playbackSpeed == normalized) return
+        playbackSpeed = normalized
+        // The DFM clock advances in media time. Synced motion therefore speeds up automatically;
+        // only the non-synced mode needs an inverse velocity update to remain constant on screen.
+        if (appliedConfig.syncScrollSpeedWithPlayback) return
+        val currentContext = context ?: return
+        val currentView = view ?: return
+        applyStyle(currentContext, appliedConfig, currentView)
+    }
+
+    fun synchronizePlaybackTimeline(
+        positionMillis: Long,
+        speed: Float,
+        isPlaying: Boolean,
+        isDiscontinuity: Boolean = false,
+    ) {
+        playbackTimelineClock.synchronize(
+            positionMillis = positionMillis,
+            playbackSpeed = speed,
+            isPlaying = isPlaying,
+            realtimeMillis = SystemClock.elapsedRealtime(),
+            allowBackward = isDiscontinuity,
+        )
     }
 
     /**
@@ -282,10 +325,23 @@ class DfmDanmakuRenderer {
         val displayComments = pendingComments.applyDisplaySampling(
             densityRatio = appliedConfig.densityRatio,
             mergeRepeatWindowMillis = appliedConfig.mergeRepeatWindowMillis,
+            blockRulesEnabled = appliedConfig.blockRulesEnabled,
+            blockedTextRules = appliedConfig.blockedTextRules,
+            blockedRegexRules = appliedConfig.blockedRegexRules,
         )
+        val scrollAdmission = if (appliedConfig.preventScrollOcclusion) ScrollDanmakuAdmission() else null
+        val scrollSpeed = appliedConfig.toDfmStyle(
+            scaledDensity = currentView.currentScaledDensity(),
+            density = currentView.resources.displayMetrics.density,
+            playbackSpeed = playbackSpeed,
+        ).scrollPixelsPerMediaSecond
         displayComments.forEach { comment ->
-            currentContext.mDanmakuFactory
-                .createDanmaku(comment.toDfmType(), currentContext)
+            val item = if (comment.mode == DanmakuDisplayMode.SCROLL) {
+                FixedSpeedScrollDanmaku(currentContext.mDanmakuFactory, scrollAdmission, scrollSpeed)
+            } else {
+                currentContext.mDanmakuFactory.createDanmaku(comment.toDfmType(), currentContext)
+            }
+            item
                 ?.apply {
                     text = comment.text
                     textColor = comment.colorArgb.takeIf { it != 0 } ?: Color.WHITE
@@ -322,13 +378,24 @@ class DfmDanmakuRenderer {
         config: DanmakuDisplayConfig,
         view: DanmakuView,
     ) {
-        val style = config.toDfmStyle(view.currentScaledDensity())
+        val style = config.toDfmStyle(
+            scaledDensity = view.currentScaledDensity(),
+            density = view.resources.displayMetrics.density,
+            playbackSpeed = playbackSpeed,
+        )
         context
             .setScaleTextSize(
                 config.fontSizeSp / DanmakuDisplayConfig.DEFAULT_FONT_SIZE_SP,
             )
             .setDanmakuMargin(style.marginPx)
-            .setScrollSpeedFactor(style.scrollDurationFactor)
+        // Anchor all visible comments at the same timestamp before changing their velocity.
+        val now = playbackTimelineClock.positionAt(SystemClock.elapsedRealtime())
+        renderedItems.forEach { rendered ->
+            (rendered.item as? FixedSpeedScrollDanmaku)?.updateSpeed(
+                timeMillis = now,
+                speed = style.scrollPixelsPerMediaSecond,
+            )
+        }
         // DFM 的全局透明度直接写绘制 paint 的 alpha，立即生效。
         context.setDanmakuTransparency(config.opacity)
     }
@@ -343,6 +410,8 @@ class DfmDanmakuRenderer {
     ) {
         context
             .setR2LDanmakuVisibility(config.showScroll)
+            // Defense-mode scrolling items identify as SPECIAL to bypass DFM's row overwriting.
+            .setSpecialDanmakuVisibility(config.showScroll)
             .setFTDanmakuVisibility(config.showTop)
             .setFBDanmakuVisibility(config.showBottom)
         provenanceFilter.setData(config.enabledProvenance)
@@ -422,6 +491,12 @@ class DfmDanmakuRenderer {
         androidContext: Context,
     ) : DanmakuView(androidContext) {
 
+        fun enablePlayerClock() {
+            // Non-blocking mode delegates every DFM timer update to DrawHandler.Callback, whose
+            // value comes from the player-backed thread-safe media clock above.
+            handler?.enableNonBlockMode(true)
+        }
+
         fun startPausedAt(positionMillis: Long) {
             start(positionMillis)
             pauseAfterTimelineCommand()
@@ -452,15 +527,47 @@ fun DfmDanmakuOverlay(
     displayConfig: DanmakuDisplayConfig,
     modifier: Modifier = Modifier,
 ) {
+    val density = LocalDensity.current
+    val minimumLineHeightPx = with(density) {
+        (
+            displayConfig.fontSizeSp.sp.toPx() * displayConfig.lineHeightFactor +
+                MINIMUM_DANMAKU_LINE_VERTICAL_PADDING.toPx()
+        ).roundToInt().coerceAtLeast(1)
+    }
     AndroidView(
         modifier = modifier
             .fillMaxWidth()
             // 显示区域即弹幕画布：画布顶部对齐视频顶部、高度 = areaRatio × 视频高度。
             // DFM 的滚动轨道与顶部/底部锚点都以画布高度分配，三种类型的弹幕
             // （滚动从顶部排、顶部从顶部堆、底部贴画布底边向上堆）天然被约束在
-            // 画布内，与显示类型开关完全正交，无需任何行数过滤。
-            .fillMaxHeight(displayConfig.areaRatio.coerceIn(0f, 1f)),
+            // 画布内，与显示类型开关完全正交。竖屏下 10% 可能小于一条弹幕的
+            // 实际行高，因此布局只在运行时兜底到一行，不改写用户保存的区域比例。
+            .layout { measurable, constraints ->
+                if (!constraints.hasBoundedHeight) {
+                    val placeable = measurable.measure(constraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.placeRelative(0, 0)
+                    }
+                } else {
+                    val targetHeight = resolveDanmakuCanvasHeightPx(
+                        containerHeightPx = constraints.maxHeight,
+                        areaRatio = displayConfig.areaRatio,
+                        minimumLineHeightPx = minimumLineHeightPx,
+                    ).coerceAtLeast(constraints.minHeight)
+                    val placeable = measurable.measure(
+                        constraints.copy(minHeight = targetHeight, maxHeight = targetHeight),
+                    )
+                    layout(placeable.width, targetHeight) {
+                        placeable.placeRelative(0, 0)
+                    }
+                }
+            },
         factory = { context ->
+            renderer.synchronizePlaybackTimeline(
+                positionMillis = player.currentPosition,
+                speed = player.speed,
+                isPlaying = player.isPlaying,
+            )
             renderer.getOrCreateView(
                 androidContext = context,
                 positionMillis = player.currentPosition,
@@ -473,6 +580,11 @@ fun DfmDanmakuOverlay(
             }
         },
         update = { view ->
+            renderer.synchronizePlaybackTimeline(
+                positionMillis = player.currentPosition,
+                speed = player.speed,
+                isPlaying = player.isPlaying,
+            )
             renderer.attach(view, player.currentPosition, player.isPlaying)
         },
     )
@@ -484,6 +596,7 @@ fun DfmDanmakuOverlay(
         displayConfig.showBottom,
         displayConfig.enabledProvenance,
         displayConfig.timeOffsetMillis,
+        displayConfig.preventScrollOcclusion,
     ) {
         renderer.setDisplayConfig(displayConfig, player.currentPosition)
     }
@@ -496,6 +609,10 @@ fun DfmDanmakuOverlay(
         displayConfig.opacity,
         displayConfig.densityRatio,
         displayConfig.mergeRepeatWindowMillis,
+        displayConfig.blockRulesEnabled,
+        displayConfig.blockedTextRules,
+        displayConfig.blockedRegexRules,
+        displayConfig.syncScrollSpeedWithPlayback,
     ) {
         delay(STYLE_RECONFIGURE_DEBOUNCE_MILLIS)
         renderer.setDisplayConfig(displayConfig, player.currentPosition)
@@ -510,19 +627,59 @@ fun DfmDanmakuOverlay(
     DisposableEffect(player) {
         val listener = object : EasyPlayerController.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                renderer.synchronizePlaybackTimeline(
+                    positionMillis = player.currentPosition,
+                    speed = player.speed,
+                    isPlaying = isPlaying,
+                )
                 if (isPlaying) renderer.resume() else renderer.pause()
             }
 
             override fun onPositionDiscontinuity(positionMs: Long) {
+                renderer.synchronizePlaybackTimeline(
+                    positionMillis = positionMs,
+                    speed = player.speed,
+                    isPlaying = player.isPlaying,
+                    isDiscontinuity = true,
+                )
                 renderer.seekTo(positionMs)
+            }
+
+            override fun onPlaybackSpeedChanged(speed: Float) {
+                renderer.synchronizePlaybackTimeline(
+                    positionMillis = player.currentPosition,
+                    speed = speed,
+                    isPlaying = player.isPlaying,
+                )
+                renderer.setPlaybackSpeed(speed)
             }
         }
         player.addListener(listener)
+        renderer.synchronizePlaybackTimeline(
+            positionMillis = player.currentPosition,
+            speed = player.speed,
+            isPlaying = player.isPlaying,
+        )
+        renderer.setPlaybackSpeed(player.speed)
         if (player.isPlaying) renderer.resume() else renderer.pause()
         onDispose {
             player.removeListener(listener)
         }
     }
+    // Both ExoPlayer and MPV callbacks can be sparse while playing. Periodic main-thread samples
+    // correct decoder/buffering drift while the clock interpolates smoothly between samples.
+    LaunchedEffect(player, renderer) {
+        while (true) {
+            renderer.synchronizePlaybackTimeline(
+                positionMillis = player.currentPosition,
+                speed = player.speed,
+                isPlaying = player.isPlaying,
+            )
+            delay(PLAYBACK_CLOCK_SNAPSHOT_INTERVAL_MILLIS)
+        }
+    }
 }
 
 private const val STYLE_RECONFIGURE_DEBOUNCE_MILLIS = 80L
+private const val PLAYBACK_CLOCK_SNAPSHOT_INTERVAL_MILLIS = 250L
+private val MINIMUM_DANMAKU_LINE_VERTICAL_PADDING = 8.dp

@@ -137,7 +137,9 @@ android {
 //    }
 
     sourceSets {
-        getByName("main").assets.srcDir(rootProject.file("inner_source"))
+        // Keep repository sources available for local development and source integration tests.
+        // Release-equivalent build types intentionally do not inherit this debug-only asset path.
+        getByName("debug").assets.srcDir(rootProject.file("inner_source"))
         // Adds exported schema location as test app assets.
         getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }

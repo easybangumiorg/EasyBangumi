@@ -559,6 +559,7 @@ private fun OverviewCoverCard(
             onClick = { onClick() },
             onLongPress = { onLongClick() },
             v2Presentation = true,
+            sourceLabel = result.source.source.label,
         )
         return
     }

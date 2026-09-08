@@ -54,7 +54,7 @@ class CartoonDownloadReqModel(
 
         val isQuickMode: Boolean = true,
 
-        val destination: Int = DownloadDestination.LOCAL_STORY,
+        val destination: Int = DownloadDestination.FLAT,
 
         val dialog: Dialog? = null,
     ) {
@@ -82,7 +82,11 @@ class CartoonDownloadReqModel(
         }
     }
 
-    private val _state = MutableStateFlow(State())
+    private val _state = MutableStateFlow(
+        State().let { initial ->
+            initial.copy(reqList = newFlatReqList(initial))
+        }
+    )
     val state = _state.asStateFlow()
 
     init {

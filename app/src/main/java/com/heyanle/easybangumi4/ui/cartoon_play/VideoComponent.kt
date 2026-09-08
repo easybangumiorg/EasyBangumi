@@ -327,42 +327,40 @@ fun VideoFloat(
             }
         }
 
-    } else if (playingState.isPlaying) {
-        if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
+    } else if (controlVM.controlState == ControlViewModel.ControlState.Ended) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            IconButton(
+                modifier = Modifier.align(Alignment.Center),
+                onClick = {
+                    cartoonPlayingViewModel.tryRefresh()
+                }) {
+                Icon(
+                    Icons.Filled.Replay,
+                    contentDescription = stringResource(id = R.string.replay)
+                )
+            }
+
+
+            if (controlVM.isFullScreen) {
                 IconButton(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(
+                            start = cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT),
+                        ),
                     onClick = {
-                        cartoonPlayingViewModel.tryRefresh()
+                        controlVM.onFullScreen(
+                            fullScreen = false,
+                            reverse = false,
+                            ctx = ctx
+                        )
                     }) {
                     Icon(
-                        Icons.Filled.Replay,
-                        contentDescription = stringResource(id = R.string.replay)
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(id = R.string.back)
                     )
-                }
-
-
-                if (controlVM.isFullScreen) {
-                    IconButton(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(
-                                start = cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT),
-                            ),
-                        onClick = {
-                            controlVM.onFullScreen(
-                                fullScreen = false,
-                                reverse = false,
-                                ctx = ctx
-                            )
-                        }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
-                        )
-                    }
                 }
             }
         }
@@ -1003,6 +1001,7 @@ fun VideoControl(
                 onNext = {
                     cartoonPlayVM.tryNext()
                 },
+                canPlayNext = cartoonPlayVM.hasNext(),
                 danmakuControlState = if (showNormalDanmakuInTopBar) null else danmakuControlState,
                 showNormalSpeed = showNormalSpeedInBottomBar,
             )
@@ -1561,6 +1560,7 @@ fun EasyVideoBottomControl(
     paddingValues: PaddingValues = PaddingValues(0.dp),
     onSHowSpeedWin: () -> Unit,
     onNext: () -> Unit,
+    canPlayNext: Boolean = true,
     danmakuControlState: PlayerDanmakuControlState? = null,
     showNormalSpeed: Boolean = false,
 ) {
@@ -1597,7 +1597,7 @@ fun EasyVideoBottomControl(
                 vm.onPlayPause(it)
             })
 
-            if (vm.isFullScreen) {
+            if (vm.isFullScreen && canPlayNext) {
                 Icon(
                     Icons.Filled.SkipNext,
                     modifier = Modifier

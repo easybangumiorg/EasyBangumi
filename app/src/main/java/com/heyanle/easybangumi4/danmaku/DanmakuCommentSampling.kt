@@ -41,6 +41,32 @@ fun List<DanmakuComment>.sampledByDensity(densityRatio: Float): List<DanmakuComm
 fun List<DanmakuComment>.applyDisplaySampling(
     densityRatio: Float,
     mergeRepeatWindowMillis: Long,
+    blockRulesEnabled: Boolean = true,
+    blockedTextRules: Set<String> = emptySet(),
+    blockedRegexRules: Set<String> = emptySet(),
 ): List<DanmakuComment> = sortedBy { it.timeMillis }
+    .let { comments ->
+        if (blockRulesEnabled) {
+            comments.filteredByBlockRules(blockedTextRules, blockedRegexRules)
+        } else {
+            comments
+        }
+    }
     .mergedRepeats(mergeRepeatWindowMillis)
     .sampledByDensity(densityRatio)
+
+fun List<DanmakuComment>.filteredByBlockRules(
+    textRules: Set<String>,
+    regexRules: Set<String>,
+): List<DanmakuComment> {
+    if (isEmpty() || (textRules.isEmpty() && regexRules.isEmpty())) return this
+    val normalizedTextRules = textRules.map(String::trim).filter(String::isNotEmpty)
+    val compiledRegexRules = regexRules.mapNotNull { rule ->
+        rule.trim().takeIf(String::isNotEmpty)?.let { runCatching { Regex(it) }.getOrNull() }
+    }
+    if (normalizedTextRules.isEmpty() && compiledRegexRules.isEmpty()) return this
+    return filterNot { comment ->
+        normalizedTextRules.any { comment.text.contains(it, ignoreCase = true) } ||
+            compiledRegexRules.any { it.containsMatchIn(comment.text) }
+    }
+}

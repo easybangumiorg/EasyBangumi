@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -156,6 +157,7 @@ import com.heyanle.easybangumi4.utils.shareText
 import com.heyanle.easybangumi4.utils.toJson
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.v2.theme.V2Theme
+import com.heyanle.easybangumi4.v2.ui.setting.DanmakuBlockRulesBottomSheet
 import com.heyanle.inject.core.Inject
 import loli.ball.easyplayer2.ControlViewModel
 import loli.ball.easyplayer2.ControlViewModelFactory
@@ -212,6 +214,7 @@ private fun playbackDetailColorScheme() = darkColorScheme(
     onSurface = Color.White,
     surfaceVariant = V2Tokens.PlayerSurface,
     onSurfaceVariant = V2Tokens.PlayerTextSecondary,
+    surfaceTint = Color.Transparent,
     outline = V2Tokens.PlayerDivider,
     error = V2Tokens.PlayerError,
 )
@@ -228,12 +231,13 @@ private fun playbackSheetColorScheme() = darkColorScheme(
     onSecondaryContainer = V2Theme.colors.onImmersiveAccentContainer,
     background = V2Tokens.PlayerDark,
     onBackground = V2Tokens.PlayerTextPrimary,
-    surface = V2Tokens.PlayerSurface,
-    surfaceContainer = V2Tokens.PlayerSurface,
-    surfaceContainerLow = V2Tokens.PlayerSurfaceMuted,
+    surface = V2Tokens.PlayerDark,
+    surfaceContainer = V2Tokens.PlayerDark,
+    surfaceContainerLow = V2Tokens.PlayerDark,
     onSurface = V2Tokens.PlayerTextPrimary,
     surfaceVariant = V2Tokens.PlayerSurfaceMuted,
     onSurfaceVariant = V2Tokens.PlayerTextSecondary,
+    surfaceTint = Color.Transparent,
     outline = V2Tokens.PlayerDivider,
     error = V2Tokens.PlayerError,
 )
@@ -432,6 +436,7 @@ fun PlaybackDetailV2(
                         danmakuState = danmakuState,
                         danmakuDisplayConfig = danmakuDisplayConfig,
                         onDanmakuDisplayConfigChange = danmakuDisplayPreferences::setConfig,
+                        onUpdateDanmakuDisplayConfig = danmakuDisplayPreferences::updateConfig,
                         onResetDanmakuDisplayConfig = danmakuDisplayPreferences::resetToDefaults,
                         onManualMatch = danmakuVM::beginManualMatch,
                         onDanmakuRetry = danmakuVM::retry,
@@ -472,6 +477,7 @@ private fun PlaybackDetailV2Content(
     danmakuState: DanmakuPlaybackState,
     danmakuDisplayConfig: DanmakuDisplayConfig,
     onDanmakuDisplayConfigChange: (DanmakuDisplayConfig) -> Unit,
+    onUpdateDanmakuDisplayConfig: ((DanmakuDisplayConfig) -> DanmakuDisplayConfig) -> Unit,
     onResetDanmakuDisplayConfig: () -> Unit,
     onManualMatch: () -> Unit,
     onDanmakuRetry: () -> Unit,
@@ -489,6 +495,7 @@ private fun PlaybackDetailV2Content(
     val showEpisodeWindow = remember { mutableStateOf(false) }
     val showScaleType = remember { mutableStateOf(false) }
     var showPlayerSettings by rememberSaveable { mutableStateOf(false) }
+    var showDanmakuBlockRules by rememberSaveable { mutableStateOf(false) }
     var playerSettingsSection by rememberSaveable {
         mutableStateOf(PlayerSettingsSection.Danmaku)
     }
@@ -633,6 +640,7 @@ private fun PlaybackDetailV2Content(
                     },
                     onDanmakuConfigChange = onDanmakuDisplayConfigChange,
                     onResetDanmaku = onResetDanmakuDisplayConfig,
+                    onOpenDanmakuBlockRules = { showDanmakuBlockRules = true },
                     videoScaleType = videoScaleType,
                     videoScaleOptions = playingVM.videoScaleTypeSelection,
                     onVideoScaleSelected = playingVM::setVideoScaleType,
@@ -648,10 +656,21 @@ private fun PlaybackDetailV2Content(
                     onExoAdAudioProbeEnabledChange = playingVM::setExoAdAudioProbeEnabled,
                     onExoAdAudioProbeRulesUrlChange = playingVM::setExoAdAudioProbeRulesUrl,
                 )
+                if (showDanmakuBlockRules) {
+                    DanmakuBlockRulesBottomSheet(
+                        config = danmakuDisplayConfig,
+                        onUpdateConfig = onUpdateDanmakuDisplayConfig,
+                        onDismiss = { showDanmakuBlockRules = false },
+                    )
+                }
             }
         },
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .let { if (isPad) it.statusBarsPadding() else it },
+        ) {
             Box(modifier = Modifier.weight(1f)) {
                 when {
                     detailState.isLoading -> LoadingPage(modifier = Modifier.fillMaxSize())

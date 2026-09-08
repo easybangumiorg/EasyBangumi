@@ -175,8 +175,10 @@ class MpvPlaybackController(
     override fun setSpeed(speed: Float) {
         if (released.get()) return
         val normalized = speed.coerceIn(0.25f, 4f)
+        if (playbackSpeed == normalized) return
         playbackSpeed = normalized
         MPVLib.setPropertyDouble("speed", normalized.toDouble())
+        post { listeners.forEach { it.onPlaybackSpeedChanged(normalized) } }
     }
 
     override fun stop() {

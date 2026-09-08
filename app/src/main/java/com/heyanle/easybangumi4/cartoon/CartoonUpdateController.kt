@@ -1,9 +1,7 @@
 package com.heyanle.easybangumi4.cartoon
 
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
-import com.heyanle.easybangumi4.case.SourceStateCase
-import com.heyanle.easybangumi4.plugin.api.SourceResult
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.utils.CoroutineProvider
 import kotlinx.coroutines.CoroutineScope
@@ -11,7 +9,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -19,8 +16,7 @@ import kotlinx.coroutines.launch
  * https://github.com/heyanLE
  */
 class CartoonUpdateController(
-    private val cartoonInfoDao: CartoonInfoDao,
-    private val sourceStateCase: SourceStateCase,
+    private val cartoonRepository: CartoonRepository,
 ) {
 
     private val dispatcher = CoroutineProvider.SINGLE
@@ -39,10 +35,7 @@ class CartoonUpdateController(
 
     fun updateAll() {
         scope.launch {
-            // 开个事务确保一致性
-            cartoonInfoDao.transaction {
-                innerUpdate(cartoonInfoDao.flowAllStar().first(), false)
-            }
+            innerUpdate(cartoonRepository.flowAllStar().first(), false)
         }
     }
 
@@ -50,39 +43,26 @@ class CartoonUpdateController(
         list: Collection<CartoonInfo>,
         isStrict: Boolean
     ) {
-        _isUpdating.update { true }
-        val bundle = sourceStateCase.awaitBundle()
-        list.asSequence()
-            .filter {
-                it.isDetailed && it.lastHistoryTime != 0L
-            }
-            .filter {
-                when (it.updateStrategy) {
-                    Cartoon.UPDATE_STRATEGY_ALWAYS -> true
-                    Cartoon.UPDATE_STRATEGY_ONLY_STRICT -> isStrict
-                    else -> false
-                }
-            }.toList()
-            .mapNotNull {
-                val detailed = bundle.detailed(it.source)
-                if( detailed == null){
-                    null
-                }else{
-                    val newCartoon = detailed.getAll(it.toSummary())
-                    if(newCartoon is SourceResult.Complete){
-                        it.copyFromCartoon(newCartoon.data.first, detailed.source.label, newCartoon.data.second)
-                    }else{
-                        null
+        _isUpdating.value = true
+        try {
+            list.asSequence()
+                .filter { it.isDetailed && it.lastHistoryTime != 0L }
+                .filter {
+                    when (it.updateStrategy) {
+                        Cartoon.UPDATE_STRATEGY_ALWAYS -> true
+                        Cartoon.UPDATE_STRATEGY_ONLY_STRICT -> isStrict
+                        else -> false
                     }
                 }
-            }.filterIsInstance<CartoonInfo>()
-            .forEach {
-                cartoonInfoDao.modify(it)
-            }
-        _isUpdating.update {
-            false
+                .forEach {
+                    cartoonRepository.awaitCartoonInfoWithPlayLines(
+                        it.toSummary(),
+                        forceRefresh = true,
+                    )
+                }
+        } finally {
+            _isUpdating.value = false
         }
-
     }
 
 

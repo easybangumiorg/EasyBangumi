@@ -19,8 +19,8 @@ val DANMAKU_SCROLL_SPEED_TIERS = listOf(
     0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f, 2.5f, 3f,
 )
 
-/** Bilibili exposes the visible scroll area in quarter steps. */
-val DANMAKU_AREA_RATIO_TIERS = listOf(0.25f, 0.5f, 0.75f, 1f)
+/** Visible danmaku canvas tiers, including a compact 10% strip for subtitle-heavy videos. */
+val DANMAKU_AREA_RATIO_TIERS = listOf(0.1f, 0.25f, 0.5f, 0.75f, 1f)
 
 fun Float.snapToDanmakuScrollSpeed(): Float {
     if (!isFinite()) return DanmakuDisplayConfig.DEFAULT_SCROLL_SPEED
@@ -77,7 +77,7 @@ data class DanmakuDisplayConfig(
     /** Global danmaku opacity, 0.1 (almost invisible) .. 1 (opaque). */
     val opacity: Float = DEFAULT_OPACITY,
     /**
-     * 弹幕画布高度占视频高度的比例，吸附到 [DANMAKU_AREA_RATIO_TIERS]（0.25 .. 1）。
+     * 弹幕画布高度占视频高度的比例，吸附到 [DANMAKU_AREA_RATIO_TIERS]（0.1 .. 1）。
      * 由 Compose 布局承载（DanmakuView 顶部对齐、高度 = areaRatio × 视频高度）：
      * 滚动/顶部/底部三种类型的弹幕都被约束在画布内，与 show* 类型开关完全正交。
      */
@@ -89,6 +89,16 @@ data class DanmakuDisplayConfig(
     val densityRatio: Float = DEFAULT_DENSITY_RATIO,
     /** 复读合并窗口（0 .. 5000ms）：窗口内同文字弹幕只保留第一条；0 = 不合并。 */
     val mergeRepeatWindowMillis: Long = DEFAULT_MERGE_REPEAT_WINDOW_MILLIS,
+    /** 屏蔽词总开关；关闭时保留规则，仅暂停匹配。 */
+    val blockRulesEnabled: Boolean = true,
+    /** 普通文本规则按忽略大小写的“包含”语义匹配。 */
+    val blockedTextRules: Set<String> = emptySet(),
+    /** 正则规则使用 Kotlin Regex 的 containsMatchIn 语义；非法表达式会被忽略。 */
+    val blockedRegexRules: Set<String> = emptySet(),
+    /** 播放倍速变化时同步调整滚动弹幕速度。 */
+    val syncScrollSpeedWithPlayback: Boolean = true,
+    /** 最终入场检查：同一行前一条尚未完全进入屏幕时等待，过期则丢弃。 */
+    val preventScrollOcclusion: Boolean = false,
 ) {
     fun normalized(): DanmakuDisplayConfig = copy(
         enabledProvenance = enabledProvenance.toSet(),
@@ -105,6 +115,8 @@ data class DanmakuDisplayConfig(
             MERGE_REPEAT_WINDOW_RANGE.start,
             MERGE_REPEAT_WINDOW_RANGE.endInclusive,
         ),
+        blockedTextRules = blockedTextRules.normalizeDanmakuRules(),
+        blockedRegexRules = blockedRegexRules.normalizeDanmakuRules(),
     )
 
     companion object {
@@ -197,6 +209,14 @@ class DanmakuDisplayPreferences(
         "danmaku_merge_repeat_window_millis",
         DanmakuDisplayConfig.DEFAULT_MERGE_REPEAT_WINDOW_MILLIS,
     )
+    val blockedTextRules = preferenceStore.getStringSet("danmaku_blocked_text_rules", emptySet())
+    val blockedRegexRules = preferenceStore.getStringSet("danmaku_blocked_regex_rules", emptySet())
+    val blockRulesEnabled = preferenceStore.getBoolean("danmaku_block_rules_enabled", true)
+    val syncScrollSpeedWithPlayback = preferenceStore.getBoolean(
+        "danmaku_sync_scroll_speed_with_playback",
+        true,
+    )
+    val preventScrollOcclusion = preferenceStore.getBoolean("danmaku_prevent_scroll_occlusion", false)
 
     /** Returns one normalized snapshot for synchronous consumers. */
     fun getConfig(): DanmakuDisplayConfig = rawConfig().normalized()
@@ -222,24 +242,42 @@ class DanmakuDisplayPreferences(
             opacity.flow(),
             areaRatio.flow(),
             timeOffsetMillis.flow(),
-            densityRatio.flow(),
-            mergeRepeatWindowMillis.flow(),
-        ) { opacity, areaRatio, offset, density, mergeWindow ->
+        ) { opacity, areaRatio, offset ->
             Visuals(
                 opacity = opacity,
                 areaRatio = areaRatio,
                 timeOffsetMillis = offset,
-                densityRatio = density,
-                mergeRepeatWindowMillis = mergeWindow,
             )
+        }
+        val blockRules = combine(
+            blockRulesEnabled.flow(),
+            blockedTextRules.flow(),
+            blockedRegexRules.flow(),
+        ) { enabled, textRules, regexRules ->
+            BlockRules(enabled, textRules, regexRules)
+        }
+        val filtering = combine(
+            densityRatio.flow(),
+            mergeRepeatWindowMillis.flow(),
+            preventScrollOcclusion.flow(),
+            blockRules,
+        ) { density, mergeWindow, preventOcclusion, rules ->
+            Filtering(density, mergeWindow, preventOcclusion, rules)
+        }
+        val style = combine(
+            fontSizeSp.flow(),
+            lineHeightFactor.flow(),
+            scrollSpeed.flow(),
+            syncScrollSpeedWithPlayback.flow(),
+        ) { fontSize, lineHeight, speed, syncSpeed ->
+            Style(fontSize, lineHeight, speed, syncSpeed)
         }
         return combine(
             switches,
             visuals,
-            fontSizeSp.flow(),
-            lineHeightFactor.flow(),
-            scrollSpeed.flow(),
-        ) { switchesValue, visualsValue, fontSize, lineHeight, speed ->
+            filtering,
+            style,
+        ) { switchesValue, visualsValue, filteringValue, styleValue ->
             DanmakuDisplayConfig(
                 enabled = switchesValue.enabled,
                 showScroll = switchesValue.showScroll,
@@ -248,12 +286,17 @@ class DanmakuDisplayPreferences(
                 enabledProvenance = switchesValue.enabledProvenance,
                 opacity = visualsValue.opacity,
                 areaRatio = visualsValue.areaRatio,
-                densityRatio = visualsValue.densityRatio,
-                mergeRepeatWindowMillis = visualsValue.mergeRepeatWindowMillis,
+                densityRatio = filteringValue.densityRatio,
+                mergeRepeatWindowMillis = filteringValue.mergeRepeatWindowMillis,
+                blockRulesEnabled = filteringValue.blockRules.enabled,
+                blockedTextRules = filteringValue.blockRules.textRules,
+                blockedRegexRules = filteringValue.blockRules.regexRules,
                 timeOffsetMillis = visualsValue.timeOffsetMillis,
-                fontSizeSp = fontSize,
-                lineHeightFactor = lineHeight,
-                scrollSpeed = speed,
+                fontSizeSp = styleValue.fontSizeSp,
+                lineHeightFactor = styleValue.lineHeightFactor,
+                scrollSpeed = styleValue.scrollSpeed,
+                syncScrollSpeedWithPlayback = styleValue.syncScrollSpeedWithPlayback,
+                preventScrollOcclusion = filteringValue.preventScrollOcclusion,
             ).normalized()
         }.distinctUntilChanged()
     }
@@ -274,6 +317,11 @@ class DanmakuDisplayPreferences(
         areaRatio.setIfChanged(value.areaRatio)
         densityRatio.setIfChanged(value.densityRatio)
         mergeRepeatWindowMillis.setIfChanged(value.mergeRepeatWindowMillis)
+        blockedTextRules.setIfChanged(value.blockedTextRules)
+        blockedRegexRules.setIfChanged(value.blockedRegexRules)
+        blockRulesEnabled.setIfChanged(value.blockRulesEnabled)
+        syncScrollSpeedWithPlayback.setIfChanged(value.syncScrollSpeedWithPlayback)
+        preventScrollOcclusion.setIfChanged(value.preventScrollOcclusion)
     }
 
     fun updateConfig(transform: (DanmakuDisplayConfig) -> DanmakuDisplayConfig) {
@@ -300,6 +348,8 @@ class DanmakuDisplayPreferences(
                 areaRatio = DanmakuDisplayConfig.DEFAULT.areaRatio,
                 densityRatio = DanmakuDisplayConfig.DEFAULT.densityRatio,
                 mergeRepeatWindowMillis = DanmakuDisplayConfig.DEFAULT.mergeRepeatWindowMillis,
+                syncScrollSpeedWithPlayback = DanmakuDisplayConfig.DEFAULT.syncScrollSpeedWithPlayback,
+                preventScrollOcclusion = DanmakuDisplayConfig.DEFAULT.preventScrollOcclusion,
             )
         }
     }
@@ -318,6 +368,11 @@ class DanmakuDisplayPreferences(
         areaRatio = areaRatio.get(),
         densityRatio = densityRatio.get(),
         mergeRepeatWindowMillis = mergeRepeatWindowMillis.get(),
+        blockRulesEnabled = blockRulesEnabled.get(),
+        blockedTextRules = blockedTextRules.get(),
+        blockedRegexRules = blockedRegexRules.get(),
+        syncScrollSpeedWithPlayback = syncScrollSpeedWithPlayback.get(),
+        preventScrollOcclusion = preventScrollOcclusion.get(),
     )
 
     private data class Switches(
@@ -332,10 +387,34 @@ class DanmakuDisplayPreferences(
         val opacity: Float,
         val areaRatio: Float,
         val timeOffsetMillis: Long,
+    )
+
+    private data class Filtering(
         val densityRatio: Float,
         val mergeRepeatWindowMillis: Long,
+        val preventScrollOcclusion: Boolean,
+        val blockRules: BlockRules,
+    )
+
+    private data class BlockRules(
+        val enabled: Boolean,
+        val textRules: Set<String>,
+        val regexRules: Set<String>,
+    )
+
+    private data class Style(
+        val fontSizeSp: Float,
+        val lineHeightFactor: Float,
+        val scrollSpeed: Float,
+        val syncScrollSpeedWithPlayback: Boolean,
     )
 }
+
+private fun Set<String>.normalizeDanmakuRules(): Set<String> = asSequence()
+    .map(String::trim)
+    .filter(String::isNotEmpty)
+    .map { it.take(256) }
+    .toCollection(linkedSetOf())
 
 private fun <T> com.heyanle.easybangumi4.base.preferences.Preference<T>.setIfChanged(value: T) {
     if (get() != value) set(value)

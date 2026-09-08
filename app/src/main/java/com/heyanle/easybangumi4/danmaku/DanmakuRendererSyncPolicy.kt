@@ -42,7 +42,11 @@ internal fun classifyDanmakuConfigChange(
 
     if (
         previous.densityRatio != next.densityRatio ||
-        previous.mergeRepeatWindowMillis != next.mergeRepeatWindowMillis
+        previous.mergeRepeatWindowMillis != next.mergeRepeatWindowMillis ||
+        previous.blockRulesEnabled != next.blockRulesEnabled ||
+        previous.blockedTextRules != next.blockedTextRules ||
+        previous.blockedRegexRules != next.blockedRegexRules ||
+        previous.preventScrollOcclusion != next.preventScrollOcclusion
     ) {
         // 数量抽样与复读合并作用于弹幕条目集本身，必须重建时间轴；
         // 该效果优先级最高，与样式字段同时变化时由 STYLE 路径顺带应用原生样式。
@@ -53,7 +57,8 @@ internal fun classifyDanmakuConfigChange(
         previous.fontSizeSp != next.fontSizeSp ||
         previous.lineHeightFactor != next.lineHeightFactor ||
         previous.scrollSpeed != next.scrollSpeed ||
-        previous.opacity != next.opacity
+        previous.opacity != next.opacity ||
+        previous.syncScrollSpeedWithPlayback != next.syncScrollSpeedWithPlayback
     ) {
         // 透明度走 DFM 全局 paint alpha，归入 STYLE 走整套应用路径。
         return DanmakuRendererConfigEffect.STYLE

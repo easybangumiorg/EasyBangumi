@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SubtitlesOff
 import androidx.compose.material.icons.filled.Tune
@@ -48,6 +47,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -590,6 +593,12 @@ private fun DanmakuBangumiCandidates(
 @Composable
 private fun DanmakuBangumiCover(bangumi: DanmakuBangumi) {
     val shape = MaterialTheme.shapes.small
+    val fallbackUrl = remember(bangumi.remoteAnimeId) {
+        "https://img.dandanplay.net/anime/${bangumi.remoteAnimeId}.jpg"
+    }
+    var useFallback by remember(bangumi.remoteAnimeId, bangumi.imageUrl) {
+        mutableStateOf(bangumi.imageUrl.isNullOrBlank())
+    }
     Box(
         modifier = Modifier
             .size(width = 52.dp, height = 72.dp)
@@ -597,22 +606,17 @@ private fun DanmakuBangumiCover(bangumi: DanmakuBangumi) {
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,
     ) {
-        if (bangumi.imageUrl.isNullOrBlank()) {
-            Icon(
-                imageVector = Icons.Filled.ImageNotSupported,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        } else {
-            OkImage(
-                modifier = Modifier.fillMaxSize(),
-                image = bangumi.imageUrl,
-                contentDescription = "${bangumi.title}封面",
-                contentScale = ContentScale.Crop,
-                errorColor = MaterialTheme.colorScheme.surfaceVariant,
-                placeholderColor = MaterialTheme.colorScheme.surfaceVariant,
-            )
-        }
+        OkImage(
+            modifier = Modifier.fillMaxSize(),
+            image = if (useFallback) fallbackUrl else bangumi.imageUrl,
+            contentDescription = "${bangumi.title}封面",
+            contentScale = ContentScale.Crop,
+            errorColor = MaterialTheme.colorScheme.surfaceVariant,
+            placeholderColor = MaterialTheme.colorScheme.surfaceVariant,
+            onError = {
+                if (!useFallback) useFallback = true
+            },
+        )
     }
 }
 

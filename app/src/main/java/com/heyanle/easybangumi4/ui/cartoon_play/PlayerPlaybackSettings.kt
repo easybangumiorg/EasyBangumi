@@ -1,5 +1,7 @@
 package com.heyanle.easybangumi4.ui.cartoon_play
 
+import com.heyanle.easybangumi4.danmaku.SCROLL_OCCLUSION_HELP
+
 import android.app.Activity
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
@@ -36,6 +38,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
@@ -376,8 +379,8 @@ internal fun FullscreenPlayerSidePanel(
                         indication = null,
                         onClick = {},
                     ),
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                tonalElevation = 6.dp,
+                color = MaterialTheme.colorScheme.background,
+                tonalElevation = 0.dp,
             ) {
                 Column(
                     modifier = Modifier
@@ -411,6 +414,7 @@ internal fun AdaptivePlayerSettingsPanel(
     danmakuSummary: String?,
     onDanmakuConfigChange: (DanmakuDisplayConfig) -> Unit,
     onResetDanmaku: () -> Unit,
+    onOpenDanmakuBlockRules: () -> Unit = {},
     videoScaleType: Int,
     videoScaleOptions: List<Pair<Int, Int>>,
     onVideoScaleSelected: (Int) -> Unit,
@@ -443,6 +447,7 @@ internal fun AdaptivePlayerSettingsPanel(
                 danmakuSummary = danmakuSummary,
                 onDanmakuConfigChange = onDanmakuConfigChange,
                 onResetDanmaku = onResetDanmaku,
+                onOpenDanmakuBlockRules = onOpenDanmakuBlockRules,
                 videoScaleType = videoScaleType,
                 videoScaleOptions = videoScaleOptions,
                 onVideoScaleSelected = onVideoScaleSelected,
@@ -464,7 +469,7 @@ internal fun AdaptivePlayerSettingsPanel(
         ModalBottomSheet(
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.SETTINGS_PANEL),
             onDismissRequest = onDismiss,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
         ) {
             Column(
                 modifier = Modifier
@@ -479,6 +484,7 @@ internal fun AdaptivePlayerSettingsPanel(
                     danmakuSummary = danmakuSummary,
                     onDanmakuConfigChange = onDanmakuConfigChange,
                     onResetDanmaku = onResetDanmaku,
+                    onOpenDanmakuBlockRules = onOpenDanmakuBlockRules,
                     videoScaleType = videoScaleType,
                     videoScaleOptions = videoScaleOptions,
                     onVideoScaleSelected = onVideoScaleSelected,
@@ -508,6 +514,7 @@ private fun ColumnScope.PlayerSettingsContent(
     danmakuSummary: String?,
     onDanmakuConfigChange: (DanmakuDisplayConfig) -> Unit,
     onResetDanmaku: () -> Unit,
+    onOpenDanmakuBlockRules: () -> Unit,
     videoScaleType: Int,
     videoScaleOptions: List<Pair<Int, Int>>,
     onVideoScaleSelected: (Int) -> Unit,
@@ -587,6 +594,7 @@ private fun ColumnScope.PlayerSettingsContent(
                 config = danmakuConfig,
                 onConfigChange = onDanmakuConfigChange,
                 onReset = onResetDanmaku,
+                onOpenBlockRules = onOpenDanmakuBlockRules,
                 matchSummary = danmakuSummary,
                 modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.DANMAKU_SECTION),
             )
@@ -707,6 +715,7 @@ internal fun DanmakuDisplaySettingsContent(
     onReset: () -> Unit,
     modifier: Modifier = Modifier,
     matchSummary: String? = null,
+    onOpenBlockRules: (() -> Unit)? = null,
 ) {
     var confirmReset by remember { mutableStateOf(false) }
     var helpTopic by remember { mutableStateOf<DanmakuSettingHelp?>(null) }
@@ -730,6 +739,61 @@ internal fun DanmakuDisplaySettingsContent(
                 containerColor = Color.Transparent,
             ),
         )
+        ListItem(
+            headlineContent = { Text("倍速同步弹幕速度") },
+            supportingContent = { Text("手动倍速和长按快进时同步加速滚动弹幕") },
+            trailingContent = {
+                Switch(
+                    checked = config.syncScrollSpeedWithPlayback,
+                    onCheckedChange = {
+                        onConfigChange(config.copy(syncScrollSpeedWithPlayback = it))
+                    },
+                )
+            },
+            modifier = Modifier.clickable {
+                onConfigChange(
+                    config.copy(
+                        syncScrollSpeedWithPlayback = !config.syncScrollSpeedWithPlayback,
+                    ),
+                )
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+        SettingsGroupTitle("弹幕防覆盖", onHelpClick = { helpTopic = DanmakuSettingHelp.Occlusion })
+        ListItem(
+            headlineContent = { Text("弹幕防覆盖") },
+            supportingContent = { Text("前一条完全入场后再显示下一条，超时丢弃") },
+            trailingContent = {
+                Switch(
+                    checked = config.preventScrollOcclusion,
+                    onCheckedChange = { onConfigChange(config.copy(preventScrollOcclusion = it)) },
+                )
+            },
+            modifier = Modifier.clickable {
+                onConfigChange(config.copy(preventScrollOcclusion = !config.preventScrollOcclusion))
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        )
+        if (onOpenBlockRules != null) {
+            SettingsGroupTitle("内容过滤")
+            ListItem(
+                headlineContent = { Text("弹幕屏蔽词") },
+                supportingContent = {
+                    Text(
+                        if (config.blockRulesEnabled) {
+                            "已开启 · ${config.blockedTextRules.size + config.blockedRegexRules.size} 条规则"
+                        } else {
+                            "已关闭 · 规则已保留"
+                        },
+                    )
+                },
+                leadingContent = {
+                    Icon(Icons.Filled.Block, contentDescription = null)
+                },
+                modifier = Modifier.clickable(onClick = onOpenBlockRules),
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            )
+        }
         SettingsGroupTitle("显示类型")
         Row(
             modifier = Modifier
@@ -755,14 +819,23 @@ internal fun DanmakuDisplaySettingsContent(
         }
 
         SettingsGroupTitle("显示区域与样式")
+        val areaIndex = DANMAKU_AREA_RATIO_TIERS.indexOf(config.areaRatio)
+            .takeIf { it >= 0 }
+            ?: DANMAKU_AREA_RATIO_TIERS.lastIndex
         DanmakuValueSlider(
             title = "显示区域",
             valueLabel = danmakuAreaRatioLabel(config.areaRatio),
-            value = config.areaRatio,
-            valueRange = DANMAKU_AREA_RATIO_TIERS.first()..DANMAKU_AREA_RATIO_TIERS.last(),
+            value = areaIndex.toFloat(),
+            valueRange = 0f..DANMAKU_AREA_RATIO_TIERS.lastIndex.toFloat(),
             steps = DANMAKU_AREA_RATIO_TIERS.size - 2,
             onValueChange = {
-                onConfigChange(config.copy(areaRatio = it).normalized())
+                onConfigChange(
+                    config.copy(
+                        areaRatio = DANMAKU_AREA_RATIO_TIERS[
+                            it.roundToInt().coerceIn(DANMAKU_AREA_RATIO_TIERS.indices)
+                        ],
+                    ),
+                )
             },
             modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.AREA),
             sliderTestTag = "${PlayerPlaybackSettingsTestTags.AREA}_slider",
@@ -912,7 +985,7 @@ internal fun DanmakuDisplaySettingsContent(
         AlertDialog(
             onDismissRequest = { confirmReset = false },
             title = { Text("恢复弹幕默认设置？") },
-            text = { Text("将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度、数量、复读合并和时间偏移。") },
+            text = { Text("将恢复显示类型、显示区域、不透明度、字体大小、行高、滚动速度、倍速同步、弹幕防覆盖、数量、复读合并和时间偏移。屏蔽词及其开关状态不会改变。") },
             confirmButton = {
                 TextButton(
                     modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.RESET_CONFIRM),
@@ -949,6 +1022,10 @@ private enum class DanmakuSettingHelp(
     val title: String,
     val description: String,
 ) {
+    Occlusion(
+        title = "弹幕防覆盖",
+        description = SCROLL_OCCLUSION_HELP,
+    ),
     Density(
         title = "弹幕数量",
         description = "控制实际显示的弹幕比例。降低比例会均匀减少同一时间段内的弹幕，适合弹幕过密或性能有限的设备。",

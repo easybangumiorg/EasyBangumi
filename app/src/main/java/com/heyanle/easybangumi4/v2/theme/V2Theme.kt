@@ -119,6 +119,7 @@ fun V2ThemeProvider(content: @Composable () -> Unit) {
             surfaceContainer = palette.surfaceMuted,
             surfaceContainerHigh = palette.surfaceMuted,
             surfaceContainerHighest = palette.surfaceMuted,
+            surfaceTint = Color.Transparent,
             outline = palette.divider,
             error = palette.error,
         )
@@ -143,6 +144,7 @@ fun V2ThemeProvider(content: @Composable () -> Unit) {
             surfaceContainer = palette.surfaceMuted,
             surfaceContainerHigh = palette.surfaceMuted,
             surfaceContainerHighest = palette.surfaceMuted,
+            surfaceTint = Color.Transparent,
             outline = palette.divider,
             error = palette.error,
         )

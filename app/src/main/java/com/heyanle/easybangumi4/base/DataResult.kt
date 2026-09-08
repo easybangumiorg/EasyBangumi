@@ -1,9 +1,6 @@
 package com.heyanle.easybangumi4.base
 
-import androidx.webkit.internal.ApiFeature.T
 import com.heyanle.easybangumi4.plugin.api.SourceResult
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 /**
  * Created by HeYanLe on 2023/8/13 16:36.
@@ -11,19 +8,26 @@ import kotlinx.coroutines.flow.map
  */
 sealed class DataResult<T> {
 
-    class Loading<T> : DataResult<T>()
+    abstract val isCache: Boolean
+
+    class Loading<T> : DataResult<T>() {
+        override val isCache: Boolean = false
+    }
 
     data class Ok<T>(
-        val data: T
+        val data: T,
+        override val isCache: Boolean = false,
     ) : DataResult<T>()
 
     data class Error<T>(
         val errorMsg: String,
         val throwable: Throwable?,
-    ) : DataResult<T>()
+    ) : DataResult<T>() {
+        override val isCache: Boolean = false
+    }
 
     companion object {
-        fun <T> ok(data: T) = DataResult.Ok(data)
+        fun <T> ok(data: T, isCache: Boolean = false) = DataResult.Ok(data, isCache)
 
         fun <T> error(throwable: Throwable) =
             DataResult.Error<T>(throwable.message ?: "", throwable)
@@ -90,7 +94,7 @@ sealed class DataResult<T> {
 fun <T> SourceResult<T>.toDataResult(): DataResult<T> =
     when (this) {
         is SourceResult.Complete -> {
-            DataResult.ok(data)
+            DataResult.ok(data, isCache)
         }
 
         is SourceResult.Error -> {
@@ -101,7 +105,7 @@ fun <T> SourceResult<T>.toDataResult(): DataResult<T> =
 public inline fun <T, R> DataResult<T>.map(transform: (value: T) -> R): DataResult<R> =
     when (this) {
         is DataResult.Ok -> {
-            DataResult.ok(transform(data))
+            DataResult.ok(transform(data), isCache)
         }
 
         is DataResult.Error -> {

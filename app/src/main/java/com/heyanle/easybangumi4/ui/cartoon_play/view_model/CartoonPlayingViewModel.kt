@@ -19,7 +19,7 @@ import androidx.media3.datasource.DataSourceException
 import androidx.media3.exoplayer.ExoPlayer
 import com.heyanle.easybangumi4.APP
 import com.heyanle.easybangumi4.BuildConfig
-import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
+import com.heyanle.easybangumi4.cartoon.repository.CartoonRepository
 import com.heyanle.easybangumi4.cartoon.story.bound.BoundMedia
 import com.heyanle.easybangumi4.cartoon.story.bound.BoundMediaCase
 import com.heyanle.easybangumi4.cartoon.story.local.source.LocalSource
@@ -310,7 +310,7 @@ class CartoonPlayingViewModel(
     private var thumbnailJob: Job? = null
 
     // 其他模块注入 =================================================
-    private val cartoonInfoDao: CartoonInfoDao by Inject.injectLazy()
+    private val cartoonRepository: CartoonRepository by Inject.injectLazy()
     private val cartoonMediaSourceFactory: CartoonMediaSourceFactory by Inject.injectLazy()
     private val sourceStateCase: SourceStateCase by Inject.injectLazy()
     private val boundMediaCase: BoundMediaCase by Inject.injectLazy()
@@ -1068,22 +1068,18 @@ class CartoonPlayingViewModel(
         }
         CoroutineProvider.globalMainScope.launch {
             runCatching {
-                cartoonInfoDao.transaction {
-                    val old = cartoonInfoDao.getByCartoonSummary(cartoon.id, cartoon.source)
-                    if (old != null) {
-                        val lineIndex = old.playLine.indexOf(line)
-                        if (lineIndex >= 0) {
-                            cartoonInfoDao.modify(
-                                old.copyHistory(
-                                    lineIndex,
-                                    line,
-                                    epi,
-                                    normalizedPosition,
-                                    durationSnapshot,
-                                )
-                            )
-                        }
-
+                cartoonRepository.updateCartoonInfo(cartoon) { old ->
+                    val lineIndex = old.playLine.indexOf(line)
+                    if (lineIndex >= 0) {
+                        old.copyHistory(
+                            lineIndex,
+                            line,
+                            epi,
+                            normalizedPosition,
+                            durationSnapshot,
+                        )
+                    } else {
+                        old
                     }
                 }
             }

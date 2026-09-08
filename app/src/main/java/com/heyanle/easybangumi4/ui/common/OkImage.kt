@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Javascript
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -26,6 +27,7 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
+import coil.request.CachePolicy
 import okhttp3.Headers
 
 /**
@@ -79,7 +81,9 @@ fun OkImage(
     tint: Color? = null,
     alpha: Float = 1f,
     headers: Map<String, String>? = null,
+    onError: (() -> Unit)? = null,
 ) {
+    val currentOnError = rememberUpdatedState(onError)
     var need = true
     if (image == null || image == "" || (image is Int && image <= 0)) {
         need = false
@@ -141,6 +145,9 @@ fun OkImage(
                     val mergedHeaders = urlHeaders + (headers ?: emptyMap())
                     ImageRequest.Builder(context)
                         .data(cleanImage)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .networkCachePolicy(CachePolicy.ENABLED)
                         .apply {
                             if (mergedHeaders.isNotEmpty()) {
                                 headers(
@@ -178,6 +185,7 @@ fun OkImage(
                                 error(errorRes)
                             }
                         }
+                        .listener(onError = { _, _ -> currentOnError.value?.invoke() })
                         .build()
                 }
                 AsyncImage(

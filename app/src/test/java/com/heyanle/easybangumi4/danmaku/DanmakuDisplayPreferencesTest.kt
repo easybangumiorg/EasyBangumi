@@ -16,6 +16,18 @@ import org.junit.Test
 class DanmakuDisplayPreferencesTest {
 
     @Test
+    fun scrollOcclusionDefaultsOffPersistsEmitsAndResets() = runBlocking {
+        val store = FakePreferenceStore()
+        val preferences = DanmakuDisplayPreferences(store)
+        assertFalse(preferences.getConfig().preventScrollOcclusion)
+        preferences.updateConfig { it.copy(preventScrollOcclusion = true) }
+        assertTrue(DanmakuDisplayPreferences(store).getConfig().preventScrollOcclusion)
+        assertTrue(preferences.configFlow().first().preventScrollOcclusion)
+        preferences.resetToDefaults()
+        assertFalse(preferences.configFlow().first().preventScrollOcclusion)
+    }
+
+    @Test
     fun newStoreUsesBackwardCompatibleDefaults() {
         val preferences = DanmakuDisplayPreferences(FakePreferenceStore())
 
@@ -30,6 +42,10 @@ class DanmakuDisplayPreferencesTest {
         assertEquals("danmaku_area_ratio", preferences.areaRatio.key())
         assertEquals("danmaku_density_ratio", preferences.densityRatio.key())
         assertEquals("danmaku_merge_repeat_window_millis", preferences.mergeRepeatWindowMillis.key())
+        assertEquals("danmaku_blocked_text_rules", preferences.blockedTextRules.key())
+        assertEquals("danmaku_blocked_regex_rules", preferences.blockedRegexRules.key())
+        assertEquals("danmaku_block_rules_enabled", preferences.blockRulesEnabled.key())
+        assertEquals("danmaku_sync_scroll_speed_with_playback", preferences.syncScrollSpeedWithPlayback.key())
     }
 
     @Test
@@ -51,7 +67,7 @@ class DanmakuDisplayPreferencesTest {
         )
         assertEquals(DanmakuDisplayConfig.SCROLL_SPEED_RANGE.start, clamped.scrollSpeed)
         assertEquals(DanmakuDisplayConfig.OPACITY_RANGE.start, clamped.opacity)
-        assertEquals(0.25f, clamped.areaRatio)
+        assertEquals(0.1f, clamped.areaRatio)
         assertEquals(DanmakuDisplayConfig.DENSITY_RATIO_RANGE.start, clamped.densityRatio)
         assertEquals(0L, clamped.mergeRepeatWindowMillis)
 
@@ -74,6 +90,7 @@ class DanmakuDisplayPreferencesTest {
 
     @Test
     fun areaRatioSnapsToTheNearestExposedTier() {
+        assertEquals(0.1f, DanmakuDisplayConfig(areaRatio = 0.12f).normalized().areaRatio)
         assertEquals(0.25f, DanmakuDisplayConfig(areaRatio = 0.3f).normalized().areaRatio)
         assertEquals(0.5f, DanmakuDisplayConfig(areaRatio = 0.6f).normalized().areaRatio)
         assertEquals(0.75f, DanmakuDisplayConfig(areaRatio = 0.7f).normalized().areaRatio)
@@ -109,6 +126,10 @@ class DanmakuDisplayPreferencesTest {
                 scrollSpeed = 1.75f,
                 opacity = 0.3f,
                 areaRatio = 0.6f,
+                blockedTextRules = setOf("  剧透  ", ""),
+                blockedRegexRules = setOf("^广告"),
+                blockRulesEnabled = false,
+                syncScrollSpeedWithPlayback = false,
             ),
         )
 
@@ -125,6 +146,10 @@ class DanmakuDisplayPreferencesTest {
         assertEquals(1.5f, restored.scrollSpeed)
         assertEquals(0.3f, restored.opacity)
         assertEquals(0.5f, restored.areaRatio)
+        assertEquals(setOf("剧透"), restored.blockedTextRules)
+        assertEquals(setOf("^广告"), restored.blockedRegexRules)
+        assertFalse(restored.blockRulesEnabled)
+        assertFalse(restored.syncScrollSpeedWithPlayback)
     }
 
     @Test
@@ -162,6 +187,9 @@ class DanmakuDisplayPreferencesTest {
                 fontSizeSp = 30f,
                 lineHeightFactor = 1.8f,
                 scrollSpeed = 1.9f,
+                blockRulesEnabled = false,
+                blockedTextRules = setOf("剧透"),
+                blockedRegexRules = setOf("^广告"),
             ),
         )
 
@@ -171,6 +199,9 @@ class DanmakuDisplayPreferencesTest {
             DanmakuDisplayConfig.DEFAULT.copy(
                 enabled = false,
                 enabledProvenance = setOf("source-a"),
+                blockRulesEnabled = false,
+                blockedTextRules = setOf("剧透"),
+                blockedRegexRules = setOf("^广告"),
             ),
             preferences.getConfig(),
         )

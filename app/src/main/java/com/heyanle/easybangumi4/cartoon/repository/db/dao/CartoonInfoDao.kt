@@ -46,6 +46,9 @@ interface CartoonInfoDao {
     @Query("SELECT * FROM CartoonInfoV2 WHERE id=(:id) AND source=(:source)")
     suspend fun getByCartoonSummary(id: String, source: String): CartoonInfo?
 
+    @Query("SELECT * FROM CartoonInfoV2 WHERE id=(:id) AND source=(:source)")
+    fun flowByCartoonSummary(id: String, source: String): Flow<CartoonInfo?>
+
     @Query("SELECT * FROM CartoonInfoV2 WHERE source=(:source)")
     suspend fun getAllBySource(source: String): List<CartoonInfo>
 

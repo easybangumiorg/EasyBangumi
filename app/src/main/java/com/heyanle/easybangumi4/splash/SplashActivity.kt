@@ -13,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,10 +27,12 @@ import com.heyanle.easybangumi4.LocalWindowSizeController
 import com.heyanle.easybangumi4.MainActivitySwitcher
 import com.heyanle.easybangumi4.Migrate
 import com.heyanle.easybangumi4.Scheduler
+import com.heyanle.easybangumi4.setting.SettingPreferences
 import com.heyanle.easybangumi4.theme.EasyTheme
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.utils.MediaUtils
+import com.heyanle.easybangumi4.v2.theme.V2ThemeProvider
 import com.heyanle.inject.api.get
 import com.heyanle.inject.core.Inject
 import com.heyanle.okkv2.core.okkv
@@ -53,6 +56,7 @@ class SplashActivity : ComponentActivity() {
 
     }
     val splashGuildController = Inject.get<SplashGuildController>()
+    private val settingPreferences: SettingPreferences by Inject.injectLazy()
     var first by okkv("first_visible_splash", def = true)
     private val launcherBus = LauncherBus(this)
     override fun onResume() {
@@ -104,7 +108,7 @@ class SplashActivity : ComponentActivity() {
                     LocalWindowSizeController provides windowClazz,
                     LocalSplashActivity provides this,
                 ) {
-                    EasyTheme {
+                    val splashContent: @Composable () -> Unit = {
                         NormalSystemBarColor()
                         Surface(
                             color = MaterialTheme.colorScheme.background,
@@ -126,6 +130,11 @@ class SplashActivity : ComponentActivity() {
 
                             }
                         }
+                    }
+                    if (settingPreferences.useV2Ui.get()) {
+                        V2ThemeProvider(content = splashContent)
+                    } else {
+                        EasyTheme(content = splashContent)
                     }
                 }
             }

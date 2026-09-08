@@ -55,7 +55,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -395,9 +394,7 @@ fun CartoonStarProcBottomSheet(
                 vm.dialogDismiss()
             },
             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                3.dp
-            ),
+            containerColor = MaterialTheme.colorScheme.surface,
             content = {
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurface
@@ -432,7 +429,7 @@ fun CartoonStarProcBottomSheet(
                     }
                     TabPage(
                         pagerModifier = Modifier,
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                        containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         tabSize = 2,
                         beyondBoundsPageCount = 2,
