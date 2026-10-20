@@ -17,18 +17,25 @@ import com.heyanle.easybangumi4.plugin.source.bundle.SourceBundle
 import com.heyanle.easybangumi4.plugin.source.js.JsSourceFileLoader
 import com.heyanle.easybangumi4.plugin.api.Source
 import com.heyanle.easybangumi4.utils.CoroutineProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 internal data class SourceLoadCandidate(
     val file: File,
@@ -61,7 +68,10 @@ class SourceController(
 
     private val scope = CoroutineScope(SupervisorJob() + CoroutineProvider.newSingleDispatcher)
     private val jsRuntimeProvider = JSRuntimeProvider(2)
-    private val componentBundleCache = hashMapOf<String, ComponentBundle>()
+    private val componentBundleCache = ConcurrentHashMap<String, ComponentBundle>()
+    // Installation and every reload share one transaction boundary. Otherwise an older scan can
+    // finish after installation and publish a bundle that no longer contains the installed key.
+    private val reloadMutex = Mutex()
 
     private val _sourceInfo = MutableStateFlow<ISourceController.SourceInfoState>(
         ISourceController.SourceInfoState.Loading
@@ -77,27 +87,31 @@ class SourceController(
     init {
         sourceFolder.mkdirs()
         scope.launch {
-            sourcePreferences.configs.requestFlow.distinctUntilChanged().collectLatest { configs ->
-                reload(configs)
+            sourcePreferences.configs.requestFlow.distinctUntilChanged().collectLatest {
+                reload()
             }
         }
     }
 
     suspend fun appendOrUpdateSource(file: File): DataResult<SourceFileInfo.Loaded> {
-        val loaded = when (val info = loadSourceFile(file)) {
-            is SourceFileInfo.Loaded -> info
-            is SourceFileInfo.Error -> return DataResult.error(info.message, info.exception)
-            null -> return DataResult.error("source file cannot be loaded")
-        }
         return try {
-            sourceFolder.mkdirs()
-            val target = File(sourceFolder, "${loaded.key.toSafeFileName()}.${PluginV3.JS_SOURCE_SUFFIX.removePrefix(".")}")
-            if (file.absolutePath != target.absolutePath) {
-                file.copyTo(target, overwrite = true)
+            reloadMutex.withLock {
+                val loaded = when (val info = loadSourceFile(file)) {
+                    is SourceFileInfo.Loaded -> info
+                    is SourceFileInfo.Error -> return@withLock DataResult.error(info.message, info.exception)
+                    null -> return@withLock DataResult.error("source file cannot be loaded")
+                }
+                sourceFolder.mkdirs()
+                val target = File(sourceFolder, "${loaded.key.toSafeFileName()}.${PluginV3.JS_SOURCE_SUFFIX.removePrefix(".")}")
+                if (file.absolutePath != target.absolutePath) {
+                    file.copyTo(target, overwrite = true)
+                }
+                componentBundleCache.remove(loaded.key)
+                reloadLocked(sourcePreferences.configs.getOrDef())
+                DataResult.ok(loaded.copy(file = target))
             }
-            componentBundleCache.remove(loaded.key)
-            reload(sourcePreferences.configs.getOrDef())
-            DataResult.ok(loaded.copy(file = target))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
             DataResult.error(e)
         }
@@ -105,13 +119,21 @@ class SourceController(
 
     fun refresh() {
         scope.launch {
-            reload(sourcePreferences.configs.getOrDef())
+            reload()
         }
     }
 
-    private suspend fun reload(configs: Map<String, SourceConfig>) {
+    private suspend fun reload() = reloadMutex.withLock {
+        // Read preferences after acquiring the lock: a queued refresh must not reapply a stale
+        // enable/order snapshot over a newer install or preference update.
+        reloadLocked(sourcePreferences.configs.getOrDef())
+    }
+
+    /** Caller must hold [reloadMutex]; do not call the locking reload from installation. */
+    private suspend fun reloadLocked(configs: Map<String, SourceConfig>) {
         _sourceInfo.update { ISourceController.SourceInfoState.Loading }
         val configSources = loadSourceFiles(configs).toMutableList()
+        currentCoroutineContext().ensureActive()
         configSources.add(InnerSourceMaster.localConfigSource)
         configSources.sortBy { it.config.order }
         _configSource.update { configSources }
@@ -123,7 +145,7 @@ class SourceController(
 
     private suspend fun loadSourceFiles(
         configs: Map<String, SourceConfig>,
-    ): List<ConfigSource> {
+    ): List<ConfigSource> = coroutineScope {
         val userFiles = sourceFolder.listFiles()
             ?.filter {
                 it.isFile &&
@@ -137,7 +159,7 @@ class SourceController(
             .orEmpty()
         val files = selectHighestVersionCandidates(
             (userFiles + innerFiles).map { file ->
-                scope.async(Dispatchers.IO) {
+                async(Dispatchers.IO) {
                     val metadata = inspectSourceFile(file)
                     SourceLoadCandidate(
                         file = file,
@@ -148,8 +170,8 @@ class SourceController(
             }.awaitAll()
         ).map { it.file }
 
-        return files.map { file ->
-            scope.async(Dispatchers.IO) {
+        files.map { file ->
+            async(Dispatchers.IO) {
                 when (val info = loadSourceFile(file)) {
                     is SourceFileInfo.Loaded -> load(info.source, configs[info.key])
                     is SourceFileInfo.Error -> ConfigSource(
@@ -199,9 +221,12 @@ class SourceController(
                 else -> SimpleComponentBundle(source)
             }
             bundle.init()
+            currentCoroutineContext().ensureActive()
             SourceInfo.Loaded(source, bundle).also {
                 componentBundleCache[source.key] = bundle
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: SourceException) {
             SourceInfo.Error(source, e.msg, e)
         } catch (e: Exception) {

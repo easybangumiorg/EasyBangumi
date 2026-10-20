@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.source.js.component
 import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.source.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.source.js.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.js.utils.WebViewProxyKtWrapper
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.api.ParserException
@@ -66,8 +67,8 @@ class JSSearchComponent(
         return withResult(Dispatchers.IO) {
             return@withResult jsScope.requestRunWithScope { context, scriptable ->
                 try {
-                    // 将该 webview 补入到 webProxyManager 中
-//                    webProxyManager?.addWebProxy(iWebProxy)
+                    // 验证期间原代理已移出管理器；恢复同一会话的生命周期和同步 JS API 桥。
+                    webProxyManager?.addWebProxy(iWebProxy)
                     val res = searchWithCheck.call(
                         context,
                         scriptable,
@@ -75,7 +76,7 @@ class JSSearchComponent(
                         arrayOf(
                             pageKey,
                             keyword,
-                            iWebProxy
+                            WebViewProxyKtWrapper(iWebProxy)
                         )
                     ).jsUnwrap() as? Pair<*, *>
                     if (res == null) {

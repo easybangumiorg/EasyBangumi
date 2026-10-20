@@ -115,7 +115,26 @@ jobs:
 
       - name: Release
         run: |
-          gh release create -d ${{ env.BANGUMI_VERSION }} easybangumi-${{ env.BANGUMI_VERSION }}.apk easybangumi-${{ env.BANGUMI_VERSION }}-compat.apk
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          lines = Path("app/src/main/assets/update_log.txt").read_text(encoding="utf-8").splitlines()
+          first = next(index for index, line in enumerate(lines) if line.strip())
+          version = os.environ["BANGUMI_VERSION"]
+          if lines[first].split()[-1] != version:
+              raise SystemExit("Release notes do not match the APK version")
+          notes = []
+          for line in lines[first + 1:]:
+              if line.startswith("- "):
+                  break
+              notes.append(line.strip())
+          body = "\n".join(notes).strip()
+          if not body:
+              raise SystemExit("Release notes are empty")
+          Path("release-notes.txt").write_text(body + "\n", encoding="utf-8")
+          PY
+          gh release create -d "$BANGUMI_VERSION" --title "$BANGUMI_VERSION" --notes-file release-notes.txt "easybangumi-$BANGUMI_VERSION.apk" "easybangumi-$BANGUMI_VERSION-compat.apk"
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
@@ -145,3 +164,8 @@ jobs:
             # origin. A normal fast-forward push avoids overwriting unrelated private assets.
             git push origin HEAD:main
           fi
+
+      - name: Publish completed release
+        run: gh release edit "$BANGUMI_VERSION" --draft=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}

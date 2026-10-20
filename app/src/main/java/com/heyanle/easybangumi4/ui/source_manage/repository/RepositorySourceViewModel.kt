@@ -31,6 +31,7 @@ class RepositorySourceViewModel : ViewModel() {
         val installedSources: Map<String, InstalledSource> = emptyMap(),
         val isLoading: Boolean = false,
         val error: String? = null,
+        val warnings: List<String> = emptyList(),
         val installState: InstallState = InstallState.Idle,
     )
 
@@ -49,13 +50,13 @@ class RepositorySourceViewModel : ViewModel() {
             repositoryController.state.collectLatest { repoState ->
                 when (repoState) {
                     is RepositoryController.State.Loading -> {
-                        _state.update { it.copy(isLoading = true, error = null, entries = emptyList()) }
+                        _state.update { it.copy(isLoading = true, error = null, entries = emptyList(), warnings = emptyList()) }
                     }
                     is RepositoryController.State.Loaded -> {
-                        _state.update { it.copy(isLoading = false, error = null, entries = repoState.entries) }
+                        _state.update { it.copy(isLoading = false, error = null, entries = repoState.entries, warnings = repoState.warnings) }
                     }
                     is RepositoryController.State.Error -> {
-                        _state.update { it.copy(isLoading = false, error = repoState.message, entries = emptyList()) }
+                        _state.update { it.copy(isLoading = false, error = repoState.message, entries = emptyList(), warnings = emptyList()) }
                     }
                 }
             }
@@ -89,8 +90,9 @@ class RepositorySourceViewModel : ViewModel() {
     }
 
     fun installSource(entry: RepositoryEntry) {
+        if (_state.value.installState is InstallState.Installing) return
+        _state.update { it.copy(installState = InstallState.Installing(entry.key)) }
         viewModelScope.launch {
-            _state.update { it.copy(installState = InstallState.Installing(entry.key)) }
             val result = repositoryController.installSource(entry)
             result.onOK {
                 _state.update { it.copy(installState = InstallState.Success("${entry.label} installed")) }
@@ -105,6 +107,6 @@ class RepositorySourceViewModel : ViewModel() {
     }
 
     fun getRepoCount(): Int {
-        return repositoryPreferences.repositories.getOrDef().size
+        return repositoryPreferences.getActiveRepositories().size
     }
 }

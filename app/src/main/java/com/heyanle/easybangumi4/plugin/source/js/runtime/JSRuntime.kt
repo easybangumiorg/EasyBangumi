@@ -2,11 +2,10 @@ package com.heyanle.easybangumi4.plugin.source.js.runtime
 
 import com.heyanle.easybangumi4.plugin.source.js.utils.JSContext
 import com.heyanle.easybangumi4.utils.PostThread
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.mozilla.javascript.ImporterTopLevel
 import org.mozilla.javascript.ScriptableObject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -53,25 +52,40 @@ class JSRuntime {
     }
 
 
-    suspend fun <R>  runWithScope(block: (JSContext, ScriptableObject) -> R) : R? {
-        return suspendCoroutine<R?> { continuation ->
-            postThread.post {
-                val ctx = JSContextLocal.get()
-                val scope = JSTopScopeLocal.get()
-                if (ctx == null || scope == null) {
-                    continuation.resume(null)
-                    return@post
-                }
-                try {
-                    continuation.resume(block(ctx, scope))
-                }catch (e: Throwable){
-                    e.printStackTrace()
-                    continuation.resumeWithException(e)
-                }
-
-
-            }
+    suspend fun <R> runWithScope(block: (JSContext, ScriptableObject) -> R): R? {
+        return awaitPostedRuntimeTask(postThread::post) {
+            val ctx = JSContextLocal.get()
+            val scope = JSTopScopeLocal.get()
+            if (ctx == null || scope == null) null else block(ctx, scope)
         }
     }
 
+}
+
+/**
+ * Cancels the caller's wait and skips work that has not started on the runtime thread.
+ * PostThread has no queue-removal API, so cancelled Runnables remain queued until skipped.
+ * Synchronous JS or network work already running cannot be forcibly stopped safely: it may
+ * continue occupying the HandlerThread, but its late result/exception never resumes the caller.
+ */
+@OptIn(InternalCoroutinesApi::class)
+internal suspend fun <R> awaitPostedRuntimeTask(
+    post: (Runnable) -> Unit,
+    block: () -> R,
+): R = suspendCancellableCoroutine { continuation ->
+    val task = Runnable {
+        if (!continuation.isActive) return@Runnable
+        val result = runCatching(block)
+        val token = result.fold(
+            onSuccess = { continuation.tryResume(it) },
+            onFailure = { continuation.tryResumeWithException(it) },
+        ) ?: return@Runnable
+        continuation.completeResume(token)
+    }
+    try {
+        post(task)
+    } catch (e: Throwable) {
+        val token = continuation.tryResumeWithException(e)
+        if (token != null) continuation.completeResume(token)
+    }
 }

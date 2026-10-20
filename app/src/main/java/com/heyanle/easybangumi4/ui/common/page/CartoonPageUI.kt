@@ -52,6 +52,7 @@ enum class CartoonPagePresentation {
 fun CartoonPageUI(
     cartoonPage: SourcePage,
     presentation: CartoonPagePresentation = CartoonPagePresentation.Legacy,
+    hasParentTabs: Boolean = true,
 ) {
     when (cartoonPage) {
         is SourcePage.SingleCartoonPage -> {
@@ -96,7 +97,7 @@ fun CartoonPageUI(
         }
 
         is SourcePage.Group -> {
-            SourceListPageGroup(cartoonPage, presentation)
+            SourceListPageGroup(cartoonPage, presentation, hasParentTabs)
         }
 
         else -> {}

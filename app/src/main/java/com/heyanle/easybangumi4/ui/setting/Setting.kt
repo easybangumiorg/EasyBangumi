@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PlayCircle
@@ -102,6 +104,15 @@ sealed class SettingPage(
         DanmakuSourceSetting(nestedScrollConnection = it)
     })
 
+    data object CloudSync : SettingPage("cloud_sync", {
+        Text(text = "数据云同步")
+    }, {
+        Text(
+            text = "请在新版界面中配置数据云同步",
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+        )
+    })
+
 }
 
 val settingPages = mapOf(
@@ -113,6 +124,7 @@ val settingPages = mapOf(
     SettingPage.Developers.router to SettingPage.Developers,
     SettingPage.LocalSource.router to SettingPage.LocalSource,
     SettingPage.DanmakuSource.router to SettingPage.DanmakuSource,
+    SettingPage.CloudSync.router to SettingPage.CloudSync,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -236,6 +248,17 @@ fun ColumnScope.FirstSetting(
                     contentDescription = "弹幕源"
                 )
             }
+        )
+
+        ListItem(
+            modifier = Modifier.clickable {
+                nav.navigationSetting(SettingPage.CloudSync)
+            },
+            headlineContent = { Text(text = "数据云同步") },
+            supportingContent = { Text(text = "WebDAV、收藏和历史") },
+            leadingContent = {
+                Icon(Icons.Filled.CloudSync, contentDescription = "数据云同步")
+            },
         )
 
         ListItem(

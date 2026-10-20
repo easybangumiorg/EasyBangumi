@@ -37,7 +37,7 @@ class MpvPlaybackController(
 
     @Volatile private var fileLoaded = false
     @Volatile private var fileLoading = false
-    @Volatile private var paused = true
+    private val playbackIntent = MpvPlaybackIntent()
     @Volatile private var pausedForCache = false
     @Volatile private var eofReached = false
     @Volatile private var positionMs = 0L
@@ -46,7 +46,6 @@ class MpvPlaybackController(
     @Volatile private var playbackSpeed = 1f
     @Volatile private var videoWidth = 0
     @Volatile private var videoHeight = 0
-    private var pendingLoad: PendingLoad? = null
     private var pendingStartPositionMs = 0L
     private var surfaceAttached = false
     private var attachedSurfaceToken = ""
@@ -94,19 +93,19 @@ class MpvPlaybackController(
     }
 
     override var playWhenReady: Boolean
-        get() = !paused
+        get() = playbackIntent.playWhenReady
         set(value) {
             if (value) play() else pause()
         }
-    override val isPlaying: Boolean get() = fileLoaded && !paused && !pausedForCache && !eofReached
+    override val isPlaying: Boolean get() = fileLoaded && playbackIntent.isPlayingAllowed && !pausedForCache && !eofReached
     override val playbackState: EasyPlaybackState
         get() = when {
             eofReached -> EasyPlaybackState.ENDED
-            !fileLoaded -> if (pendingLoad != null || fileLoading) EasyPlaybackState.BUFFERING else EasyPlaybackState.IDLE
+            !fileLoaded -> if (playbackIntent.hasPendingLoad || fileLoading) EasyPlaybackState.BUFFERING else EasyPlaybackState.IDLE
             pausedForCache -> EasyPlaybackState.BUFFERING
             else -> EasyPlaybackState.READY
         }
-    override val hasMedia: Boolean get() = fileLoaded || fileLoading || pendingLoad != null
+    override val hasMedia: Boolean get() = fileLoaded || fileLoading || playbackIntent.hasPendingLoad
     override val currentPosition: Long get() = positionMs
     override val duration: Long get() = durationMs
     override val bufferedPosition: Long get() = bufferedMs
@@ -130,14 +129,13 @@ class MpvPlaybackController(
         applyAnime4K()
         val playableUri = resolvePlayableUri(uri)
         if (playableUri == null) {
-            pendingLoad = null
+            playbackIntent.cancelPendingLoad()
             post { listeners.forEach { it.onPlaybackStateChanged(EasyPlaybackState.IDLE) } }
             return
         }
-        val load = PendingLoad(playableUri, playWhenReady)
-        pendingLoad = load
+        playbackIntent.queueLoad(playableUri, playWhenReady)
         notifyState()
-        if (surfaceAttached) executeLoad(load)
+        if (surfaceAttached) executePendingLoad()
     }
 
     override fun applyAnime4K() {
@@ -154,12 +152,16 @@ class MpvPlaybackController(
 
     override fun play() {
         if (released.get()) return
+        playbackIntent.requestPlayback(true)
         MPVLib.setPropertyBoolean("pause", false)
+        notifyPlaybackIntent()
     }
 
     override fun pause() {
         if (released.get()) return
+        playbackIntent.requestPlayback(false)
         MPVLib.setPropertyBoolean("pause", true)
+        notifyPlaybackIntent()
     }
 
     override fun seekTo(positionMs: Long) {
@@ -183,7 +185,8 @@ class MpvPlaybackController(
 
     override fun stop() {
         if (released.get()) return
-        pendingLoad = null
+        playbackIntent.cancelPendingLoad()
+        playbackIntent.requestPlayback(false)
         fileLoaded = false
         fileLoading = false
         MPVLib.command(arrayOf("stop"))
@@ -292,7 +295,6 @@ class MpvPlaybackController(
             MPVLib.MPV_EVENT_FILE_LOADED -> {
                 fileLoaded = true
                 fileLoading = false
-                pendingLoad = null
                 if (pendingStartPositionMs > 0L) seekTo(pendingStartPositionMs)
                 pendingStartPositionMs = 0L
                 notifyState()
@@ -335,7 +337,11 @@ class MpvPlaybackController(
     override fun eventProperty(property: String, value: Boolean) {
         if (!isActiveOwner()) return
         when (property) {
-            "pause" -> paused = value
+            "pause" -> {
+                playbackIntent.onNativePauseChanged(value)
+                notifyPlaybackIntent()
+                return
+            }
             "paused-for-cache" -> pausedForCache = value
             "eof-reached" -> eofReached = value
             else -> return
@@ -345,8 +351,8 @@ class MpvPlaybackController(
 
     override fun eventProperty(property: String, value: String) = Unit
 
-    private fun executeLoad(load: PendingLoad) {
-        pendingLoad = null
+    private fun executePendingLoad() {
+        val load = playbackIntent.takePendingLoad() ?: return
         fileLoading = true
         MPVLib.command(arrayOf("loadfile", load.uri))
         MPVLib.setPropertyBoolean("pause", !load.playWhenReady)
@@ -393,7 +399,7 @@ class MpvPlaybackController(
             // vo=null -> vo=gpu, even after video-reload/seek. Restart mpv's current playlist
             // entry and let FILE_LOADED restore the position. This rebuilds the decoder/demuxer
             // without asking EasyBangumi to resolve the source again.
-            val resumePlayback = !paused
+            val resumePlayback = playbackIntent.playWhenReady
             pendingStartPositionMs = positionMs
             fileLoaded = false
             fileLoading = true
@@ -405,7 +411,7 @@ class MpvPlaybackController(
             // Submit the exact BufferQueue size before asking vo=gpu to redraw the retained frame.
             MPVLib.command(arrayOf("seek", "0", "relative", "exact"))
         }
-        pendingLoad?.let(::executeLoad)
+        executePendingLoad()
     }
 
     private fun bindTextureSurface(
@@ -521,6 +527,15 @@ class MpvPlaybackController(
         }
     }
 
+    // Play/pause does not make an old media item READY again. Keeping it separate also prevents
+    // a pause before resolving the next item from prematurely displaying its history notice.
+    private fun notifyPlaybackIntent() = post {
+        listeners.forEach {
+            it.onPlayWhenReadyChanged(playWhenReady)
+            it.onIsPlayingChanged(isPlaying)
+        }
+    }
+
     private fun notifyPosition() = post {
         listeners.forEach { it.onPositionDiscontinuity(positionMs) }
     }
@@ -530,8 +545,6 @@ class MpvPlaybackController(
     }
 
     private fun Double.secondsToMs(): Long = (this * 1000.0).toLong().coerceAtLeast(0L)
-
-    private data class PendingLoad(val uri: String, val playWhenReady: Boolean)
 
     private companion object {
         const val TAG = "MpvPlaybackController"

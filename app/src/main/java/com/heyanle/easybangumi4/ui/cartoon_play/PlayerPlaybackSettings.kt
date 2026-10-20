@@ -199,6 +199,7 @@ internal enum class PlayerSettingsSection {
     Danmaku,
     Video,
     Controls,
+    SleepTimer,
     Anime4K,
     AdBlock,
 }
@@ -209,12 +210,14 @@ internal object PlayerPlaybackSettingsTestTags {
     const val DANMAKU_SECTION_TAB = "player_settings_tab_danmaku"
     const val VIDEO_SECTION_TAB = "player_settings_tab_video"
     const val CONTROLS_SECTION_TAB = "player_settings_tab_controls"
+    const val SLEEP_TIMER_SECTION_TAB = "player_settings_tab_sleep_timer"
     const val ANIME4K_SECTION_TAB = "player_settings_tab_anime4k"
     const val ADBLOCK_SECTION_TAB = "player_settings_tab_adblock"
     const val OPEN_DANMAKU_SETTINGS = "player_open_danmaku_settings"
     const val DANMAKU_SECTION = "player_settings_danmaku"
     const val VIDEO_SECTION = "player_settings_video"
     const val CONTROLS_SECTION = "player_settings_controls"
+    const val SLEEP_TIMER_SECTION = "player_settings_sleep_timer"
     const val ANIME4K_SECTION = "player_settings_anime4k"
     const val ADBLOCK_SECTION = "player_settings_adblock"
     const val RESET = "player_danmaku_reset"
@@ -429,6 +432,8 @@ internal fun AdaptivePlayerSettingsPanel(
     exoAdAudioProbeRulesUrl: String = "",
     onExoAdAudioProbeEnabledChange: (Boolean) -> Unit = {},
     onExoAdAudioProbeRulesUrlChange: (String) -> Unit = {},
+    sleepTimerState: PlayerSleepTimerState? = null,
+    onSleepTimerOptionSelected: (PlayerSleepTimerOption) -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
     val useSidePanel = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -462,6 +467,8 @@ internal fun AdaptivePlayerSettingsPanel(
                 exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
                 onExoAdAudioProbeEnabledChange = onExoAdAudioProbeEnabledChange,
                 onExoAdAudioProbeRulesUrlChange = onExoAdAudioProbeRulesUrlChange,
+                sleepTimerState = sleepTimerState,
+                onSleepTimerOptionSelected = onSleepTimerOptionSelected,
             )
         }
     } else if (visible) {
@@ -499,6 +506,8 @@ internal fun AdaptivePlayerSettingsPanel(
                     exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
                     onExoAdAudioProbeEnabledChange = onExoAdAudioProbeEnabledChange,
                     onExoAdAudioProbeRulesUrlChange = onExoAdAudioProbeRulesUrlChange,
+                    sleepTimerState = sleepTimerState,
+                    onSleepTimerOptionSelected = onSleepTimerOptionSelected,
                 )
             }
         }
@@ -529,6 +538,8 @@ private fun ColumnScope.PlayerSettingsContent(
     exoAdAudioProbeRulesUrl: String,
     onExoAdAudioProbeEnabledChange: (Boolean) -> Unit,
     onExoAdAudioProbeRulesUrlChange: (String) -> Unit,
+    sleepTimerState: PlayerSleepTimerState?,
+    onSleepTimerOptionSelected: (PlayerSleepTimerOption) -> Unit,
 ) {
     // Keep the visual selection in the same retained subcomposition as the tab controls. The
     // caller still receives every change and provides the initial value the next time this panel
@@ -537,6 +548,7 @@ private fun ColumnScope.PlayerSettingsContent(
         add(PlayerSettingsSection.Danmaku)
         add(PlayerSettingsSection.Video)
         add(PlayerSettingsSection.Controls)
+        if (sleepTimerState != null) add(PlayerSettingsSection.SleepTimer)
         if (BuildConfig.HAS_MPV && isMpvEngine) add(PlayerSettingsSection.Anime4K)
         if (isExoPlayerEngine) add(PlayerSettingsSection.AdBlock)
     }
@@ -582,6 +594,7 @@ private fun ColumnScope.PlayerSettingsContent(
                     PlayerSettingsSection.Danmaku -> danmakuScrollState
                     PlayerSettingsSection.Video -> videoScrollState
                     PlayerSettingsSection.Controls -> videoScrollState
+                    PlayerSettingsSection.SleepTimer -> videoScrollState
                     PlayerSettingsSection.Anime4K,
                     PlayerSettingsSection.AdBlock,
                     -> videoScrollState
@@ -609,6 +622,14 @@ private fun ColumnScope.PlayerSettingsContent(
             PlayerSettingsSection.Controls -> PlayerControlSettingsContent(
                 modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.CONTROLS_SECTION),
             )
+
+            PlayerSettingsSection.SleepTimer -> sleepTimerState?.let { timerState ->
+                PlayerSleepTimerSettingsContent(
+                    state = timerState,
+                    onOptionSelected = onSleepTimerOptionSelected,
+                    modifier = Modifier.testTag(PlayerPlaybackSettingsTestTags.SLEEP_TIMER_SECTION),
+                )
+            }
 
             PlayerSettingsSection.Anime4K -> {
                 if (BuildConfig.HAS_MPV) {
@@ -672,6 +693,9 @@ private fun PlayerSettingsSectionSelector(
                             PlayerSettingsSection.Controls ->
                                 PlayerPlaybackSettingsTestTags.CONTROLS_SECTION_TAB
 
+                            PlayerSettingsSection.SleepTimer ->
+                                PlayerPlaybackSettingsTestTags.SLEEP_TIMER_SECTION_TAB
+
                             PlayerSettingsSection.Anime4K ->
                                 PlayerPlaybackSettingsTestTags.ANIME4K_SECTION_TAB
 
@@ -690,6 +714,7 @@ private fun PlayerSettingsSectionSelector(
                             PlayerSettingsSection.Danmaku -> "弹幕"
                             PlayerSettingsSection.Video -> "画面"
                             PlayerSettingsSection.Controls -> "控制"
+                            PlayerSettingsSection.SleepTimer -> "定时"
                             PlayerSettingsSection.Anime4K -> {
                                 if (BuildConfig.HAS_MPV) "Anime4K" else ""
                             }

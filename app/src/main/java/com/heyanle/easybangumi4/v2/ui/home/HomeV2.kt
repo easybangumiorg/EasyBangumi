@@ -60,6 +60,11 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.R
+import com.heyanle.easybangumi4.navigationDetailed
+import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
+import com.heyanle.easybangumi4.ui.main.home.ContinueWatchingViewModel
+import com.heyanle.easybangumi4.setting.SettingPreferences
+import com.heyanle.inject.core.Inject
 import com.heyanle.easybangumi4.navigationSearch
 import com.heyanle.easybangumi4.navigationSourceManager
 import com.heyanle.easybangumi4.plugin.source.LocalSourceBundleController
@@ -83,6 +88,10 @@ import com.heyanle.easybangumi4.v2.theme.V2Theme
 internal fun HomeV2() {
     val viewModel = viewModel<HomeViewModel>()
     val state by viewModel.stateFlow.collectAsState()
+    val continueWatchingVM = viewModel<ContinueWatchingViewModel>()
+    val continueWatching by continueWatchingVM.item.collectAsState()
+    val settings: SettingPreferences by Inject.injectLazy()
+    val privateMode by settings.isInPrivate.flow().collectAsState(initial = settings.isInPrivate.get())
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showSourceSelector by remember { mutableStateOf(false) }
@@ -114,60 +123,88 @@ internal fun HomeV2() {
             onSearchClick = { navController.navigationSearch(state.selectionKey) },
         )
 
-        when {
-            state.isLoading -> LoadingPage(
-                modifier = Modifier.fillMaxSize(),
-                loadingMsg = "正在加载番源",
-            )
+        Column(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            when {
+                state.isLoading -> LoadingPage(
+                    modifier = Modifier.fillMaxSize(),
+                    loadingMsg = "正在加载番源",
+                )
 
-            !state.hasPageComponent -> EmptyPage(
-                modifier = Modifier.fillMaxSize(),
-                emptyMsg = stringResource(com.heyanle.easy_i18n.R.string.no_source),
-                other = {
-                    TextButton(onClick = { navController.navigationSourceManager(1) }) {
-                        Text(stringResource(com.heyanle.easy_i18n.R.string.go_to_manage_source))
-                    }
-                },
-            )
-
-            state.pages.isEmpty() -> EmptyPage(
-                modifier = Modifier.fillMaxSize(),
-                emptyMsg = stringResource(com.heyanle.easy_i18n.R.string.is_empty),
-            )
-
-            else -> {
-                if (state.isShowLabel) {
-                    V2ScrollableTabs(
-                        labels = state.pages.map { it.label },
-                        selectedIndex = state.selectionIndex,
-                        onSelected = viewModel::changeSelectionPage,
-                    )
-                    HorizontalDivider(color = V2Tokens.Divider)
-                }
-
-                AnimatedContent(
-                    targetState = state.pages.getOrNull(state.selectionIndex),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .let { modifier ->
-                            if (state.isShowLabel) modifier else modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-                        },
-                    transitionSpec = {
-                        fadeIn(tween(durationMillis = 300, delayMillis = 300)) togetherWith
-                            fadeOut(tween(durationMillis = 300))
+                !state.hasPageComponent -> EmptyPage(
+                    modifier = Modifier.fillMaxSize(),
+                    emptyMsg = stringResource(com.heyanle.easy_i18n.R.string.no_source),
+                    other = {
+                        TextButton(onClick = { navController.navigationSourceManager(1) }) {
+                            Text(stringResource(com.heyanle.easy_i18n.R.string.go_to_manage_source))
+                        }
                     },
-                    label = "v2-home-page",
-                ) { page ->
-                    page?.let {
-                        CompositionLocalProvider(
-                            LocalViewModelStoreOwner provides viewModel.getViewModelStoreOwner(it),
-                        ) {
-                            CartoonPageUI(cartoonPage = it, presentation = CartoonPagePresentation.V2)
+                )
+
+                state.pages.isEmpty() -> EmptyPage(
+                    modifier = Modifier.fillMaxSize(),
+                    emptyMsg = stringResource(com.heyanle.easy_i18n.R.string.is_empty),
+                )
+
+                else -> {
+                    if (state.isShowLabel) {
+                        V2ScrollableTabs(
+                            labels = state.pages.map { it.label },
+                            selectedIndex = state.selectionIndex,
+                            onSelected = viewModel::changeSelectionPage,
+                        )
+                        HorizontalDivider(color = V2Tokens.Divider)
+                    }
+
+                    AnimatedContent(
+                        targetState = state.pages.getOrNull(state.selectionIndex),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .let { modifier ->
+                                if (state.isShowLabel) modifier else modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                            },
+                        transitionSpec = {
+                            fadeIn(tween(durationMillis = 300, delayMillis = 300)) togetherWith
+                                fadeOut(tween(durationMillis = 300))
+                        },
+                        label = "v2-home-page",
+                    ) { page ->
+                        page?.let {
+                            CompositionLocalProvider(
+                                LocalViewModelStoreOwner provides viewModel.getViewModelStoreOwner(it),
+                            ) {
+                                CartoonPageUI(
+                                    cartoonPage = it,
+                                    presentation = CartoonPagePresentation.V2,
+                                    hasParentTabs = state.isShowLabel,
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+        continueWatching?.takeUnless { privateMode || settings.isInPrivate.get() }?.let { item ->
+            ContinueWatchingBar(
+                item = item,
+                onDismiss = continueWatchingVM::dismiss,
+                onResume = {
+                    navController.navigationDetailed(
+                        item.id,
+                        item.source,
+                        CartoonPlayViewModel.EnterData(
+                            playLineId = item.lastLineId,
+                            playLineLabel = item.lastLineLabel,
+                            playLineIndex = item.lastLinesIndex,
+                            episodeId = item.lastEpisodeId,
+                            episodeLabel = item.lastEpisodeLabel,
+                            episodeOrder = item.lastEpisodeOrder,
+                            episodeIndex = item.lastEpisodeIndex,
+                            adviceProgress = item.lastProcessTime,
+                        ),
+                    )
+                },
+            )
         }
     }
 }

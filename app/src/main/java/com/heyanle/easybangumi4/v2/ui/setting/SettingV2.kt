@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewQuilt
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Download
@@ -69,6 +70,7 @@ internal fun SettingV2(router: String) {
             SettingPage.Developers -> DevelopersSettingV2(Modifier.weight(1f))
             SettingPage.LocalSource -> LocalSourceSettingV2(Modifier.weight(1f))
             SettingPage.DanmakuSource -> DanmakuSourceSettingV2(Modifier.weight(1f))
+            SettingPage.CloudSync -> CloudSyncSettingV2(Modifier.weight(1f))
         }
     }
 }
@@ -83,6 +85,7 @@ private fun SettingPage.titleText(): String = when (this) {
     SettingPage.Developers -> stringResource(R.string.developers_setting)
     SettingPage.LocalSource -> stringResource(R.string.local_extension_setting)
     SettingPage.DanmakuSource -> "弹幕源"
+    SettingPage.CloudSync -> "数据云同步"
 }
 
 @Composable
@@ -148,6 +151,13 @@ private fun FirstSettingV2(modifier: Modifier = Modifier) {
         }
 
         V2Section(title = "高级") {
+            V2ActionRow(
+                icon = Icons.Filled.CloudSync,
+                title = "数据云同步",
+                subtitle = "手动上传或下载收藏与历史",
+                onClick = { navController.navigationSetting(SettingPage.CloudSync) },
+            )
+            V2SectionDivider()
             V2ActionRow(
                 icon = Icons.Filled.DeveloperMode,
                 title = stringResource(R.string.developers_setting),

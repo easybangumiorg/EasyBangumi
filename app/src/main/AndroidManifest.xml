@@ -70,6 +70,20 @@
         </activity>
 
         <activity
+            android:name="com.microsoft.identity.client.BrowserTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="${onedrive_redirect_scheme}"
+                    android:host="${onedrive_redirect_host}"
+                    android:path="${onedrive_redirect_path}" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name="com.heyanle.easybangumi4.MainActivity"
             android:exported="true"
             android:label="@string/app_name"

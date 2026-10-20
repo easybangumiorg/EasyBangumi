@@ -100,6 +100,12 @@ const val STORY = "story"
 
 const val SOURCE_PUSH = "source_push"
 
+/** 源体检（批量测试首页/搜索/播放），仅开发与测试变体可见 */
+const val SOURCE_LAB = "source_lab"
+
+/** 用户主动诊断已安装并启用的源。 */
+const val SOURCE_DIAGNOSTICS = "source_diagnostics"
+
 fun NavHostController.navigationSearch(
     defSourceKey: String,
 ) {

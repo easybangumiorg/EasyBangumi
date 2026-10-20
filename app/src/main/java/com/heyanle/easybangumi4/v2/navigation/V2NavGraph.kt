@@ -18,7 +18,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.LocalNavController
+import com.heyanle.easybangumi4.SOURCE_LAB
+import com.heyanle.easybangumi4.SOURCE_DIAGNOSTICS
 import com.heyanle.easybangumi4.navControllerRef
 import com.heyanle.easybangumi4.navigation.PLAYBACK_DETAIL_LEGACY_ROUTE
 import com.heyanle.easybangumi4.navigation.PLAYBACK_DETAIL_V2_ROUTE
@@ -28,6 +31,8 @@ import com.heyanle.easybangumi4.plugin.source.utils.network.WebViewHelperV2Impl
 import com.heyanle.easybangumi4.theme.NormalSystemBarColor
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.common.MoeDialogHost
+import com.heyanle.easybangumi4.v2.ui.sourcelab.SourceLabScreen
+import com.heyanle.easybangumi4.v2.ui.sourcelab.SourceDiagnosticsScreen
 import com.heyanle.easybangumi4.ui.setting.SettingPage
 import com.heyanle.easybangumi4.utils.jsonTo
 import com.heyanle.easybangumi4.v2.ui.legacy.LegacyAboutScreen
@@ -91,6 +96,7 @@ internal object V2Routes {
         SOURCE_CONFIG,
         TAG_MANAGE,
         STORAGE,
+        SOURCE_DIAGNOSTICS,
     )
 }
 
@@ -254,6 +260,22 @@ fun V2NavGraph(
                 NormalSystemBarColor()
                 LegacySurface {
                     LegacySourceManagerScreen(entry.arguments?.getInt("defIndex") ?: -1)
+                }
+            }
+
+            composable(SOURCE_DIAGNOSTICS) {
+                NormalSystemBarColor()
+                SourceDiagnosticsScreen(
+                    onBack = { navController.popBackStack() },
+                    onManageSources = { navController.navigate(V2Routes.SOURCE_MANAGER) },
+                )
+            }
+
+            // 内部批量验收入口仅开发 / 性能版 / 测试版开放，公共诊断共用执行器。
+            if (BuildConfig.ENABLE_SOURCE_LAB) {
+                composable(SOURCE_LAB) {
+                    NormalSystemBarColor()
+                    SourceLabScreen(onBack = { navController.popBackStack() })
                 }
             }
 

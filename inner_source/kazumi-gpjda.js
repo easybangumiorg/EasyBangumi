@@ -1,25 +1,25 @@
-// @key kazumi.7sefun
-// @label 7sefun
-// @versionName 1.2
-// @versionCode 10200
+// @key kazumi.gpjda
+// @label gpjda
+// @versionName 1.0
+// @versionCode 10000
 // @libVersion 15
-// @cover https://www.7sefun.top/favicon.ico
+// @cover https://www.gpjda.com/favicon.ico
 
 var networkHelper = Inject_NetworkHelper;
 var renderHelper = Inject_RenderHelper;
 var okhttpHelper = Inject_OkhttpHelper;
 var preferenceHelper = Inject_PreferenceHelper;
 
-var DEFAULT_BASE_URL = "https://www.7sefun.top/";
-var SEARCH_URL = "https://www.7sefun.top/vodsearch/-------------.html?wd=@keyword";
-var SEARCH_LIST_XPATH = "//div[2]/div[2]/div[2]/div[2]/div";
-var SEARCH_NAME_XPATH = "//div[2]/text()";
-var SEARCH_RESULT_XPATH = "//a";
-var CHAPTER_ROADS_XPATH = "//div[contains(@class,'vod-play-list-container')]";
-var CHAPTER_RESULT_XPATH = "//a";
+var DEFAULT_BASE_URL = "https://www.gpjda.com/";
+var SEARCH_URL = "https://www.gpjda.com/search.php?searchword=@keyword";
+var SEARCH_LIST_XPATH = "//div[1]/div/div[2]/ul[1]/li";
+var SEARCH_NAME_XPATH = "//h4/a";
+var SEARCH_RESULT_XPATH = "//h4/a";
+var CHAPTER_ROADS_XPATH = "//ul[@class='stui-content__playlist playlink clearfix']";
+var CHAPTER_RESULT_XPATH = "//li/a";
 var USER_AGENT = "";
 var REFERER = "";
-var USE_POST = false;
+var USE_POST = true;
 var USE_LEGACY_PARSER = false;
 var PLAY_TIMEOUT = 30000;
 
@@ -30,9 +30,7 @@ function PreferenceComponent_getPreference() {
 }
 
 function PageComponent_getMainTabs() {
-    var res = new ArrayList();
-    res.add(new MainTab("首页推荐", MainTab.MAIN_TAB_WITH_COVER));
-    return res;
+    return new NonLabelMainTab(MainTab.MAIN_TAB_WITH_COVER);
 }
 
 function PageComponent_getSubTabs(mainTab) {
@@ -409,18 +407,13 @@ function extractDirectVideoFromHtml(html, pageUrl) {
 }
 
 function isDirectVideoUrl(url) {
-    var value = String(url == null ? "" : url).trim();
-    var lower = value.toLowerCase();
-    if (lower.indexOf("http://") != 0 && lower.indexOf("https://") != 0 && lower.indexOf("//") != 0) {
-        return false;
-    }
-    var path = lower.split("?")[0].split("#")[0];
-    return path.lastIndexOf(".m3u8") == path.length - 5 || path.lastIndexOf(".mp4") == path.length - 4;
+    var lower = String(url == null ? "" : url).toLowerCase();
+    return (lower.indexOf("http://") == 0 || lower.indexOf("https://") == 0 || lower.indexOf("//") == 0) &&
+        (lower.indexOf(".m3u8") >= 0 || lower.indexOf(".mp4") >= 0);
 }
 
 function isM3u8Url(url) {
-    var path = String(url == null ? "" : url).toLowerCase().split("?")[0].split("#")[0];
-    return path.lastIndexOf(".m3u8") == path.length - 5;
+    return String(url == null ? "" : url).toLowerCase().indexOf(".m3u8") >= 0;
 }
 
 function getText(url) {

@@ -82,15 +82,7 @@ class JSPageComponent(
                 )?.apply {
                     this.logi("JSPageComponent")
                 }.jsUnwrap() as? ArrayList<*>)?.let {
-                    if (it is NonLabelMainTab) {
-                        result.add(MainTab("", it.type))
-                    } else {
-                        it.forEach {
-                            if (it is MainTab) {
-                                result.add(it)
-                            }
-                        }
-                    }
+                    result.addAll(normalizeMainTabs(it))
                 }
                 mainTabList.clear()
                 mainTabList.addAll(result)
@@ -209,3 +201,9 @@ class JSPageComponent(
             }
         }
     }
+
+/** Preserve opaque source parameters when turning the no-label marker into a page. */
+internal fun normalizeMainTabs(tabs: ArrayList<*>): List<MainTab> = when (tabs) {
+    is NonLabelMainTab -> listOf(MainTab("", tabs.type, tabs.ext))
+    else -> tabs.filterIsInstance<MainTab>()
+}

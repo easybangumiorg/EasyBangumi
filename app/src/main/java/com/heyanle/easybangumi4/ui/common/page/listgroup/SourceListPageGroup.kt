@@ -27,6 +27,7 @@ import com.heyanle.easybangumi4.ui.common.FastScrollToTopFab
 import com.heyanle.easybangumi4.ui.common.LoadingPage
 import com.heyanle.easybangumi4.ui.common.page.list.SourceListPage
 import com.heyanle.easybangumi4.ui.common.page.CartoonPagePresentation
+import com.heyanle.easybangumi4.ui.common.page.sourcePageTabRole
 import com.heyanle.easybangumi4.v2.theme.V2Theme
 import com.heyanle.easybangumi4.v2.theme.V2Tokens
 import com.heyanle.easybangumi4.ui.common.cover_star.CoverStarViewModel
@@ -41,6 +42,7 @@ import kotlinx.coroutines.launch
 fun SourceListPageGroup(
     listPageGroup: SourcePage.Group,
     presentation: CartoonPagePresentation = CartoonPagePresentation.Legacy,
+    hasParentTabs: Boolean = true,
 ) {
     val vm =
         viewModel<SourceListGroupViewModel>(factory = SourceListGroupViewModelFactory(listPageGroup))
@@ -60,7 +62,7 @@ fun SourceListPageGroup(
                 )
             }
             is SourceListGroupViewModel.GroupState.Group -> {
-                SourceListWithGroup(vm, it, presentation)
+                SourceListWithGroup(vm, it, presentation, hasParentTabs)
             }
             is SourceListGroupViewModel.GroupState.Error -> {
                 ErrorPage(
@@ -85,6 +87,7 @@ fun SourceListWithGroup(
     groupVM: SourceListGroupViewModel,
     groupState: SourceListGroupViewModel.GroupState.Group,
     presentation: CartoonPagePresentation,
+    hasParentTabs: Boolean = true,
 ){
 
     val coverStarViewModel = viewModel<CoverStarViewModel>()
@@ -111,6 +114,7 @@ fun SourceListWithGroup(
             lazyGridState,
             lazyStaggeredGridState,
             presentation,
+            tabRole = sourcePageTabRole(hasParentTabs, groupState.list.size),
         )
         PullRefreshIndicator(
             refreshing,

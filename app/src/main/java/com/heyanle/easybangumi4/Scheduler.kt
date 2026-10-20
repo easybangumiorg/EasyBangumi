@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.heyanle.easy_crasher.CrashHandler
 import com.heyanle.easybangumi4.cartoon.CartoonModule
+import com.heyanle.easybangumi4.cloudsync.CloudSyncModule
 import com.heyanle.easybangumi4.exo.MediaModule
 import com.heyanle.easybangumi4.case.CaseModule
 import com.heyanle.easybangumi4.danmaku.DanmakuModule
@@ -72,6 +73,7 @@ object Scheduler {
         // 注册各种 Controller
         SettingModule(application).registerWith(Inject)
         ControllerModule(application).registerWith(Inject)
+        CloudSyncModule(application).registerWith(Inject)
         CartoonModule(application).registerWith(Inject)
         DanmakuModule().registerWith(Inject)
         MediaModule(application).registerWith(Inject)

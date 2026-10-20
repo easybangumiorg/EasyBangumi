@@ -14,6 +14,9 @@ dependencyResolutionManagement {
         mavenCentral()
         google()
         maven {
+            url = uri("https://pkgs.dev.azure.com/MicrosoftDeviceSDK/DuoSDK-Public/_packaging/Duo-SDK-Feed/maven/v1")
+        }
+        maven {
             url = uri("http://4thline.org/m2")
             isAllowInsecureProtocol = true
         }
@@ -51,5 +54,4 @@ include(":lib_upnp")
 
 include(":easy-player2")
 include(":easy_transformer")
-
 

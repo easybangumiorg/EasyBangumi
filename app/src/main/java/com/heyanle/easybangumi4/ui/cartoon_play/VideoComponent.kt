@@ -211,7 +211,9 @@ fun VideoFloat(
                 controlVM.controlState
             }.collectLatest {
                 if (it == ControlViewModel.ControlState.Ended) {
-                    cartoonPlayViewModel.tryNext()
+                    if (!cartoonPlayingViewModel.sleepTimer.onEpisodeEnded()) {
+                        cartoonPlayViewModel.tryNext()
+                    }
                 }
             }
         }
@@ -366,6 +368,38 @@ fun VideoFloat(
         }
     }
 
+
+    val historyNotice by cartoonPlayingViewModel.historyResumeNotice.collectAsState()
+    val automaticLineSwitch by cartoonPlayingViewModel.autoLineSwitch.collectAsState()
+    if (controlVM.controlState != ControlViewModel.ControlState.Locked &&
+        (historyNotice != null || automaticLineSwitch != null)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart).padding(
+                    start = 12.dp + if (controlVM.isFullScreen) cutoutInsets.paddingFor(PlayerCutoutInsets.Side.LEFT) else 0.dp,
+                    end = 12.dp,
+                    bottom = if (controlVM.isShowOverlay()) 64.dp else 12.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                automaticLineSwitch?.let { notice ->
+                    PlayerActionNotice(
+                        message = "${if (notice.isConnecting) "正在连接" else "即将切换至"}${notice.lineLabel}（${notice.attempt}/${notice.maxAttempts}）",
+                        actionLabel = "取消换线",
+                        onAction = cartoonPlayingViewModel::cancelAutomaticLineSwitch,
+                    )
+                }
+                historyNotice?.let { notice ->
+                    PlayerActionNotice(
+                        message = "已跳转至 ${playerNoticeTime(notice.positionMs)}",
+                        actionLabel = "取消跳转",
+                        onAction = cartoonPlayingViewModel::cancelHistoryResume,
+                    )
+                }
+            }
+        }
+    }
 
     // 倍速窗口
     val customSpeed by cartoonPlayingViewModel.customSpeed.collectAsState()

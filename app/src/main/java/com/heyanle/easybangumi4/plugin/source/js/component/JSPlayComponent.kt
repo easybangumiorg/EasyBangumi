@@ -3,6 +3,7 @@ package com.heyanle.easybangumi4.plugin.source.js.component
 import com.heyanle.easybangumi4.plugin.source.js.runtime.JSScope
 import com.heyanle.easybangumi4.plugin.source.js.utils.JSFunction
 import com.heyanle.easybangumi4.plugin.source.js.utils.jsUnwrap
+import com.heyanle.easybangumi4.plugin.source.js.utils.WebViewProxyKtWrapper
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.IWebProxy
 import com.heyanle.easybangumi4.plugin.source.utils.network.web.WebProxyManager
 import com.heyanle.easybangumi4.plugin.api.ParserException
@@ -120,10 +121,12 @@ class JSPlayComponent(
         return withResult(Dispatchers.IO) {
             jsScope.requestRunWithScope { context, scriptable ->
                 try {
+                    // 原代理保留验证后的 WebView/Cookie，重新接入管理器并恢复同步 JS API 桥。
+                    webProxyManager?.addWebProxy(iWebProxy)
                     val res = getPlayInfoWithCheck?.call(
                         context, scriptable, scriptable,
                         arrayOf(
-                            summary, playLine, episode, iWebProxy
+                            summary, playLine, episode, WebViewProxyKtWrapper(iWebProxy)
                         )
                     ).jsUnwrap() as? PlayerInfo
                     if (res == null) {

@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -87,6 +89,16 @@ internal fun RepositorySourcesV2() {
                     ),
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
+                    if (state.warnings.isNotEmpty()) {
+                        item {
+                            Text(
+                                state.warnings.joinToString("\n"),
+                                modifier = Modifier.padding(V2Tokens.ScreenHorizontalPadding),
+                                color = V2Tokens.Error,
+                                fontSize = 13.sp,
+                            )
+                        }
+                    }
                     items(
                         items = state.entries,
                         key = { "${it.repoUrl}::${it.key}" },
@@ -112,7 +124,8 @@ internal fun RepositorySourcesV2() {
             )
             else -> StoryEmptyV2(
                 title = "暂无可用番源",
-                subtitle = "点击右上角添加仓库，或下拉刷新",
+                subtitle = state.warnings.takeIf { it.isNotEmpty() }?.joinToString("\n")
+                    ?: "请自行获取仓库地址后，点击右上角添加仓库",
             )
         }
 
@@ -181,6 +194,7 @@ private fun RepositorySourceCardV2(
                     overflow = TextOverflow.Ellipsis,
                 )
                 val versionText = buildList {
+                    add(entry.repoUrl)
                     repositoryVersionLabelV2(entry)?.let { add("仓库 $it") }
                     installedVersionLabelV2(installedSource)?.let { add("当前 $it") }
                 }.joinToString(" · ")
@@ -301,12 +315,14 @@ internal fun RepositoryManageDialogV2(
         onDismissRequest = onDismiss,
         title = { Text("仓库管理", color = V2Tokens.TextPrimary) },
         text = {
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 OutlinedTextField(
                     value = newUrl,
                     onValueChange = { newUrl = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("仓库地址") },
+                    isError = state.addError != null,
+                    supportingText = state.addError?.let { message -> ({ Text(message) }) },
                     placeholder = { Text("https://…/index.jsonl") },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -318,8 +334,7 @@ internal fun RepositoryManageDialogV2(
                 Button(
                     onClick = {
                         if (newUrl.isNotBlank()) {
-                            viewModel.addRepository(newUrl)
-                            newUrl = ""
+                            if (viewModel.addRepository(newUrl)) newUrl = ""
                         }
                     },
                     modifier = Modifier
@@ -399,7 +414,7 @@ internal fun RepositoryManageDialogV2(
 }
 
 private fun repositoryVersionLabelV2(entry: RepositoryEntry): String? {
-    return formatVersionV2(entry.version, entry.versionCode)
+    return formatVersionV2(entry.displayVersion, entry.versionCode)
 }
 
 private fun installedVersionLabelV2(

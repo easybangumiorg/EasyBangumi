@@ -122,8 +122,14 @@ fun CartoonPlay(
     }
 
     LaunchedEffect(key1 = playState.value) {
-        playingVM.changePlay(playState.value, playVM.adviceProgress)
-        playVM.adviceProgress = -1L
+        playingVM.bindPlaybackSelection(playVM)
+        val target = playState.value
+        if (target == null) {
+            playingVM.changePlay(null, -1L)
+        } else {
+            playingVM.changePlay(target, playVM.adviceProgress, historyResume = playVM.consumeHistoryResumeFlag())
+            playVM.adviceProgress = -1L
+        }
     }
 
     Surface(

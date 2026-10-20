@@ -142,6 +142,16 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 -dontwarn androidx.window.extensions.area.ExtensionWindowAreaPresentation
+# MSAL/Nimbus 的可选算法与源码注解。OneDrive OAuth/Graph 路径不加载这些实现。
+-dontwarn com.google.auto.value.AutoValue
+-dontwarn com.google.crypto.tink.subtle.Ed25519Sign$KeyPair
+-dontwarn com.google.crypto.tink.subtle.Ed25519Sign
+-dontwarn com.google.crypto.tink.subtle.Ed25519Verify
+-dontwarn com.google.crypto.tink.subtle.X25519
+-dontwarn com.google.crypto.tink.subtle.XChaCha20Poly1305
+-dontwarn edu.umd.cs.findbugs.annotations.NonNull
+-dontwarn edu.umd.cs.findbugs.annotations.Nullable
+-dontwarn edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 # Rhino 在 JVM 桌面环境的可选依赖（awt/swing），Android 上不存在
 -dontwarn java.awt.**
 -dontwarn java.beans.**

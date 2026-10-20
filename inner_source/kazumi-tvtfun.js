@@ -1,25 +1,34 @@
-// @key kazumi.gpjda
-// @label gpjda
-// @versionName 1.0
-// @versionCode 10000
+// @key kazumi.tvtfun
+// @label TvTFun
+// @versionName 1.1
+// @versionCode 10100
 // @libVersion 15
-// @cover https://www.gpjda.com/favicon.ico
+// @cover https://www.tvtfun.net/favicon.ico
 
 var networkHelper = Inject_NetworkHelper;
 var renderHelper = Inject_RenderHelper;
 var okhttpHelper = Inject_OkhttpHelper;
 var preferenceHelper = Inject_PreferenceHelper;
 
-var DEFAULT_BASE_URL = "https://www.gpjda.com/";
-var SEARCH_URL = "https://www.gpjda.com/search.php?searchword=@keyword";
-var SEARCH_LIST_XPATH = "//div[1]/div/div[2]/ul[1]/li";
-var SEARCH_NAME_XPATH = "//h4/a";
-var SEARCH_RESULT_XPATH = "//h4/a";
-var CHAPTER_ROADS_XPATH = "//ul[@class='stui-content__playlist playlink clearfix']";
-var CHAPTER_RESULT_XPATH = "//li/a";
+var DEFAULT_BASE_URL = "https://www.tvtfun.net/";
+var SEARCH_API_URL = "https://www.tvtfun.net/api/videos/search";
+var SEARCH_API_QUERY = new JSONObject("{\"q\":\"@keyword\",\"pageSize\":5}");
+var SEARCH_LIST_PATH = "$.data.videos[*]";
+var SEARCH_NAME_PATH = "$.name";
+var SEARCH_SOURCE_PATH = "$.id";
+var CHAPTER_API_URL = "https://www.tvtfun.net/api/videos/@source";
+var CHAPTER_API_QUERY = new JSONObject("{}");
+var CHAPTER_ROADS_PATH = "$.data.playSources[*]";
+var ROAD_NAME_PATH = "$.name";
+var EPISODES_PATH = "$.episodes[*]";
+var EPISODE_NAME_PATH = "$.name";
+var EPISODE_URL_PATH = "";
+var EPISODE_PAGE_URL = "https://www.tvtfun.net/video/@slug/play";
+var EPISODE_PAGE_QUERY = new JSONObject("{\"source\":\"@roadIndex\",\"episode\":\"@episodeIndex\"}");
+var CHAPTER_VARIABLES = new JSONObject("{\"slug\":\"$.data.slug\"}");
 var USER_AGENT = "";
-var REFERER = "";
-var USE_POST = true;
+var REFERER = "https://www.tvtfun.net/";
+var USE_POST = false;
 var USE_LEGACY_PARSER = false;
 var PLAY_TIMEOUT = 30000;
 
@@ -30,9 +39,7 @@ function PreferenceComponent_getPreference() {
 }
 
 function PageComponent_getMainTabs() {
-    var res = new ArrayList();
-    res.add(new MainTab("首页推荐", MainTab.MAIN_TAB_WITH_COVER));
-    return res;
+    return new NonLabelMainTab(MainTab.MAIN_TAB_WITH_COVER);
 }
 
 function PageComponent_getSubTabs(mainTab) {
@@ -268,30 +275,34 @@ function isLikelyCoverUrl(url) {
     return value.indexOf("http://") == 0 || value.indexOf("https://") == 0;
 }
 
-
 function SearchComponent_search(pageKey, keyword) {
-    var url = runtimeUrl(SEARCH_URL).replace("@keyword", URLEncoder.encode(keyword, "utf-8"));
-    var doc = getDoc(url);
-    var items = XPathUtils.nodes(doc, SEARCH_LIST_XPATH);
+    var variables = new HashMap();
+    variables.put("keyword", keyword);
+    variables.put("page", pageKey == null ? 1 : pageKey);
+    var url = buildApiUrl(SEARCH_API_URL, SEARCH_API_QUERY, variables);
+    var root = new JSONObject(getRequiredText(url));
+    var items = jsonPathList(root, SEARCH_LIST_PATH);
     var list = new ArrayList();
+    var seen = new HashMap();
     for (var i = 0; i < items.size(); i++) {
         var item = items.get(i);
-        var title = XPathUtils.text(item, SEARCH_NAME_XPATH);
-        var href = XPathUtils.attr(item, SEARCH_RESULT_XPATH, "href");
-        if (title == null || String(title).trim().length == 0) {
+        var title = jsonPathString(item, SEARCH_NAME_PATH);
+        var remoteId = jsonPathString(item, SEARCH_SOURCE_PATH);
+        if (title.length == 0 || remoteId.length == 0) {
             continue;
         }
-        if (href == null || href.length == 0) {
+        var coverUrl = apiImage(item);
+        var id = encodeSourceId(remoteId, title, coverUrl);
+        if (seen.containsKey(id)) {
             continue;
         }
-        var detailUrl = absoluteUrl(href);
-        var coverUrl = absoluteUrl(XPathUtils.firstImage(item));
+        seen.put(id, true);
         list.add(makeCartoonCover({
-            id: encodeSourceId(detailUrl, title, coverUrl),
+            id: id,
             source: source.key,
-            url: detailUrl,
+            url: getRootUrl(),
             title: title,
-            intro: "",
+            intro: apiDescription(item),
             cover: coverUrl
         }));
     }
@@ -300,51 +311,180 @@ function SearchComponent_search(pageKey, keyword) {
 
 function DetailedComponent_getDetailed(summary) {
     var sourceId = decodeSourceId(String(summary.id));
-    var detailUrl = runtimeUrl(sourceId.url);
-    var doc = getDoc(detailUrl);
-    var coverUrl = sourceId.cover;
-    if (coverUrl == null || coverUrl.length == 0) {
-        coverUrl = absoluteUrl(XPathUtils.firstImage(doc));
+    var variables = new HashMap();
+    variables.put("source", sourceId.url);
+    var detailUrl = buildApiUrl(CHAPTER_API_URL, CHAPTER_API_QUERY, variables);
+    var root = new JSONObject(getRequiredText(detailUrl));
+    addConfiguredVariables(variables, root);
+    var detail = jsonPathValue(root, "$.data");
+    if (detail == null) {
+        detail = root;
     }
-    var title = sourceId.title;
-    if (title == null || title.length == 0) {
-        title = cleanTitle(XPathUtils.title(doc));
+    var title = apiFirstString(detail, ["name", "title"]);
+    if (title.length == 0) {
+        title = sourceId.title;
     }
-    if (title == null || title.length == 0) {
-        title = detailUrl;
+    var coverUrl = apiImage(detail);
+    if (coverUrl.length == 0) {
+        coverUrl = sourceId.cover;
     }
-    var roads = XPathUtils.nodes(doc, CHAPTER_ROADS_XPATH);
+    var roads = jsonPathList(root, CHAPTER_ROADS_PATH);
     var lines = new ArrayList();
     for (var i = 0; i < roads.size(); i++) {
         var road = roads.get(i);
-        var episodeNodes = XPathUtils.nodes(road, CHAPTER_RESULT_XPATH);
+        var roadName = jsonPathString(road, ROAD_NAME_PATH);
+        if (roadName.length == 0) {
+            roadName = "播放线路" + (i + 1);
+        }
+        var episodeNodes = jsonPathList(road, EPISODES_PATH);
         var episodes = new ArrayList();
         for (var j = 0; j < episodeNodes.size(); j++) {
-            var ep = episodeNodes.get(j);
-            var epHref = XPathUtils.attrSelf(ep, "href");
-            var epLabel = XPathUtils.textSelf(ep);
-            if (epHref == null || epHref.length == 0) {
-                continue;
-            }
-            var epUrl = absoluteUrl(epHref);
-            episodes.add(new Episode(encodeSourceId(epUrl, "", ""), epLabel, j));
+            var episode = episodeNodes.get(j);
+            var episodeName = jsonPathString(episode, EPISODE_NAME_PATH);
+            var episodeValue = jsonPathString(episode, EPISODE_URL_PATH);
+            variables.put("roadIndex", i);
+            variables.put("episodeIndex", j);
+            variables.put("episodeUrl", episodeValue);
+            var episodePage = buildApiUrl(EPISODE_PAGE_URL, EPISODE_PAGE_QUERY, variables);
+            episodes.add(new Episode(encodeSourceId(episodePage, "", ""), episodeName, j));
         }
         if (episodes.size() > 0) {
-            lines.add(new PlayLine(String(i), "播放线路" + (i + 1), episodes));
+            lines.add(new PlayLine(String(i), roadName, episodes));
         }
     }
+    var description = apiDescription(detail);
     var cartoon = makeCartoon({
         id: summary.id,
         source: summary.source,
-        url: detailUrl,
+        url: getRootUrl(),
         title: title,
         cover: coverUrl,
-        intro: "",
-        description: "",
+        intro: description,
+        description: description,
         status: Cartoon.STATUS_UNKNOWN,
         updateStrategy: Cartoon.UPDATE_STRATEGY_ALWAYS
     });
     return new Pair(cartoon, lines);
+}
+
+function addConfiguredVariables(variables, root) {
+    var keys = CHAPTER_VARIABLES.keys();
+    while (keys.hasNext()) {
+        var key = String(keys.next());
+        variables.put(key, jsonPathString(root, String(CHAPTER_VARIABLES.get(key))));
+    }
+}
+
+function buildApiUrl(template, query, variables) {
+    var url = runtimeUrl(expandTemplate(template, variables));
+    var keys = query.keys();
+    var separator = url.indexOf("?") >= 0 ? "&" : "?";
+    while (keys.hasNext()) {
+        var key = String(keys.next());
+        var value = expandTemplate(String(query.get(key)), variables);
+        url += separator + URLEncoder.encode(key, "utf-8") + "=" + URLEncoder.encode(value, "utf-8");
+        separator = "&";
+    }
+    return url;
+}
+
+function expandTemplate(template, variables) {
+    var value = String(template);
+    var iterator = variables.entrySet().iterator();
+    while (iterator.hasNext()) {
+        var entry = iterator.next();
+        value = value.split("@" + entry.getKey()).join(String(entry.getValue()));
+    }
+    return value;
+}
+
+function jsonPathValue(root, path) {
+    if (root == null) {
+        return null;
+    }
+    var normalized = String(path == null ? "" : path).trim();
+    if (normalized.length == 0 || normalized == "$") {
+        return root;
+    }
+    if (normalized.indexOf("$.") == 0) {
+        normalized = normalized.substring(2);
+    }
+    var parts = normalized.split(".");
+    var value = root;
+    for (var i = 0; i < parts.length; i++) {
+        var key = String(parts[i]).replace(/\[\*\]$/, "");
+        if (key.length == 0) {
+            continue;
+        }
+        if (!(value instanceof JSONObject)) {
+            return null;
+        }
+        value = value.opt(key);
+        if (value == null || value == JSONObject.NULL) {
+            return null;
+        }
+    }
+    return value;
+}
+
+function jsonPathList(root, path) {
+    var value = jsonPathValue(root, path);
+    var result = new ArrayList();
+    if (value instanceof JSONArray) {
+        for (var i = 0; i < value.length(); i++) {
+            var item = value.opt(i);
+            if (item != null && item != JSONObject.NULL) {
+                result.add(item);
+            }
+        }
+    } else if (value != null) {
+        result.add(value);
+    }
+    return result;
+}
+
+function jsonPathString(root, path) {
+    if (path == null || String(path).trim().length == 0) {
+        return "";
+    }
+    var value = jsonPathValue(root, path);
+    if (value == null || value == JSONObject.NULL) {
+        return "";
+    }
+    return String(value);
+}
+
+function apiFirstString(object, fields) {
+    if (!(object instanceof JSONObject)) {
+        return "";
+    }
+    for (var i = 0; i < fields.length; i++) {
+        var value = object.opt(fields[i]);
+        if (value != null && value != JSONObject.NULL && String(value).trim().length > 0) {
+            return String(value).trim();
+        }
+    }
+    return "";
+}
+
+function apiImage(object) {
+    var value = apiFirstString(object, ["pic", "cover", "picThumb", "coverThumb", "image", "thumbnail"]);
+    if (value.length == 0) {
+        return "";
+    }
+    return absoluteUrl(value);
+}
+
+function apiDescription(object) {
+    return apiFirstString(object, ["content", "summary", "blurb", "description", "remarks"]);
+}
+
+function getRequiredText(url) {
+    var text = getText(url);
+    if (text == null || String(text).length == 0) {
+        throw new ParserException(String("API 请求失败: " + url), null);
+    }
+    return text;
 }
 
 function PlayComponent_getPlayInfo(summary, playLine, episode) {
@@ -400,7 +540,7 @@ function extractDirectVideoFromHtml(html, pageUrl) {
     if (match == null || match.length < 2) {
         return "";
     }
-    var raw = String(match[1]).replace(/\\//g, "/").replace(/\u0026/g, "&");
+    var raw = String(match[1]).replace(/\\\//g, "/").replace(/\u0026/g, "&");
     var resolved = SourceUtils.urlParser(String(pageUrl), raw);
     if (isDirectVideoUrl(resolved)) {
         return resolved;
@@ -409,18 +549,17 @@ function extractDirectVideoFromHtml(html, pageUrl) {
 }
 
 function isDirectVideoUrl(url) {
-    var value = String(url == null ? "" : url).trim();
-    var lower = value.toLowerCase();
-    if (lower.indexOf("http://") != 0 && lower.indexOf("https://") != 0 && lower.indexOf("//") != 0) {
-        return false;
-    }
-    var path = lower.split("?")[0].split("#")[0];
-    return path.lastIndexOf(".m3u8") == path.length - 5 || path.lastIndexOf(".mp4") == path.length - 4;
+    var lower = String(url == null ? "" : url).toLowerCase();
+    var path = lower.split("?", 1)[0].split("#", 1)[0];
+    var supportedScheme = path.indexOf("http://") == 0 ||
+        path.indexOf("https://") == 0 || path.indexOf("//") == 0;
+    return supportedScheme && (path.endsWith(".m3u8") || path.endsWith(".mp4"));
 }
 
 function isM3u8Url(url) {
-    var path = String(url == null ? "" : url).toLowerCase().split("?")[0].split("#")[0];
-    return path.lastIndexOf(".m3u8") == path.length - 5;
+    var lower = String(url == null ? "" : url).toLowerCase();
+    var path = lower.split("?", 1)[0].split("#", 1)[0];
+    return path.endsWith(".m3u8");
 }
 
 function getText(url) {
@@ -444,7 +583,7 @@ function getDoc(url) {
     if (USE_POST) {
         var uri = URI.create(url);
         var form = parseQueryToMap(uri.getRawQuery());
-        var postUrl = uri.getScheme() + "://" + uri.getHost() + uri.getPath();
+        var postUrl = uri.getScheme() + "://" + uri.getRawAuthority() + uri.getPath();
         request = OkhttpUtils.postFromBody(postUrl, form, makeObjectHeaders());
     } else {
         request = OkhttpUtils.get(url, makeHeaders());
@@ -556,11 +695,13 @@ function parseQueryToMap(query) {
     }
     var parts = String(query).split("&");
     for (var i = 0; i < parts.length; i++) {
-        var kv = String(parts[i]).split("=");
-        var key = URLDecoder.decode(kv[0], "utf-8");
+        var part = String(parts[i]);
+        var equalsIndex = part.indexOf("=");
+        var rawKey = equalsIndex >= 0 ? part.substring(0, equalsIndex) : part;
+        var key = URLDecoder.decode(rawKey, "utf-8");
         var value = "";
-        if (kv.length > 1) {
-            value = URLDecoder.decode(kv[1], "utf-8");
+        if (equalsIndex >= 0) {
+            value = URLDecoder.decode(part.substring(equalsIndex + 1), "utf-8");
         }
         map.put(key, value);
     }

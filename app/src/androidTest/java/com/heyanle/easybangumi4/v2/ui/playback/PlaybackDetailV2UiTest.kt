@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -21,14 +22,17 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -37,9 +41,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.espresso.Espresso.pressBack
+import androidx.test.platform.app.InstrumentationRegistry
 import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalEpisode
 import com.heyanle.easybangumi4.cartoon.entity.CartoonLocalItem
@@ -55,17 +61,30 @@ import com.heyanle.easybangumi4.ui.cartoon_play.RecordingOverlayHost
 import com.heyanle.easybangumi4.ui.cartoon_play.view_model.CartoonPlayViewModel
 import com.heyanle.easybangumi4.ui.common.proc.SortBy
 import com.heyanle.easybangumi4.ui.common.proc.SortState
+import com.heyanle.easybangumi4.sourcelab.foregroundSourceLabForDeviceTests
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExternalResource
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class PlaybackDetailV2UiTest {
+    private val composeRule = createComposeRule()
 
     @get:Rule
-    val composeRule = createComposeRule()
+    val rules: TestRule = RuleChain.outerRule(object : ExternalResource() {
+        override fun before() {
+            if (InstrumentationRegistry.getInstrumentation().targetContext.packageName ==
+                "com.heyanle.easybangumi4.sourcelab"
+            ) {
+                foregroundSourceLabForDeviceTests()
+            }
+        }
+    }).around(composeRule)
 
     @Test
     fun episodeRailButton_shortLabel_isCompactAndKeepsAccessibleTouchHeight() {
@@ -443,6 +462,44 @@ class PlaybackDetailV2UiTest {
 
         composeRule.runOnIdle {
             assertEquals(listOf("episode-2"), submittedEpisodeIds)
+        }
+    }
+
+    @Test
+    fun downloadSelection_keepsConfirmVisibleAfterScrolling_andAcceptsTouch() {
+        val episodes = (1..80).map { Episode("episode-$it", "第 $it 集", it) }
+        var submittedEpisodeIds = emptyList<String>()
+        var viewportWidth = 0
+        var viewportHeight = 0
+        setMaterialContent {
+            val configuration = LocalConfiguration.current
+            viewportWidth = configuration.screenWidthDp
+            viewportHeight = configuration.screenHeightDp
+            DownloadSelectionHarness(
+                episodes = episodes,
+                onSubmit = { submittedEpisodeIds = it.map(Episode::id) },
+            )
+        }
+        composeRule.runOnIdle {
+            InstrumentationRegistry.getArguments().getString("expectedLandscape")?.let {
+                assertEquals("Viewport: ${viewportWidth}x${viewportHeight}dp", it.toBoolean(), viewportWidth > viewportHeight)
+            }
+        }
+
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.DOWNLOAD_CONFIRM)
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.DOWNLOAD_SELECT_ALL).performClick()
+        composeRule.onNode(hasScrollToIndexAction())
+            .performScrollToNode(hasTestTag(CartoonPlayV2TestTags.episode("episode-80")))
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.episode("episode-80")).assertIsDisplayed()
+        composeRule.onNodeWithTag(CartoonPlayV2TestTags.DOWNLOAD_CONFIRM)
+            .assertIsDisplayed()
+            .assertIsEnabled()
+            .performTouchInput { click() }
+
+        composeRule.runOnIdle {
+            assertEquals(episodes.map(Episode::id), submittedEpisodeIds)
         }
     }
 

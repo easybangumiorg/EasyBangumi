@@ -190,7 +190,7 @@ fun Home() {
                     CompositionLocalProvider(
                         LocalViewModelStoreOwner provides listVmOwner
                     ) {
-                        CartoonPageUI(cartoonPage = it)
+                        CartoonPageUI(cartoonPage = it, hasParentTabs = state.isShowLabel)
                     }
                 }
             }

@@ -5,6 +5,7 @@ import com.heyanle.easybangumi4.cartoon.entity.CartoonInfo
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.CartoonInfoDao
 import com.heyanle.easybangumi4.cartoon.repository.db.dao.StarMigrationResult
 import com.heyanle.easybangumi4.case.SourceStateCase
+import com.heyanle.easybangumi4.cloudsync.CloudSyncEventBatcher
 import com.heyanle.easybangumi4.plugin.api.entity.Cartoon
 import com.heyanle.easybangumi4.plugin.api.entity.CartoonSummary
 import com.heyanle.easybangumi4.plugin.api.entity.PlayLine
@@ -40,12 +41,14 @@ class CartoonRepository private constructor(
     private val remoteLoader: suspend (String, String) -> DataResult<Pair<Cartoon, List<PlayLine>>>,
     private val sourceNameLoader: suspend (String) -> String,
     private val remoteMerger: (CartoonInfo?, Cartoon, String, List<PlayLine>) -> CartoonInfo,
+    private val cloudSyncEventBatcher: CloudSyncEventBatcher?,
 ) {
 
     constructor(
         cartoonInfoDao: CartoonInfoDao,
         cartoonNetworkDataSource: CartoonNetworkDataSource,
         sourceStateCase: SourceStateCase,
+        cloudSyncEventBatcher: CloudSyncEventBatcher? = null,
     ) : this(
         cartoonInfoDao = cartoonInfoDao,
         remoteLoader = cartoonNetworkDataSource::awaitCartoonWithPlayLines,
@@ -56,6 +59,7 @@ class CartoonRepository private constructor(
             local?.copyFromCartoon(cartoon, sourceName, playLines)
                 ?: CartoonInfo.fromCartoon(cartoon, sourceName, playLines)
         },
+        cloudSyncEventBatcher = cloudSyncEventBatcher,
     )
 
     internal constructor(
@@ -63,11 +67,13 @@ class CartoonRepository private constructor(
         remoteLoader: suspend (String, String) -> DataResult<Pair<Cartoon, List<PlayLine>>>,
         sourceName: String,
         remoteMerger: (CartoonInfo?, Cartoon, String, List<PlayLine>) -> CartoonInfo,
+        cloudSyncEventBatcher: CloudSyncEventBatcher? = null,
     ) : this(
         cartoonInfoDao,
         remoteLoader,
         sourceNameLoader = { sourceName },
         remoteMerger = remoteMerger,
+        cloudSyncEventBatcher = cloudSyncEventBatcher,
     )
 
     data class MutationTarget(
@@ -227,11 +233,13 @@ class CartoonRepository private constructor(
      */
     suspend fun mutateCartoonInfo(
         targets: Collection<MutationTarget>,
+        notifyCloudSync: Boolean = true,
         transform: (MutationTarget, CartoonInfo?) -> CartoonInfo?,
     ): List<CartoonInfo> {
         if (targets.isEmpty()) return emptyList()
         val distinctTargets = targets.distinctBy { it.key }
         val updated = mutableListOf<CartoonInfo>()
+        val cloudSyncChangedKeys = mutableListOf<CartoonInfoKey>()
         databaseMutationMutex.withLock {
             cartoonInfoDao.transaction {
                 distinctTargets.forEach { target ->
@@ -240,6 +248,9 @@ class CartoonRepository private constructor(
                     val next = transform(target, current) ?: return@forEach
                     require(next.id == target.id && next.source == target.source) {
                         "CartoonInfo identity cannot change during repository mutation"
+                    }
+                    if (notifyCloudSync && hasCloudSyncRelevantChange(current, next)) {
+                        cloudSyncChangedKeys += target.key
                     }
                     cartoonInfoDao.modify(next)
                     updated += cartoonInfoDao.getByCartoonSummary(target.id, target.source) ?: next
@@ -252,6 +263,9 @@ class CartoonRepository private constructor(
             val retainedCacheFlag = (entry.mutableCartoonInfo.value as? DataResult.Ok)?.isCache
                 ?: true
             entry.mutableCartoonInfo.value = DataResult.ok(value, retainedCacheFlag)
+        }
+        if (notifyCloudSync) {
+            cloudSyncEventBatcher?.submit(cloudSyncChangedKeys)
         }
         return updated
     }
@@ -295,6 +309,12 @@ class CartoonRepository private constructor(
         if (result == StarMigrationResult.SUCCESS) {
             publishDatabaseValue(CartoonInfoKey(sourceId, sourceKey))
             publishDatabaseValue(CartoonInfoKey(targetDraft.id, targetDraft.source))
+            cloudSyncEventBatcher?.submit(
+                listOf(
+                    CartoonInfoKey(sourceId, sourceKey),
+                    CartoonInfoKey(targetDraft.id, targetDraft.source),
+                )
+            )
         }
         return result
     }
@@ -331,4 +351,21 @@ class CartoonRepository private constructor(
     }
 
     private fun activeEntry(key: CartoonInfoKey): Entry? = synchronized(entries) { entries[key] }
+
+    private fun hasCloudSyncRelevantChange(old: CartoonInfo?, new: CartoonInfo): Boolean {
+        if (old == null) return new.starTime > 0L || new.lastHistoryTime > 0L
+        return old.starTime != new.starTime ||
+            old.tags != new.tags ||
+            old.upTime != new.upTime ||
+            old.lastHistoryTime != new.lastHistoryTime ||
+            old.lastLineId != new.lastLineId ||
+            old.lastLinesIndex != new.lastLinesIndex ||
+            old.lastLineLabel != new.lastLineLabel ||
+            old.lastEpisodeId != new.lastEpisodeId ||
+            old.lastEpisodeOrder != new.lastEpisodeOrder ||
+            old.lastEpisodeIndex != new.lastEpisodeIndex ||
+            old.lastEpisodeLabel != new.lastEpisodeLabel ||
+            old.lastProcessTime != new.lastProcessTime ||
+            old.lastTotalTile != new.lastTotalTile
+    }
 }

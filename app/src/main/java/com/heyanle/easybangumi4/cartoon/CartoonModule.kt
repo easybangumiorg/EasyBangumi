@@ -72,6 +72,7 @@ class CartoonModule(
                 cartoonInfoDao = get(),
                 cartoonNetworkDataSource = get(),
                 sourceStateCase = get(),
+                cloudSyncEventBatcher = get(),
             )
         }
 

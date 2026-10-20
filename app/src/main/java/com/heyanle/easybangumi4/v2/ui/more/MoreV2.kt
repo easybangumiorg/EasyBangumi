@@ -39,6 +39,8 @@ import com.heyanle.easybangumi4.ABOUT
 import com.heyanle.easybangumi4.BuildConfig
 import com.heyanle.easybangumi4.LocalNavController
 import com.heyanle.easybangumi4.SOURCE_MANAGER
+import com.heyanle.easybangumi4.SOURCE_LAB
+import com.heyanle.easybangumi4.SOURCE_DIAGNOSTICS
 import com.heyanle.easybangumi4.STORAGE
 import com.heyanle.easybangumi4.STORY
 import com.heyanle.easybangumi4.TestMain
@@ -86,6 +88,13 @@ internal fun MoreV2() {
         MoreDividerV2()
         MoreEntryV2(Icons.Filled.Extension, stringResource(R.string.source_manage), null, { navController.navigate(SOURCE_MANAGER) })
         MoreDividerV2()
+        MoreEntryV2(
+            icon = Icons.Outlined.RunCircle,
+            title = "源诊断",
+            subtitle = "检查已安装源的首页、搜索与播放",
+            onClick = { navController.navigate(SOURCE_DIAGNOSTICS) },
+        )
+        MoreDividerV2()
         MoreEntryV2(Icons.Filled.Tag, stringResource(R.string.tag_manage), null, navController::navigationCartoonTag)
         MoreDividerV2()
         MoreEntryV2(Icons.Filled.Storage, stringResource(R.string.backup_and_store), null, { navController.navigate(STORAGE) })
@@ -95,6 +104,16 @@ internal fun MoreV2() {
         MoreEntryV2(Icons.Filled.Settings, stringResource(R.string.setting), null, { navController.navigationSetting(SettingPage.First) })
         MoreDividerV2()
         MoreEntryV2(Icons.Outlined.Info, stringResource(R.string.about), null, { navController.navigate(ABOUT) })
+
+        if (BuildConfig.ENABLE_SOURCE_LAB) {
+            MoreDividerV2()
+            MoreEntryV2(
+                icon = Icons.Outlined.RunCircle,
+                title = "源体检",
+                subtitle = "批量测试首页 / 搜索 / 播放，仅开发与测试版可见",
+                onClick = { navController.navigate(SOURCE_LAB) },
+            )
+        }
 
         if (BuildConfig.DEBUG) {
             MoreDividerV2()

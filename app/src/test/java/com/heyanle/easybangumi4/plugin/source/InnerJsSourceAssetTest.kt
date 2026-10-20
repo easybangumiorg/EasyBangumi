@@ -1,14 +1,12 @@
 package com.heyanle.easybangumi4.plugin.source
 
 import com.heyanle.easybangumi4.plugin.source.js.SourceMetadata
-import com.heyanle.easybangumi4.plugin.source.js.source.JsSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.ImporterTopLevel
-import org.mozilla.javascript.ScriptableObject
 import java.io.File
 import java.net.URI
 
@@ -32,22 +30,12 @@ class InnerJsSourceAssetTest {
     fun innerSourceAssetsHaveSupportedMetadata() {
         val files = innerSourceFiles()
 
-        assertEquals(
-            listOf(
-                "age.js",
-                "girigirilove.js",
-                "kazumi-9ciyuan.js",
-                "kazumi-anime7.js",
-                "kazumi-ant.js",
-                "kazumi-baimao.js",
-                "kazumi-mxdm.js",
-                "kazumi-omofun03.js",
-                "kazumi-ylsp.js",
-                "xifandm.js",
-            ),
-            activeInnerSourceFiles().map { it.name }.sorted(),
-        )
-        assertEquals(68, blockedInnerSourceFiles().size)
+        // Development inputs include unverified candidates and older source APIs. The stable
+        // regression set must remain supported, while candidates are classified by admission.
+        val stable = stableRegressionFiles().map { it.name }.toSet()
+        assertTrue("source candidates must not be empty", files.isNotEmpty())
+        val keys = files.map { readMetadata(it)[SourceMetadata.SOURCE_TAG_KEY] }
+        assertEquals("candidate keys must be unique", keys.size, keys.toSet().size)
 
         files.forEach { file ->
             val metadata = readMetadata(file)
@@ -59,9 +47,13 @@ class InnerJsSourceAssetTest {
                 metadata[SourceMetadata.SOURCE_TAG_VERSION_CODE]?.toLongOrNull() != null,
             )
             assertTrue(
-                "${file.name} libVersion should be supported",
-                metadata[SourceMetadata.SOURCE_TAG_LIB_VERSION]?.toIntOrNull() in PluginV3.SUPPORTED_LIB_VERSION_RANGE,
+                "${file.name} libVersion should be declared",
+                (metadata[SourceMetadata.SOURCE_TAG_LIB_VERSION]?.toIntOrNull() ?: 0) > 0,
             )
+            if (file.name in stable) {
+                assertTrue("${file.name} stable source API should be supported",
+                    metadata[SourceMetadata.SOURCE_TAG_LIB_VERSION]?.toIntOrNull() in PluginV3.SUPPORTED_LIB_VERSION_RANGE)
+            }
             val cover = metadata[SourceMetadata.SOURCE_TAG_COVER]
             assertTrue("${file.name} cover should not be blank", cover.isNotNullOrBlank())
             assertTrue(
@@ -80,11 +72,9 @@ class InnerJsSourceAssetTest {
                 optimizationLevel = -1
                 languageVersion = Context.VERSION_ES6
             }.use { context ->
-                val scope = ImporterTopLevel(context)
-                context.initStandardObjects(scope)
-                putTestInjects(scope, file.nameWithoutExtension)
-                context.evaluateString(scope, JsSource.JS_IMPORT, "import", 1, null)
-                context.evaluateReader(scope, file.reader(), file.name, 1, null)
+                // Syntax validation must not execute a candidate's top-level network or config
+                // code; runtime capabilities are checked through the Android acceptance path.
+                file.reader().use { reader -> context.compileReader(reader, file.name, 1, null) }
             }
         }
     }
@@ -138,7 +128,7 @@ class InnerJsSourceAssetTest {
 
     @Test
     fun activeKazumiAssetsExposePageComponent() {
-        activeInnerSourceFiles()
+        stableRegressionFiles()
             .filter { it.name.startsWith("kazumi-") }
             .forEach { file ->
                 val js = file.readText()
@@ -204,12 +194,13 @@ class InnerJsSourceAssetTest {
             .orEmpty()
     }
 
-    private fun activeInnerSourceFiles(): List<File> {
-        return innerSourceFiles().filterNot { it.name.startsWith("block-") }
-    }
-
-    private fun blockedInnerSourceFiles(): List<File> {
-        return innerSourceFiles().filter { it.name.startsWith("block-") }
+    private fun stableRegressionFiles(): List<File> {
+        val names = setOf("age.js", "girigirilove.js", "kazumi-9ciyuan.js", "kazumi-anime7.js",
+            "kazumi-ant.js", "kazumi-baimao.js", "kazumi-mxdm.js", "kazumi-omofun03.js",
+            "kazumi-ylsp.js", "xifandm.js")
+        val files = innerSourceFiles().filter { it.name in names }
+        assertEquals("stable regression inputs must remain present", names, files.map { it.name }.toSet())
+        return files
     }
 
     private inline fun <T> Context.use(block: (Context) -> T): T {
@@ -241,15 +232,4 @@ class InnerJsSourceAssetTest {
         return !this.isNullOrBlank()
     }
 
-    private fun putTestInjects(scope: ScriptableObject, sourceKey: String) {
-        ScriptableObject.putProperty(scope, "Inject_Source", TestSource(sourceKey))
-        ScriptableObject.putProperty(scope, "Inject_NetworkHelper", Any())
-        ScriptableObject.putProperty(scope, "Inject_OkhttpHelper", Any())
-        ScriptableObject.putProperty(scope, "Inject_PreferenceHelper", Any())
-        ScriptableObject.putProperty(scope, "Inject_RenderHelper", Any())
-        ScriptableObject.putProperty(scope, "Inject_WebViewHelperV2", Any())
-        ScriptableObject.putProperty(scope, "Inject_WebProxyProvider", Any())
-    }
-
-    private class TestSource(val key: String)
 }

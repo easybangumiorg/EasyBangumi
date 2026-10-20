@@ -105,10 +105,32 @@ class CartoonPlayViewModel(
     /** 最近一次详情快照生成的线路，排序变化后会替换为新的 wrapper。 */
     private var latestPlayLines: List<PlayLineWrapper> = emptyList()
 
+    internal var onManualPlaybackSelection: (() -> Unit)? = null
+    internal var onSameTargetPlaybackRetry: ((CartoonPlayState) -> Unit)? = null
+
+    internal fun automaticFallbackLines(expected: CartoonPlayState): List<PlayLineWrapper> =
+        latestPlayLines.takeIf { _curringPlayStatus.value == expected }.orEmpty()
+
+    internal fun selectAutomaticFallback(
+        expected: CartoonPlayState,
+        next: CartoonPlayState,
+        positionMs: Long,
+    ): Boolean {
+        if (_curringPlayStatus.value != expected) return false
+        historyResumePending = false
+        adviceProgress = positionMs
+        selectLineById(next.playLine.playLine.id)
+        _curringPlayStatus.value = next
+        return true
+    }
+
     private val _curringPlayStatus = MutableStateFlow<CartoonPlayState?>(null)
     val curringPlayState = _curringPlayStatus.asStateFlow()
 
     var adviceProgress: Long = -1L
+    private var historyResumePending = false
+
+    fun consumeHistoryResumeFlag(): Boolean = historyResumePending.also { historyResumePending = false }
 
     fun onCartoonInfoChange(
         info: CartoonInfo
@@ -152,6 +174,7 @@ class CartoonPlayViewModel(
             match(playLines, enter)
         }
 
+        historyResumePending = old == null && pair != null && adviceProgress > 0L
         // enter 只生效一次
         enter = null
 
@@ -176,20 +199,29 @@ class CartoonPlayViewModel(
         playLineWrapper: PlayLineWrapper,
         episode: Episode,
     ){
-        selectLineById(playLineWrapper.playLine.id)
-        _curringPlayStatus.update {
-            CartoonPlayState(cartoonSummary, playLineWrapper, episode)
-        }
+        selectManualPlayback(CartoonPlayState(cartoonSummary, playLineWrapper, episode))
     }
     fun changePlay(
         cartoonInfo: CartoonInfo,
         playLineWrapper: PlayLineWrapper,
         episode: Episode,
     ){
-        selectLineById(playLineWrapper.playLine.id)
-        _curringPlayStatus.update {
-            CartoonPlayState(cartoonInfo.toSummary(), playLineWrapper, episode, cartoonInfo.toCartoon())
-        }
+        selectManualPlayback(CartoonPlayState(cartoonInfo.toSummary(), playLineWrapper, episode, cartoonInfo.toCartoon()))
+    }
+
+    private fun selectManualPlayback(next: CartoonPlayState) {
+        val previous = _curringPlayStatus.value
+        val sameTarget = previous?.cartoonSummary == next.cartoonSummary &&
+            previous?.playLine?.playLine?.id == next.playLine.playLine.id &&
+            previous?.episode?.id == next.episode.id
+        adviceProgress = -1L
+        historyResumePending = false
+        onManualPlaybackSelection?.invoke()
+        selectLineById(next.playLine.playLine.id)
+        _curringPlayStatus.value = next
+        // StateFlow and the V2 page's identity keys deliberately conflate the same target.
+        // Explicitly selecting it must still restart a failed/cancelled playback attempt.
+        if (sameTarget) onSameTargetPlaybackRetry?.invoke(next)
     }
 
     fun tryNext(): Boolean {
@@ -203,6 +235,9 @@ class CartoonPlayViewModel(
         if(currentIndex < 0 || nextIndex >= episodes.size){
             return false
         }
+        adviceProgress = -1L
+        historyResumePending = false
+        onManualPlaybackSelection?.invoke()
         selectLineById(latestLine.playLine.id)
         _curringPlayStatus.update {
             CartoonPlayState(
@@ -241,6 +276,9 @@ class CartoonPlayViewModel(
     fun selectLine(playLines: List<PlayLineWrapper>, index: Int) {
         latestPlayLines = playLines
         val line = playLines.getOrNull(index) ?: return
+        adviceProgress = -1L
+        historyResumePending = false
+        onManualPlaybackSelection?.invoke()
         selectedLineId = line.playLine.id
         legacySelectedLineIndex = index
     }

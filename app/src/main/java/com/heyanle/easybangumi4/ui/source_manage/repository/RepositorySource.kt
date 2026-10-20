@@ -149,13 +149,17 @@ fun RepositorySource() {
                 if (state.error != null) {
                     Text(text = state.error ?: "", color = MaterialTheme.colorScheme.error)
                 } else {
-                    Text(text = "暂无番源，点击右上角添加仓库")
+                    Text(text = state.warnings.takeIf { it.isNotEmpty() }?.joinToString("\n")
+                        ?: "暂无番源，请自行获取仓库地址后在右上角添加仓库")
                 }
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
             ) {
+                if (state.warnings.isNotEmpty()) {
+                    item { Text(state.warnings.joinToString("\n"), color = MaterialTheme.colorScheme.error) }
+                }
                 items(state.entries, key = { "${it.repoUrl}::${it.key}" }) { entry ->
                     RepositorySourceItem(
                         entry = entry,
@@ -200,6 +204,7 @@ fun RepositorySourceItem(
         },
         supportingContent = {
             Column {
+                Text(text = entry.repoUrl, maxLines = 1)
                 repositoryVersionLabel(entry)?.let {
                     Text(text = "仓库版本 $it")
                 }
@@ -237,7 +242,7 @@ fun RepositorySourceItem(
 }
 
 private fun repositoryVersionLabel(entry: RepositoryEntry): String? {
-    return formatVersion(entry.version, entry.versionCode)
+    return formatVersion(entry.displayVersion, entry.versionCode)
 }
 
 private fun installedVersionLabel(

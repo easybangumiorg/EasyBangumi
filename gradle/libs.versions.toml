@@ -3,6 +3,7 @@ dfm = "0.9.25"
 jsoup = "1.16.1"
 jsoup-xpath = "2.5.5"
 okhttp3 = "4.12.0"
+msal = "6.2.0"
 paging = "3.2.0"
 
 gson = "2.10"
@@ -63,6 +64,8 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 jsoup-xpath = { module = "cn.wanghaomiao:JsoupXpath", version.ref = "jsoup-xpath" }
 okhttp3 = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp3" }
 okhttp3_logging_interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp3" }
+okhttp3_mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp3" }
+msal = { module = "com.microsoft.identity.client:msal", version.ref = "msal" }
 
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }

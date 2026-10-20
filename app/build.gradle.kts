@@ -2,9 +2,12 @@
 import com.android.build.api.dsl.VariantDimension
 import com.heyanle.buildsrc.Android
 import com.heyanle.buildsrc.RoomSchemaArgProvider
+import java.net.URI
 import java.util.Properties
 
 val baseApplicationId = "com.heyanle.easybangumi4"
+// Source acceptance must never reuse a developer's existing Debug data or database schema.
+val sourceAcceptanceBuild = providers.gradleProperty("sourceAcceptanceBuild").orNull == "true"
 
 plugins {
     alias(build.plugins.android.application)
@@ -45,6 +48,12 @@ project.rootProject.file("dandanplay.properties")
     ?.inputStream()
     ?.use(danDanPlayProps::load)
 
+val oneDriveProps = Properties()
+project.rootProject.file("onedrive.properties")
+    .takeIf { it.isFile }
+    ?.inputStream()
+    ?.use(oneDriveProps::load)
+
 fun danDanPlayCredential(property: String, environment: String): String {
     return System.getenv(environment)
         ?: providers.gradleProperty(property).orNull
@@ -58,6 +67,15 @@ fun buildConfigString(value: String): String {
 
 val danDanPlayAppId = danDanPlayCredential("dandanplay.appId", "DANDANPLAY_APP_ID")
 val danDanPlayAppSecret = danDanPlayCredential("dandanplay.appSecret", "DANDANPLAY_APP_SECRET")
+fun oneDriveCredential(property: String, environment: String): String =
+    System.getenv(environment)
+        ?: providers.gradleProperty(property).orNull
+        ?: oneDriveProps.getProperty(property)
+        ?: ""
+
+val oneDriveClientId = oneDriveCredential("onedrive.clientId", "ONEDRIVE_CLIENT_ID")
+val oneDriveRedirectUri = oneDriveCredential("onedrive.redirectUri", "ONEDRIVE_REDIRECT_URI")
+val oneDriveRedirect = runCatching { URI(oneDriveRedirectUri) }.getOrNull()
 
 android {
     namespace =  "com.heyanle.easybangumi4"
@@ -94,8 +112,15 @@ android {
         manifestPlaceholders["bugly_app_version"] = Android.versionName
         manifestPlaceholders["bugly_app_channel"] = "github"
         manifestPlaceholders["label_res"] = "@string/app_name"
+        manifestPlaceholders["onedrive_redirect_scheme"] = oneDriveRedirect?.scheme ?: "msauth"
+        manifestPlaceholders["onedrive_redirect_host"] = oneDriveRedirect?.host ?: "$baseApplicationId.unconfigured"
+        // MSAL config uses the URL-encoded redirect URI, while Android's intent-filter path must
+        // contain the decoded Base64 signature (for example '+' and '=' instead of %2B/%3D).
+        manifestPlaceholders["onedrive_redirect_path"] = oneDriveRedirect?.path ?: "/unconfigured"
         buildConfigField("String", "DANDANPLAY_APP_ID", buildConfigString(danDanPlayAppId))
         buildConfigField("String", "DANDANPLAY_APP_SECRET", buildConfigString(danDanPlayAppSecret))
+        buildConfigField("String", "ONEDRIVE_CLIENT_ID", buildConfigString(oneDriveClientId))
+        buildConfigField("String", "ONEDRIVE_REDIRECT_URI", buildConfigString(oneDriveRedirectUri))
 
         // bugly 调试模式
         manifestPlaceholders["bugly_is_debug"] = false
@@ -151,12 +176,14 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = if (sourceAcceptanceBuild) ".sourcelab" else ".debug"
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles("proguard-rules.pro")
 
             manifestPlaceholders["label_res"] = "@string/app_name"
+            // 内部源体检入口只在开发与测试变体开放；用户源诊断在所有变体开放并共用执行器。
+            buildConfigField("boolean", "ENABLE_SOURCE_LAB", "true")
             buildConfig()
         }
         release {
@@ -165,6 +192,7 @@ android {
             proguardFiles("proguard-rules.pro")
 
             manifestPlaceholders["label_res"] = "@string/app_name"
+            buildConfigField("boolean", "ENABLE_SOURCE_LAB", "false")
             buildConfig()
         }
         create("performance") {
@@ -180,6 +208,7 @@ android {
 
             manifestPlaceholders["label_res"] = "@string/app_name"
             manifestPlaceholders["bugly_app_channel"] = "local-performance"
+            buildConfigField("boolean", "ENABLE_SOURCE_LAB", "true")
             buildConfig()
         }
         create("beta") {
@@ -196,9 +225,14 @@ android {
 
             manifestPlaceholders["label_res"] = "@string/app_name"
             manifestPlaceholders["bugly_app_channel"] = "local-beta"
+            buildConfigField("boolean", "ENABLE_SOURCE_LAB", "true")
             buildConfig()
         }
     }
+
+    // 源体检（批量测试全部源）需要内置源。buildType 的 sourceSet 要等上面的 buildTypes 声明
+    // 之后才存在，所以这里单独挂；release / performance 仍然不带，保持对外产物体积不变。
+    sourceSets.getByName("beta").assets.srcDir(rootProject.file("inner_source"))
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -313,6 +347,7 @@ dependencies {
     debugImplementation(compose.ui.test.manifest)
 
     implementation(libs.bundles.okhttp3)
+    implementation(libs.msal)
     //implementation(libs.bundles.appcenter)
 
     implementation(libs.jsoup)
@@ -330,6 +365,7 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.coroutines.test)
+    testImplementation(libs.okhttp3.mockwebserver)
 
 //    implementation(libs.accompanist.systemuicontroller)
 //    implementation(libs.accompanist.swiperefresh)

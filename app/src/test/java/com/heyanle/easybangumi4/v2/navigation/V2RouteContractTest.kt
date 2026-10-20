@@ -11,6 +11,7 @@ import com.heyanle.easybangumi4.MAIN
 import com.heyanle.easybangumi4.SEARCH
 import com.heyanle.easybangumi4.SETTING
 import com.heyanle.easybangumi4.SOURCE_CONFIG
+import com.heyanle.easybangumi4.SOURCE_DIAGNOSTICS
 import com.heyanle.easybangumi4.SOURCE_MANAGER
 import com.heyanle.easybangumi4.SOURCE_PUSH
 import com.heyanle.easybangumi4.STORAGE
@@ -23,7 +24,7 @@ import org.junit.Test
 class V2RouteContractTest {
 
     @Test
-    fun v2ShellMirrorsEveryRegisteredLegacyDestination() {
+    fun v2ShellMirrorsLegacyDestinationsAndAddsUserDiagnostics() {
         val legacyDestinationBases = setOf(
             MAIN,
             DETAILED,
@@ -44,7 +45,6 @@ class V2RouteContractTest {
             STORAGE,
         )
 
-        assertEquals(17, V2Routes.allDestinationBases.size)
-        assertEquals(legacyDestinationBases, V2Routes.allDestinationBases)
+        assertEquals(legacyDestinationBases + SOURCE_DIAGNOSTICS, V2Routes.allDestinationBases)
     }
 }

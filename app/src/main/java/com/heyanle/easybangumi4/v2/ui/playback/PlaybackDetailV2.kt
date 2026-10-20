@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -70,6 +71,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -360,8 +362,15 @@ fun PlaybackDetailV2(
         playState?.episode?.id,
     ) {
         boundMediaVM.onPlayStateChanged(playState)
-        playingVM.changePlay(playState, playVM.adviceProgress)
-        playVM.adviceProgress = -1L
+        playingVM.bindPlaybackSelection(playVM)
+        if (playState == null) {
+            // Cached details can publish a pending resume before this initial null effect runs.
+            // Only a concrete playback target may consume that progress and its notice.
+            playingVM.changePlay(null, -1L)
+        } else {
+            playingVM.changePlay(playState, playVM.adviceProgress, historyResume = playVM.consumeHistoryResumeFlag())
+            playVM.adviceProgress = -1L
+        }
     }
     LaunchedEffect(
         detailState.cartoonInfo?.id,
@@ -509,6 +518,7 @@ private fun PlaybackDetailV2Content(
     val mpvAnime4kStatus by playingVM.mpvAnime4KStatus.collectAsState()
     val exoAdAudioProbeEnabled by playingVM.exoAdAudioProbeEnabled.collectAsState()
     val exoAdAudioProbeRulesUrl by playingVM.exoAdAudioProbeRulesUrl.collectAsState()
+    val sleepTimerState by playingVM.sleepTimer.state.collectAsState()
     val orientationMode by settingPreferences.playerOrientationMode.flow().collectAsState(
         initial = settingPreferences.playerOrientationMode.get(),
     )
@@ -655,6 +665,8 @@ private fun PlaybackDetailV2Content(
                     exoAdAudioProbeRulesUrl = exoAdAudioProbeRulesUrl,
                     onExoAdAudioProbeEnabledChange = playingVM::setExoAdAudioProbeEnabled,
                     onExoAdAudioProbeRulesUrlChange = playingVM::setExoAdAudioProbeRulesUrl,
+                    sleepTimerState = sleepTimerState,
+                    onSleepTimerOptionSelected = playingVM.sleepTimer::select,
                 )
                 if (showDanmakuBlockRules) {
                     DanmakuBlockRulesBottomSheet(
@@ -1920,12 +1932,14 @@ internal fun EpisodePickerBottomSheet(
         selectedDownloadCount == allEpisodes.size
     LaunchedEffect(selectedLine?.playLine?.id, playingState?.episode?.id) {
         val index = allEpisodes.indexOfFirst { it.id == playingState?.episode?.id }
-        if (index >= 0) gridState.scrollToItem(index)
+        if (index >= 0) gridState.scrollToItem(if (index == 0) 0 else index + 1)
     }
 
     PlaybackSheetTheme {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        modifier = Modifier.testTag(CartoonPlayV2TestTags.EPISODE_PICKER),
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
         scrimColor = Color.Black.copy(alpha = 0.48f),
@@ -1933,7 +1947,6 @@ internal fun EpisodePickerBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag(CartoonPlayV2TestTags.EPISODE_PICKER)
                 .then(
                     if (isDownloadMode) {
                         Modifier.testTag(CartoonPlayV2TestTags.DOWNLOAD_SELECTION)
@@ -1979,55 +1992,58 @@ internal fun EpisodePickerBottomSheet(
                 },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            selectedLine?.let { line ->
-                Text(
-                    text = "当前线路 · ${line.playLine.label}",
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            androidx.compose.material3.OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                value = keyword,
-                onValueChange = { keyword = it },
-                label = { Text("搜索剧集") },
-                singleLine = true,
-            )
-            if (isDownloadMode) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(
-                        modifier = Modifier.testTag(CartoonPlayV2TestTags.DOWNLOAD_SELECT_ALL),
-                        onClick = onDownloadSelectAll,
-                    ) {
-                        Icon(Icons.Filled.SelectAll, contentDescription = null)
-                        Spacer(Modifier.width(6.dp))
-                        Text(if (allDownloadEpisodesSelected) "取消全选" else "全选")
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        text = "共 ${allEpisodes.size} 集",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            }
             LazyVerticalGrid(
                 modifier = Modifier
-                    .height(if (isDownloadMode) 390.dp else 450.dp)
+                    // Keep the title/actions visible; controls scroll with episodes on short windows.
+                    .weight(1f, fill = false)
                     .padding(horizontal = 20.dp),
                 columns = GridCells.Adaptive(100.dp),
                 state = gridState,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column {
+                        selectedLine?.let { line ->
+                            Text(
+                                text = "当前线路 · ${line.playLine.label}",
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                        androidx.compose.material3.OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            value = keyword,
+                            onValueChange = { keyword = it },
+                            label = { Text("搜索剧集") },
+                            singleLine = true,
+                        )
+                        if (isDownloadMode) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                TextButton(
+                                    modifier = Modifier.testTag(CartoonPlayV2TestTags.DOWNLOAD_SELECT_ALL),
+                                    onClick = onDownloadSelectAll,
+                                ) {
+                                    Icon(Icons.Filled.SelectAll, contentDescription = null)
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(if (allDownloadEpisodesSelected) "取消全选" else "全选")
+                                }
+                                Spacer(Modifier.weight(1f))
+                                Text(
+                                    text = "共 ${allEpisodes.size} 集",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+                    }
+                }
                 items(episodes.size, key = { episodes[it].id }) { index ->
                     val episode = episodes[index]
                     EpisodeRailButton(

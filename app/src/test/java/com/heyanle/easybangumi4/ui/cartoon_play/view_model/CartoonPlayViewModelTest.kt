@@ -8,6 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CartoonPlayViewModelTest {
@@ -104,6 +105,89 @@ class CartoonPlayViewModelTest {
         assertFalse(viewModel.tryNext())
         assertFalse(viewModel.hasNext())
         assertEquals("episode-1", viewModel.curringPlayState.value?.episode?.id)
+    }
+
+    @Test
+    fun automaticFallbackKeepsProgressAndDoesNotResetAttemptChain() {
+        val episode = Episode("episode-1", "第1集", 1)
+        val first = wrapper(PlayLine("line-1", "线路一", arrayListOf(episode)), compareBy { it.order })
+        val second = wrapper(PlayLine("line-2", "线路二", arrayListOf(episode)), compareBy { it.order })
+        val viewModel = CartoonPlayViewModel(enterFor("line-1", "episode-1").copy(adviceProgress = 45_000L))
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(first, second))
+        var manualSelections = 0
+        viewModel.onManualPlaybackSelection = { manualSelections++ }
+        val original = viewModel.curringPlayState.value!!
+
+        viewModel.selectAutomaticFallback(original, original.copy(playLine = second), 45_000L)
+
+        assertEquals(45_000L, viewModel.adviceProgress)
+        assertEquals("line-2", viewModel.selectedLineId)
+        assertEquals(0, manualSelections)
+        assertFalse(viewModel.consumeHistoryResumeFlag())
+        viewModel.changePlay(cartoonInfo(), first, episode)
+        assertEquals(1, manualSelections)
+    }
+
+    @Test
+    fun staleAutomaticFallbackCannotReplaceManualSelection() {
+        val one = Episode("episode-1", "第1集", 1)
+        val two = Episode("episode-2", "第2集", 2)
+        val line = wrapper(PlayLine("line-1", "线路一", arrayListOf(one, two)), compareBy { it.order })
+        val viewModel = CartoonPlayViewModel(enterFor("line-1", "episode-1"))
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(line))
+        val original = viewModel.curringPlayState.value!!
+        viewModel.changePlay(cartoonInfo(), line, two)
+
+        assertFalse(viewModel.selectAutomaticFallback(original, original, 45_000L))
+        assertEquals("episode-2", viewModel.curringPlayState.value!!.episode.id)
+        assertEquals(emptyList<PlayLineWrapper>(), viewModel.automaticFallbackLines(original))
+    }
+
+    @Test
+    fun initialHistoryResumeFlagIsConsumedOnlyOnce() {
+        val episode = Episode("episode-1", "第1集", 1)
+        val line = wrapper(PlayLine("line-1", "线路一", arrayListOf(episode)), compareBy { it.order })
+        val viewModel = CartoonPlayViewModel(enterFor("line-1", "episode-1").copy(adviceProgress = 45_000L))
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(line))
+
+        assertTrue(viewModel.consumeHistoryResumeFlag())
+        assertFalse(viewModel.consumeHistoryResumeFlag())
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(line))
+        assertFalse(viewModel.consumeHistoryResumeFlag())
+    }
+
+    @Test
+    fun manualEpisodeSelectionClearsUnconsumedHistoryResumeAndProgress() {
+        val one = Episode("episode-1", "第1集", 1)
+        val two = Episode("episode-2", "第2集", 2)
+        val line = wrapper(PlayLine("line-1", "线路一", arrayListOf(one, two)), compareBy { it.order })
+        val viewModel = CartoonPlayViewModel(enterFor("line-1", "episode-1").copy(adviceProgress = 45_000L))
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(line))
+
+        viewModel.changePlay(cartoonInfo(), line, two)
+
+        assertEquals(-1L, viewModel.adviceProgress)
+        assertFalse(viewModel.consumeHistoryResumeFlag())
+    }
+
+    @Test
+    fun manualSameTargetSelectionRetriesEvenWhenStateFlowConflatesIt() {
+        val one = Episode("episode-1", "第1集", 1)
+        val two = Episode("episode-2", "第2集", 2)
+        val rawLine = PlayLine("line-1", "线路一", arrayListOf(one, two))
+        val line = wrapper(rawLine, compareBy { it.order })
+        val viewModel = CartoonPlayViewModel(enterFor("line-1", "episode-1"))
+        viewModel.onCartoonInfoChange(cartoonInfo(), listOf(line))
+        val retried = mutableListOf<CartoonPlayViewModel.CartoonPlayState>()
+        viewModel.onSameTargetPlaybackRetry = { retried += it }
+
+        viewModel.changePlay(cartoonInfo(), line, one)
+        viewModel.changePlay(cartoonInfo(), wrapper(rawLine, compareBy { it.label }), one)
+        viewModel.changePlay(cartoonInfo(), line, two)
+
+        assertEquals(2, retried.size)
+        assertTrue(retried.all { it.episode.id == "episode-1" })
+        assertEquals("episode-2", viewModel.curringPlayState.value!!.episode.id)
     }
 
     private fun wrapper(
